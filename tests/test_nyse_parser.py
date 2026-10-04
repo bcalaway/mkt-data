@@ -1,3 +1,4 @@
+import re
 from datetime import date, time
 
 import pytest
@@ -47,13 +48,17 @@ def test_script_text_is_ignored(nyse_html):
 
 
 def test_footnotes_inside_the_table_work_too(nyse_html):
-    # Every footnote as a one-cell row at the end of the holidays table.
+    # Every footnote as a one-cell row at the end of the holidays table. On the
+    # real page they're the first four disclaimer paragraphs after it.
     table_end = nyse_html.index(b"</tbody>")
-    notes_end = nyse_html.index(b"</section>", table_end)
-    notes = nyse_html[table_end:notes_end].replace(b"</tbody>\n      </table>", b"")
-    notes = notes.replace(b"<p>", b"<tr><td colspan=4>").replace(b"</p>", b"</td></tr>")
-    assert notes.count(b"<tr>") == 4
-    moved = nyse_html[:table_end] + notes + b"</tbody></table>" + nyse_html[notes_end:]
+    notes = list(re.finditer(rb'<p data-type="disclaimer"[^>]*>(.*?)</p>', nyse_html[table_end:], re.S))[:4]
+    assert [m[1][:5].count(b"*") for m in notes] == [1, 2, 3, 4]
+    rows = b"".join(b"<tr><td colspan=4>" + m[1] + b"</td></tr>" for m in notes)
+    rest = nyse_html[table_end:]
+    for m in reversed(notes):  # cut them out where they were
+        rest = rest[: m.start()] + rest[m.end():]
+    moved = nyse_html[:table_end] + rows + rest
+    assert moved.count(b"close early at 1:00 p.m.") == nyse_html.count(b"close early at 1:00 p.m.")
     assert nyse.parse(moved) == nyse.parse(nyse_html)
 
 
@@ -92,7 +97,7 @@ def test_early_close_on_a_holiday_fails(nyse_html):
 
 
 def test_missing_rows_fail(nyse_html):
-    start = nyse_html.index(b"<tr><td>Labor Day")
+    start = nyse_html.index(b"<tr><th>Labor Day")
     end = nyse_html.index(b"</tr>", start) + len(b"</tr>")
     with pytest.raises(ParseError, match="too few holidays"):
         nyse.parse(nyse_html[:start] + nyse_html[end:])

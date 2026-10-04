@@ -18,7 +18,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
   - the holiday's date line plus an early close on that same date (Good Friday 2015).
 
   Done in #12, from the real capture. SIFMA's page gives no date for Presidents Day 2015 or 2016, though both were full closes: the PDF should fill them. The page links the PDF as "US Holiday Archives 1996-2017".
-- **The PDF** needs a parser that reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
+- **The PDF** is captured raw first, as source `SIFMA-US-HISTORY` with no parser (#15). It needs a parser that reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
 - **Unscheduled recommendations are missing from both.** They need a cited exceptions list:
   - Hurricane Sandy: Oct 29, 2012 early close at noon, Oct 30 full close;
   - George H.W. Bush: Dec 5, 2018 full close;

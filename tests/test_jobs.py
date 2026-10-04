@@ -85,10 +85,13 @@ def test_captures_list_and_raw_body(token, migrated_db, fed_html, sifma_html, si
 
     r = client.get("/jobs/captures", headers=_auth())
     caps = r.json()["captures"]
-    assert [c["source"] for c in caps] == ["SIFMA-US-ARCHIVE", "SIFMA-US-HOLIDAYS", "FED-K8"]  # newest first
-    assert all(c["applied"] for c in caps)
+    # newest first
+    assert [c["source"] for c in caps] == ["SIFMA-US-HISTORY", "SIFMA-US-ARCHIVE", "SIFMA-US-HOLIDAYS", "FED-K8"]
+    # The historical PDF has no parser yet: kept raw, never applied, and says so.
+    assert [(c["applied"], c["parsed"]) for c in caps] == [(False, False), (True, True), (True, True), (True, True)]
+    assert client.get(f"/jobs/captures/{caps[0]['id']}/text", headers=_auth()).status_code == 415
     sifma_caps = client.get("/jobs/captures", params={"calendar": "sifma-us"}, headers=_auth()).json()["captures"]
-    assert [c["source"] for c in sifma_caps] == ["SIFMA-US-ARCHIVE", "SIFMA-US-HOLIDAYS"]
+    assert [c["source"] for c in sifma_caps] == ["SIFMA-US-HISTORY", "SIFMA-US-ARCHIVE", "SIFMA-US-HOLIDAYS"]
     page = client.get("/jobs/captures", params={"source": "sifma-us-holidays"}, headers=_auth()).json()["captures"]
     assert len(page) == 1 and page[0]["size_bytes"] == len(sifma_html)
     assert client.get("/jobs/captures", params={"source": "fed-k8"}, headers=_auth()).json()["captures"][0][

@@ -92,8 +92,9 @@ def test_business_day(migrated_db, fed_html):
 def test_sifma_capture_and_early_close(migrated_db, sifma_fetch):
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)
-    page, archive = out["sources"]
+    page, archive, history = out["sources"]
     assert page["source"] == "SIFMA-US-HOLIDAYS" and archive["source"] == "SIFMA-US-ARCHIVE"
+    assert history["source"] == "SIFMA-US-HISTORY" and history["parsed"] is False and history["new_capture"]
     assert page["years"] == [2026] and page["added"] == page["closed_days"] == 19
     assert archive["years"] == list(range(2015, 2026))
     with db.session() as s:
@@ -124,7 +125,7 @@ def test_sifma_archive_backfills_past_years(migrated_db, sifma_fetch):
         assert sorted(years) == list(range(2015, 2027))
 
 
-def test_the_page_outranks_the_archive(migrated_db, sifma_fetch, sifma_html, sifma_archive_html):
+def test_the_page_outranks_the_archive(migrated_db, sifma_html, sifma_archive_html, sifma_history_pdf):
     # The archive also lists Dec 31, 2025 (as a full close, say): the page's early close stands.
     clash = sifma_archive_html.replace(
         b"<p>Early Close (2:00 p.m. Eastern Time): Wednesday, December 31, 2025</p>",
@@ -133,7 +134,7 @@ def test_the_page_outranks_the_archive(migrated_db, sifma_fetch, sifma_html, sif
     assert clash != sifma_archive_html
     from app.calendars import sifma
 
-    pages = {sifma.URL: sifma_html, sifma.ARCHIVE_URL: clash}
+    pages = {sifma.URL: sifma_html, sifma.ARCHIVE_URL: clash, sifma.HISTORY_URL: sifma_history_pdf}
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", lambda url: (200, "text/html", pages[url]))
     assert out["sources"][1]["held_by_higher_source"] == ["2025-12-31"]
@@ -156,7 +157,7 @@ def test_one_source_failing_does_not_stop_the_other(migrated_db, sifma_html):
         service.run_capture(s, "SIFMA-US", fetch)
     with db.session() as s:
         assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
-        assert _count(s, Capture) == 1
+        assert _count(s, Capture) == 2  # the page and the PDF source (this fake answers every URL with the page)
 
 
 def test_calendars_are_independent(migrated_db, fed_html, sifma_fetch):
@@ -167,7 +168,7 @@ def test_calendars_are_independent(migrated_db, fed_html, sifma_fetch):
         # Good Friday: the Fed is open; SIFMA recommends a noon close.
         assert service.business_day(s, "FED", date(2026, 4, 3))["status"] == "open"
         assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
-        assert _count(s, Capture) == 3  # FED's page, SIFMA's page and archive
+        assert _count(s, Capture) == 4  # FED's page, SIFMA's page, archive and historical PDF
 
 
 def test_nyse_capture_and_early_close(migrated_db, nyse_html):
@@ -194,4 +195,21 @@ def test_good_friday_across_the_three_calendars(migrated_db, fed_html, sifma_fet
     with db.session() as s:
         statuses = {n: service.business_day(s, n, date(2026, 4, 3))["status"] for n in service.CALENDARS}
         assert statuses == {"FED": "open", "SIFMA-US": "early_close", "NYSE": "closed"}
-        assert _count(s, Capture) == 4
+        assert _count(s, Capture) == 5
+
+
+def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_history_pdf):
+    with db.session() as s:
+        out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
+    assert out == {
+        "source": "SIFMA-US-HISTORY", "capture_id": out["capture_id"], "new_capture": True,
+        "parsed": False, "note": service.NOT_PARSED,
+    }
+    with db.session() as s:
+        cap = s.get(Capture, out["capture_id"])
+        assert cap.body == sifma_history_pdf and cap.content_type == "application/pdf"
+        assert _count(s, CalendarDay, CalendarDay.capture_id == cap.id) == 0
+        # The same PDF again is a check, not a new capture; reparse skips it.
+        again = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
+        assert again["capture_id"] == cap.id and again["new_capture"] is False
+        assert service.run_reparse(s, "SIFMA-US")["sources"][2]["parsed"] is False

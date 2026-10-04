@@ -41,7 +41,7 @@ Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitop
 - `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
 - `POST /jobs/calendars/{name}/reparse` re-applies the latest capture, for example after a parser fix.
 - `GET /jobs/calendars/{name}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
-- `GET /jobs/captures?calendar=NYSE` (or `?source=NYSE-HOURS`, or neither; `limit` defaults to 20) lists raw captures, newest first: id, source, when, size, SHA-256, and `applied` (some calendar row came from it; a newest capture that isn't applied usually failed to parse).
+- `GET /jobs/captures?calendar=NYSE` (or `?source=NYSE-HOURS`, or neither; `limit` defaults to 20) lists raw captures, newest first: id, source, when, size, SHA-256, `applied` (some calendar row came from it; a newest capture that isn't applied usually failed to parse) and `parsed` (false when its source has no parser yet, so it's kept raw only).
 - `GET /jobs/captures/{id}` returns one capture's body byte for byte, as a download.
 - `GET /jobs/captures/{id}/text?contains=…&context=…&limit=…` returns an HTML capture's visible text, one numbered line per block element, optionally only the lines containing a phrase. It's what the SIFMA-style parsers see. Use it to turn a real capture into a test fixture or see exactly what a parser saw.
 
@@ -61,6 +61,6 @@ See `app/models.py`. In short:
 - **Raw:** `source` → `capture`, which is append-only and enforced by a trigger, plus `source_check`, which records every fetch attempt.
 - **Processed:** `calendar` → `calendar_year` (coverage) and `calendar_day` (closed or early-close weekdays, with `valid_from`/`valid_to` history).
 
-A calendar can have several sources, highest precedence first (`CALENDARS` in `app/calendars/service.py`): SIFMA-US reads its current schedule page and then its archive. A capture job fetches and applies each source in turn. A source never overrides a date a higher one holds (it reports the disagreement as `held_by_higher_source`), and only closes off rows it wrote itself. The job's summary has one entry per source under `sources`.
+A calendar can have several sources, highest precedence first (`CALENDARS` in `app/calendars/service.py`): SIFMA-US reads its current schedule page, then its archive, then its historical PDF. A source can have no parser yet: it's fetched and kept raw, applies nothing, and its captures list with `parsed: false`. That's how a new document is first captured, so its parser can be written against the real bytes. A capture job fetches and applies each source in turn. A source never overrides a date a higher one holds (it reports the disagreement as `held_by_higher_source`), and only closes off rows it wrote itself. The job's summary has one entry per source under `sources`.
 
 Started from `templates/python` in `nyc_pa_aws_gitops`. `ExampleService.Ping` is still the template's gRPC example.

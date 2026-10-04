@@ -13,9 +13,14 @@ The flow for every calendar (docs/phase-1.md, step 4):
    stops listing are left alone.
 
 A calendar can have several sources, highest precedence first (SIFMA-US:
-its current page, then its archive). Each is fetched and applied on its
-own; a source never overrides a date a higher one holds, and only closes off
-rows it wrote itself (`apply`). One source failing doesn't stop the others.
+its current page, then its archive, then its historical PDF). Each is fetched
+and applied on its own; a source never overrides a date a higher one holds,
+and only closes off rows it wrote itself (`apply`). One source failing
+doesn't stop the others.
+
+A source can have no parser yet (`parse=None`): it's fetched and kept raw,
+and applies nothing. That's how a new document is first captured, so its
+parser can be written against the real bytes.
 """
 
 import hashlib
@@ -40,7 +45,7 @@ class SourceSpec:
     name: str
     url: str
     description: str
-    parse: Callable[[bytes], ParsedCalendar]
+    parse: Callable[[bytes], ParsedCalendar] | None  # None: captured raw, not parsed yet
 
 
 @dataclass(frozen=True)
@@ -86,6 +91,10 @@ CALENDARS: dict[str, CalendarSpec] = {
                 "SIFMA-US-ARCHIVE", sifma.ARCHIVE_URL,
                 "SIFMA, U.S. Holiday Archive (recent past years)", sifma.parse_archive,
             ),
+            SourceSpec(
+                "SIFMA-US-HISTORY", sifma.HISTORY_URL,
+                "SIFMA, historical U.S. holiday recommendations PDF (1996 onward)", None,
+            ),
         ),
     ),
     "NYSE": CalendarSpec(
@@ -97,6 +106,11 @@ CALENDARS: dict[str, CalendarSpec] = {
         ),
     ),
 }
+
+
+SOURCES: dict[str, SourceSpec] = {src.name: src for cal in CALENDARS.values() for src in cal.sources}
+
+NOT_PARSED = "kept raw; this source has no parser yet"
 
 
 class SourceFetchError(RuntimeError):
@@ -257,6 +271,8 @@ def run_capture(s: Session, name: str, fetcher=None) -> dict:
         # Commit the raw capture (and its check) before parsing: a parse error
         # must never lose what was fetched.
         s.commit()
+        if src.parse is None:
+            return {"capture_id": cap.id, "new_capture": is_new, "parsed": False, "note": NOT_PARSED}
         out = {"capture_id": cap.id, "new_capture": is_new} | apply(s, spec, rank, cap, src.parse(cap.body))
         s.commit()
         return out
@@ -273,6 +289,8 @@ def run_reparse(s: Session, name: str) -> dict:
         cap = latest_capture(s, src)
         if cap is None:
             return {"skipped": "nothing captured yet"}
+        if src.parse is None:
+            return {"capture_id": cap.id, "new_capture": False, "parsed": False, "note": NOT_PARSED}
         out = {"capture_id": cap.id, "new_capture": False} | apply(s, spec, rank, cap, src.parse(cap.body))
         s.commit()
         return out

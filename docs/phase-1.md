@@ -1,6 +1,6 @@
 # Phase 1: holiday calendars end to end
 
-Platform roadmap: Milestone 22 in `nyc_pa_aws_gitops/docs/roadmap.md`.
+**Status: complete (2026-10-04).** All nine steps are done and verified on the hub. Platform roadmap: Milestone 22, now in `nyc_pa_aws_gitops/docs/roadmap-archive.md`. Follow-ups are at the end of this file.
 
 **Goal:** before adding more sources, build one vertical slice through the whole data layer: sourcing → raw store → processed tables → Airflow schedule → monitoring and alerts → Grafana dashboard. Calendars come first because every later dataset's schedule and staleness checks depend on them ("was today a trading day for this market?").
 

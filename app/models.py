@@ -24,6 +24,7 @@ Integer IDs internally; every table people look at has a short readable
 """
 
 from datetime import date, datetime, time
+from decimal import Decimal
 
 from sqlalchemy import (
     CheckConstraint,
@@ -33,6 +34,7 @@ from sqlalchemy import (
     Index,
     Integer,
     LargeBinary,
+    Numeric,
     SmallInteger,
     String,
     Text,
@@ -150,6 +152,47 @@ class SourceDay(Base):
     status: Mapped[str] = mapped_column(String(12))
     close_time: Mapped[time | None] = mapped_column(Time)
     holiday: Mapped[str] = mapped_column(String(100))
+    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
+    valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Observation(Base):
+    """A time-series value as one source publishes it (near-raw, phase 2 Part B).
+
+    One row per source, the source's own series key (BC_10YEAR,
+    RIFLGFCY10_N.B), date and field, holding the value exactly as printed
+    (numeric, in the source's unit: percent for CMT yields). No instruments,
+    no conversion: quote-svc maps keys to instruments through secmaster-svc and
+    builds golden quotes. History like source_day: within a capture's period
+    (its month), a changed value closes the old row (`valid_to`) and adds a
+    new one, and a value the source drops is closed off. Times are the
+    captures' fetch times, so a rebuild from raw gives the same rows.
+    """
+
+    __tablename__ = "observation"
+    __table_args__ = (
+        Index(
+            "uq_observation_current",
+            "source_id",
+            "source_key",
+            "as_of",
+            "field",
+            unique=True,
+            postgresql_where=text("valid_to IS NULL"),
+            sqlite_where=text("valid_to IS NULL"),
+        ),
+        Index("ix_observation_source_period", "source_id", "period"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int] = mapped_column(Integer, ForeignKey("source.id"))
+    period: Mapped[str] = mapped_column(String(10))
+    source_key: Mapped[str] = mapped_column(String(40))
+    as_of: Mapped[date] = mapped_column(Date)
+    field: Mapped[str] = mapped_column(String(20))
+    value: Mapped[Decimal] = mapped_column(Numeric)
+    unit: Mapped[str] = mapped_column(String(20))
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

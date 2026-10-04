@@ -5,8 +5,11 @@ Two layers:
 - **Raw** (`source`, `capture`, `source_check`): what was fetched, from
   where, when, byte for byte. `capture` is append-only: a Postgres trigger
   (migration 0002) refuses UPDATE, DELETE and TRUNCATE. Raw is kept forever.
+- **Near-raw** (`source_year`, `source_day`): each calendar source's parse
+  as that source states it, one set of rows per source, no precedence
+  (docs/phase-2.md, Part A). What calendar-svc builds golden calendars from.
 - **Processed** (`calendar`, `calendar_year`, `calendar_day`): parsed from
-  raw and always rebuildable from it. `calendar_day` keeps history: a date
+  raw and always rebuildable from it. Retired once calendar-svc takes over. `calendar_day` keeps history: a date
   that changes or disappears in a newer capture gets `valid_to` set and a
   new row, never an overwrite. The current view is `valid_to IS NULL`.
 
@@ -140,4 +143,53 @@ class CalendarDay(Base):
     holiday: Mapped[str] = mapped_column(String(100))
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SourceYear(Base):
+    """A year a calendar source covers, as of its latest capture listing it (near-raw).
+
+    Like `calendar_year`, a year the source stops listing is kept: dropping
+    off a page that rolls forward isn't a change to the calendar.
+    """
+
+    __tablename__ = "source_year"
+
+    source_id: Mapped[int] = mapped_column(Integer, ForeignKey("source.id"), primary_key=True)
+    year: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class SourceDay(Base):
+    """A closed or early-close weekday as one source states it (near-raw), with history.
+
+    One current row per source and date. Two sources listing the same date
+    both keep their row: precedence is calendar-svc's job. `valid_from` and
+    `valid_to` are the fetch times of the captures that said it and stopped
+    saying it, so a rebuild from raw gives the same rows.
+    """
+
+    __tablename__ = "source_day"
+    __table_args__ = (
+        CheckConstraint("status IN ('closed', 'early_close')", name="ck_source_day_status"),
+        CheckConstraint("(status = 'early_close') = (close_time IS NOT NULL)", name="ck_source_day_close_time"),
+        Index(
+            "uq_source_day_current",
+            "source_id",
+            "day",
+            unique=True,
+            postgresql_where=text("valid_to IS NULL"),
+            sqlite_where=text("valid_to IS NULL"),
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int] = mapped_column(Integer, ForeignKey("source.id"))
+    day: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(12))
+    close_time: Mapped[time | None] = mapped_column(Time)
+    holiday: Mapped[str] = mapped_column(String(100))
+    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
+    valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

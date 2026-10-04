@@ -42,7 +42,7 @@ import httpx2
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
+from app.calendars import fed, near_raw, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
 from app.calendars.parsed import Day, ParsedCalendar, ParseError, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -380,17 +380,22 @@ def _run(s: Session, name: str, step) -> dict:
 
 def _parse_and_apply(s: Session, spec: CalendarSpec, rank: int, src: SourceSpec, cap: Capture,
                      check: SourceCheck) -> dict:
-    """Parse the capture and apply it, recording the parse's outcome on the check."""
+    """Parse the capture and apply it, recording the parse's outcome on the check.
+
+    The parse goes to the source's near-raw rows (near_raw.py) and to the
+    calendar (`apply`), in one transaction.
+    """
     try:
         parsed = src.parse(cap.body)
     except ParseError as e:
         check.parse_outcome, check.parse_detail = "error", str(e)[:2000]
         s.commit()  # kept even though _run rolls back what follows
         raise
+    raw = near_raw.apply_source(s, cap, parsed)
     out = apply(s, spec, rank, cap, parsed)
     check.parse_outcome = "ok"
     s.commit()
-    return out
+    return out | {"near_raw": raw}
 
 
 def run_capture(s: Session, name: str, fetcher=None) -> dict:
@@ -423,6 +428,19 @@ def run_reparse(s: Session, name: str) -> dict:
         return {"capture_id": cap.id, "new_capture": False} | _parse_and_apply(s, spec, rank, src, cap, check)
 
     return _run(s, name, step)
+
+
+def run_near_raw_rebuild(s: Session, name: str) -> dict:
+    """Rebuild every parsed source's near-raw rows from all its captures (near_raw.rebuild)."""
+    spec = CALENDARS[name]
+    results = []
+    for src in spec.sources:
+        if src.parse is None:
+            results.append({"source": src.name, "parsed": False, "note": NOT_PARSED})
+            continue
+        _source(s, src)
+        results.append(near_raw.rebuild(s, src.name, src.parse))
+    return {"calendar": name, "sources": results}
 
 
 def business_day(s: Session, name: str, day: date) -> dict:

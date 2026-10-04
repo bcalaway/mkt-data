@@ -29,7 +29,7 @@ Today mkt-data does both jobs for calendars: it captures and parses each source,
 - Every calendar source, captured raw exactly as now, including the `repo:` rules and projection files (each version of the rules is still a raw capture).
 - **Near-raw calendar tables** (calendars keep their own shape, not the generic `observation`): `source_year` (the years a source covers, from which capture) and `source_day` (a source's closed and early-close weekdays as that source states them: date, status, close time, holiday name, capture, `valid_from`/`valid_to`). One set per source, with no precedence applied: two sources listing the same date both keep their row.
 - Parse outcomes, captures, checks and their metrics and alerts (capture stale, parse failed), and home-mcp's capture and checks tools.
-- A gRPC read API: a source's rows changed since a watermark, and a source's rows for a year range.
+- A gRPC read API: a source's years and days (current and superseded). Calendars are small, so calendar-svc reads a source whole rather than by watermark.
 
 **Moves to calendar-svc (golden):**
 
@@ -139,7 +139,9 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 
 ### Part A: calendars
 
-1. **Calendar near-raw** (mkt-data). Migration for `source_year` and `source_day`; every source's parse writes its own rows there (no precedence); populated from every existing capture by a reparse; the gRPC read API; the calendar DAGs mark an Asset when a source's rows change. `calendar_day` and everything that reads it are untouched.
+1. **Calendar near-raw** (mkt-data). Two PRs:
+   - **Tables and rebuild** (this PR, migration 0004): `source_year` and `source_day`; every capture job writes the source's parse there (no precedence) in the same transaction as the calendar; `POST /jobs/calendars/{name}/near-raw/rebuild` replays every stored capture, oldest first, with the captures' fetch times as `valid_from`/`valid_to`, so a rebuild gives the same rows; the manual DAG `mkt_data__calendar_near_raw_rebuild` fills near-raw on the hub from the captures taken before it existed. `calendar_day` and everything that reads it are untouched.
+   - **Read API:** gRPC for calendar-svc (a source's years and days, current and superseded; a full read per source, since calendars are a few thousand rows), and the calendar DAGs marking an Asset after each capture.
 2. **Platform onboarding** (nyc_pa_aws_gitops). `calendar-svc` in `apps/registry.yml` (`database: true`, `airflow: true`, no Authentik, no previews), its `github_repo_id`, its scrape job, then the repo's first PR from `templates/python`.
 3. **calendar-svc golden calendars.** The calendar definitions; the merge ported from mkt-data's `apply` together with its tests (precedence, `held_by_higher_source`, `taken_from_lower_source`, projection by whole years, history); coverage, gap years and next-year checks; the load job and its DAG (on the Asset, plus nightly); the business-day answer over HTTP (`/jobs`, for DAGs and home-mcp) and gRPC (for services); metrics.
 4. **Prove it.** A comparison of calendar-svc's calendars against mkt-data's `calendar_day` for FED, SIFMA-US and NYSE, 1986–2100: every date, status, close time, holiday name and projected flag. Zero differences, or each one explained and fixed, before step 5.

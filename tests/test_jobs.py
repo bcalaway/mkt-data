@@ -75,3 +75,32 @@ def test_nyse_capture_via_the_api(token, migrated_db, nyse_html, monkeypatch):
     assert r.json()["calendar"] == "NYSE" and r.json()["years"] == [2026, 2027, 2028]
     r = client.get("/jobs/calendars/NYSE/business-day", params={"on": "2026-11-27"}, headers=_auth())
     assert r.json()["close_time"] == "13:00" and r.json()["holiday"] == "Thanksgiving Day (early close)"
+
+
+def test_captures_list_and_raw_body(token, migrated_db, fed_html, sifma_html, monkeypatch):
+    for name, html in [("FED", fed_html), ("SIFMA-US", sifma_html)]:
+        monkeypatch.setattr(service, "fetch", lambda url, html=html: (200, "text/html; charset=utf-8", html))
+        assert client.post(f"/jobs/calendars/{name}/capture", headers=_auth()).status_code == 200
+
+    r = client.get("/jobs/captures", headers=_auth())
+    caps = r.json()["captures"]
+    assert [c["source"] for c in caps] == ["SIFMA-US-HOLIDAYS", "FED-K8"]  # newest first
+    only = client.get("/jobs/captures", params={"calendar": "sifma-us"}, headers=_auth()).json()["captures"]
+    assert len(only) == 1 and only[0]["size_bytes"] == len(sifma_html)
+    assert client.get("/jobs/captures", params={"source": "fed-k8"}, headers=_auth()).json()["captures"][0][
+        "source"
+    ] == "FED-K8"
+
+    r = client.get(f"/jobs/captures/{only[0]['id']}", headers=_auth())
+    assert r.status_code == 200 and r.content == sifma_html  # byte for byte
+    assert r.headers["content-type"] == "text/html; charset=utf-8"
+    assert r.headers["content-disposition"].startswith("attachment;")
+    assert r.headers["x-capture-sha256"] == only[0]["sha256"]
+
+
+def test_captures_need_the_token_and_exist(token, migrated_db):
+    assert client.get("/jobs/captures/1").status_code == 401
+    assert client.get("/jobs/captures/999", headers=_auth()).status_code == 404
+    assert client.get("/jobs/captures", params={"calendar": "nope"}, headers=_auth()).status_code == 404
+    r = client.get("/jobs/captures", params={"calendar": "FED", "source": "FED-K8"}, headers=_auth())
+    assert r.status_code == 400

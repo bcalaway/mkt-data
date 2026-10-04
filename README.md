@@ -41,6 +41,15 @@ Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitop
 - `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
 - `POST /jobs/calendars/{name}/reparse` re-applies the latest capture, for example after a parser fix.
 - `GET /jobs/calendars/{name}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
+- `GET /jobs/captures?calendar=NYSE` (or `?source=NYSE-HOURS`, or neither; `limit` defaults to 20) lists raw captures, newest first: id, source, when, size and SHA-256.
+- `GET /jobs/captures/{id}` returns one capture's body byte for byte, as a download. Use it to turn a real capture into a test fixture or see exactly what a parser saw.
+
+mkt-data is internal only, so to save a capture to a file, run this on the hub (`ssh ec2-user@10.0.3.1`). The token is read inside the container and never appears on the command line:
+
+```
+docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures?limit=10",headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())'
+docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures/"+sys.argv[1],headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())' 2 > nyse-capture-2.html
+```
 
 DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 

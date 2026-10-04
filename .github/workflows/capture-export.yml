@@ -96,3 +96,19 @@ jobs:
             commit -q -m "Capture $ID: $NAME (sha256 $SHA)"
           git push -q -f origin "capture/$ID"
           echo "::notice title=result::capture/$ID has captures/$NAME (sha256 ${SHA:0:12})"
+
+      # Hand-off branches are short-lived: delete other capture/* branches
+      # whose commit is over 7 days old (the S3 exports expire then too).
+      - name: Tidy old capture branches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cutoff=$(date -u -d '7 days ago' +%s)
+          git ls-remote --heads origin 'capture/*' | while read -r sha ref; do
+            branch=${ref#refs/heads/}
+            [ "$branch" = "capture/$ID" ] && continue
+            when=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}" --jq .commit.committer.date)
+            if [ "$(date -u -d "$when" +%s)" -lt "$cutoff" ]; then
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}" && echo "deleted $branch ($when)"
+            fi
+          done

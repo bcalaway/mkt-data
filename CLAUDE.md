@@ -4,7 +4,7 @@ The market data platform's data pipeline. The overview and conventions are in `R
 
 ## Git
 
-`main` is protected by the platform's ruleset: no direct pushes, no force-push, and `ci / Build, test, lint` must pass. Work on a branch, `git push` it right after every commit without asking, then open a PR (or update the open one). Bill merges. Merging deploys to the hub after Bill approves the `production` environment.
+`main` is protected by the platform's ruleset: no direct pushes, no force-push, and `ci / Build, test, lint` must pass. Work on a branch, `git push` it right after every commit without asking, then open a PR (or update the open one). Bill merges, with one exception: for a PR that changes only docs (`docs/**`, `*.md`), Claude turns on auto-merge, so it merges once CI passes (Bill, 2026-10-04). Merging deploys to the hub after Bill approves the `production` environment; docs-only merges don't deploy (`cd.yml` ignores them).
 
 ## Rules
 
@@ -14,4 +14,12 @@ The market data platform's data pipeline. The overview and conventions are in `R
 - Internal integer IDs, with short readable names in every view, log line and dashboard.
 - No secrets in code, in the repo, or on command lines. App secrets go in SSM under `/home-platform/mkt-data/` (add a row to the platform's `docs/ssm-parameters.md`).
 - Keep `deploy/docker-compose.yml`'s `mem_limit`; the hub deploy rejects services without one.
-- Update `docs/phase-1.md` (and the platform's roadmap Milestone 22) when a step lands.
+- Update `docs/phase-1.md` when a step lands. It's the one place for phase-1 status: the platform roadmap's Milestone 22 links to it and changes only when the milestone itself opens, closes or changes shape.
+
+## Testing where PyPI is blocked
+
+Claude's sandbox usually can't reach PyPI, but GitHub works. `scripts/sandbox-test.sh` clones the pure-Python dependencies at their pinned versions and runs the whole suite except `test_grpc.py`, which needs compiled grpcio. It takes about a minute the first time and reuses the clones after.
+
+For lint, ruff ships as a single binary on GitHub. Download the pinned version from `https://github.com/astral-sh/ruff/releases/download/<version>/ruff-x86_64-unknown-linux-gnu.tar.gz`, then run `ruff check app/ tests/ migrations/ dags/`, the same as CI.
+
+CI's logs aren't readable from the sandbox. Read a failure from the check run's annotations instead: `gh api repos/bcalaway/mkt-data/check-runs/<id>/annotations`.

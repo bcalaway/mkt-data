@@ -22,10 +22,10 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import select
 
 from app import db
-from app.calendars import service, text
+from app.calendars import rsc, service, text
 from app.calendars.parsed import ParseError
 from app.config import settings
-from app.models import CalendarDay, CalendarYear, Capture, Source
+from app.models import CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
 router = APIRouter(prefix="/jobs")
 
@@ -138,6 +138,45 @@ def list_captures(
     }
 
 
+@router.get("/checks", dependencies=[Depends(require_read_token)])
+def list_checks(
+    source: str | None = None, calendar: str | None = None, limit: int = Query(20, ge=1, le=200)
+) -> dict:
+    """Newest fetch attempts and reparses first: what each capture job did per source.
+
+    outcome is new / unchanged / error (fetch) or reparse; parse_outcome is
+    ok / error (empty for a fetch error or a source with no parser); detail
+    and parse_detail hold the messages (a fetch error, "markup changed,
+    visible text identical", a parse error).
+    """
+    if source and calendar:
+        raise HTTPException(400, "give source or calendar, not both")
+    names = [source.upper()] if source else None
+    if calendar:
+        names = service.CALENDARS[_calendar(calendar)].source_names
+    q = (
+        select(SourceCheck.id, Source.name, SourceCheck.checked_at, SourceCheck.outcome, SourceCheck.capture_id,
+               SourceCheck.detail, SourceCheck.parse_outcome, SourceCheck.parse_detail)
+        .join(Source, Source.id == SourceCheck.source_id)
+        .order_by(SourceCheck.id.desc())
+        .limit(limit)
+    )
+    if names:
+        q = q.where(Source.name.in_(names))
+    with db.session() as s:
+        rows = s.execute(q).all()
+    return {
+        "checks": [
+            {
+                "id": r.id, "source": r.name, "checked_at": r.checked_at.isoformat(), "outcome": r.outcome,
+                "capture_id": r.capture_id, "detail": r.detail,
+                "parse_outcome": r.parse_outcome, "parse_detail": r.parse_detail,
+            }
+            for r in rows
+        ]
+    }
+
+
 def _has_parser(source: str) -> bool:
     spec = service.SOURCES.get(source)
     return spec is not None and spec.parse is not None
@@ -191,18 +230,24 @@ def capture_text(
     contains: str = "",
     context: int = Query(0, ge=0, le=10),
     limit: int = Query(40, ge=1, le=400),
+    embedded: bool = False,
 ) -> dict:
     """An HTML capture's visible text, one line per block element, numbered.
 
     `contains` keeps matching lines (case-insensitive) plus `context` lines
     either side. For reading what a parser sees without downloading the page.
+    `embedded=true` shows the text of a Next.js page's embedded React data
+    instead (rsc.py): what SIFMA's parser reads, hidden year tabs included.
     """
     with db.session() as s:
         cap, source = _load(s, capture_id)
         body, ctype, fetched = cap.body, cap.content_type or "", cap.fetched_at
     if "html" not in ctype.lower() and not body.lstrip()[:15].lower().startswith((b"<!doctype", b"<html")):
         raise HTTPException(415, f"capture {capture_id} is {ctype or 'not HTML'}; only HTML has a text view")
-    all_lines = text.lines(body.decode("utf-8", errors="replace"))
+    html = body.decode("utf-8", errors="replace")
+    all_lines = rsc.lines(html) if embedded else text.lines(html)
+    if embedded and not all_lines:
+        raise HTTPException(404, f"capture {capture_id} has no embedded React data; use the default view")
     if contains:
         hits = [i for i, ln in enumerate(all_lines) if contains.lower() in ln.lower()]
         keep = sorted({j for i in hits for j in range(max(0, i - context), min(len(all_lines), i + context + 1))})
@@ -210,7 +255,7 @@ def capture_text(
         hits, keep = [], list(range(len(all_lines)))
     return {
         "capture_id": capture_id, "source": source, "fetched_at": fetched.isoformat(),
-        "lines_total": len(all_lines), "matches": len(hits) if contains else None,
+        "view": "embedded" if embedded else "visible", "lines_total": len(all_lines), "matches": len(hits) if contains else None,
         "truncated": len(keep) > limit,
         "lines": [{"n": i + 1, "text": all_lines[i]} for i in keep[:limit]],
     }

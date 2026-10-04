@@ -19,13 +19,15 @@ Research done 2026-10-04, before building anything. Every source below was read 
 
   Done in #12, from the real capture. SIFMA's page gives no date for Presidents Day 2015 or 2016, though both were full closes: the PDF should fill them. The page links the PDF as "US Holiday Archives 1996-2017".
 - **The PDF** is source `SIFMA-US-HISTORY`: captured raw first (#15), then parsed from the real capture (#17). Its parser reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
-- **Unscheduled recommendations:** the PDF has Hurricane Sandy (Oct 29, 2012 early close at noon, Oct 30 full close) and George H.W. Bush (Dec 5, 2018 full close). Only Jimmy Carter (Jan 9, 2025, early close at 2 p.m.) is missing from both documents and needs a cited exception.
+- **Unscheduled recommendations:** the PDF has Hurricane Sandy (Oct 29, 2012 early close at noon, Oct 30 full close) and George H.W. Bush (Dec 5, 2018 full close). Jimmy Carter (Jan 9, 2025, early close at 2 p.m.) is missing from both documents. It's the one entry in `rules/sifma_us_exceptions.json` (#19), cited to [SIFMA's press release](https://www.sifma.org/news/press-releases/sifma-recommends-early-market-close-on-january-9-2025-for-the-national-day-of-mourning-in-honor-of-former-president-carter).
 
   SIFMA's press releases and its Unscheduled Close Market Matrix are the sources. What SIFMA recommended on 9/11, and on the Reagan (2004) and Ford (2007) mourning days, isn't confirmed.
 - **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is a noon early close on the archive page (it lists the date and then the noon early close under Good Friday). The PDF still has the original 2015 recommendation: an early close on Thursday, Apr 2 and a full close on Friday, Apr 3. The archive outranks it on Apr 3. The Apr 2 early close is kept from the PDF (Bill, 2026-10-04).
 - **Reliability:** 2005 onward is solid. 1996–2004 has less regular times, so review it by hand.
 
 ## FED: rules, confirmed against NY Fed circulars
+
+**Built (#19):** `rules/fed.json` (source `FED-RULES`, 1986–2025). All seven circulars (2003–2009) match it; 11720, 11797 and 11879 are 2006, 2007 and 2008. The circulars were read through a web-fetch summarizer, and their dates are pinned in `tests/test_rules.py`. They aren't captured as sources yet.
 
 - **No archived K.8 is reachable.** `federalreserve.gov/releases/k8/k8a.htm` (2005) exists but its body didn't come through, and the Wayback Machine was blocked.
 - **Official per-year lists, 2003–2009:** NY Fed operating circulars, one per year. Found so far:

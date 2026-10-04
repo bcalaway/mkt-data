@@ -1,0 +1,37 @@
+{
+  "calendar": "FED",
+  "about": "Federal Reserve Banks' closed weekdays before K.8's years: the federal holidays (5 U.S.C. 6103) as the Reserve Banks observe them. A Saturday holiday closes no weekday (the Banks open the Friday before; only the Board closes); a Sunday holiday closes the Monday after. 2003-2009 were checked against the NY Fed's yearly holiday circulars, and 2026-2030 against K.8 (tests). 1986-2002 come from the statute alone. No one-off closures: the Banks and Fedwire stayed open on 9/11, through Hurricane Sandy and on the national days of mourning (docs/backfill.md).",
+  "first_year": 1986,
+  "last_year": 2025,
+  "observance": {"saturday": "none", "sunday": "monday"},
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1},
+    {"name": "Birthday of Martin Luther King, Jr.", "month": 1, "weekday": "monday", "n": 3, "from": 1986},
+    {"name": "Washington's Birthday", "month": 2, "weekday": "monday", "n": 3},
+    {"name": "Memorial Day", "month": 5, "weekday": "monday", "n": -1},
+    {"name": "Juneteenth National Independence Day", "month": 6, "day": 19, "from": 2021},
+    {"name": "Independence Day", "month": 7, "day": 4},
+    {"name": "Labor Day", "month": 9, "weekday": "monday", "n": 1},
+    {"name": "Columbus Day", "month": 10, "weekday": "monday", "n": 2},
+    {"name": "Veterans Day", "month": 11, "day": 11},
+    {"name": "Thanksgiving Day", "month": 11, "weekday": "thursday", "n": 4},
+    {"name": "Christmas Day", "month": 12, "day": 25}
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.law.cornell.edu/uscode/text/5/6103",
+    "https://www.federalreserve.gov/aboutthefed/k8.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/other20210617b.htm",
+    "https://www.newyorkfed.org/banking/circulars/11465.html",
+    "https://www.newyorkfed.org/banking/circulars/11532.html",
+    "https://www.newyorkfed.org/banking/circulars/11615.html",
+    "https://www.newyorkfed.org/banking/circulars/11720.html",
+    "https://www.newyorkfed.org/banking/circulars/11797.html",
+    "https://www.newyorkfed.org/banking/circulars/11879.html",
+    "https://www.newyorkfed.org/banking/circulars/11980.html"
+  ],
+  "notes": {
+    "Juneteenth": "Federal holiday from June 17, 2021. June 19, 2021 was a Saturday, so under the Saturday rule no weekday closed; the Board's press release confirms Federal Reserve Financial Services operated normally on Friday, June 18, 2021.",
+    "Inauguration Day": "Not a Reserve Bank holiday."
+  }
+}

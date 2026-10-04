@@ -35,8 +35,10 @@ Each step is its own PR.
    - **SIFMA-US 1996–2019 PDF:** source `SIFMA-US-HISTORY`, third in precedence. It was captured raw first (#15, capture #5, 2026-10-04), then parsed by `app/calendars/sifma_history.py` (#17), which reads words by position with `pdfplumber`. Result: 1996–2019 covered, 473 days.
      - It already holds Sandy (2012) and the Bush mourning day (2018). Two typos (Dec 30, 2016 printed with the wrong year or day) are corrected in `CORRECTIONS`.
      - Against the archive (2015–2019), the archive wins on Good Friday 2015 (reported as `held_by_higher_source`). The PDF fills dates the archive leaves out: Presidents Day 2015 and 2016, Jul 2, 2015 and Dec 5, 2018. It also adds Apr 2, 2015, a 2 p.m. early close the archive doesn't list: kept, Bill's call (2026-10-04). Applied on the hub 2026-10-04 (03:25 UTC run): SIFMA-US now covers 1996 onward.
-   - Next for SIFMA-US: the one unscheduled close neither document has, Carter (Jan 9, 2025), as a cited exception.
-   - Then FED (`FED-RULES`, 1986+, checked against NY Fed circulars 2003+), then NYSE (`NYSE-RULES` + cited exceptions, 1990+).
+   - **Rules and cited exceptions (#19):** versioned JSON files in `app/calendars/rules/`, read as `repo:` sources. The capture is the file's bytes, so a rule change becomes a new capture.
+     - `SIFMA-US-EXCEPTIONS`, lowest precedence and covering no years, adds Carter (Jan 9, 2025, 2 p.m. early close; SIFMA press release of Dec 30, 2024).
+     - `FED-RULES` (1986–2025) generates the federal holidays (5 U.S.C. 6103) as the Reserve Banks observe them: a Saturday holiday closes no weekday, and a Sunday holiday closes the Monday after. 382 closed weekdays. Checked against the NY Fed circulars for 2003–2009 (all seven match). The same rules reproduce K.8's 2026–2030 table exactly. Juneteenth 2021 fell on a Saturday, so no weekday closed; the Board confirmed Fed services ran normally on June 18, 2021. 1986–2002 rest on the statute alone.
+   - Next: NYSE (`NYSE-RULES` + cited exceptions, 1990+). It needs Good Friday (Easter), the Saturday→Friday rule with the New Year's exception, early-close rules, and the one-off closes.
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.
 7. **Monitoring.**

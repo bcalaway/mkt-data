@@ -20,6 +20,10 @@ def _failing(url):
     raise service.SourceFetchError(f"{url}: HTTP 503")
 
 
+# Closed weekdays FED-RULES generates for 1986-2025 (tests/test_rules.py pins it too).
+FED_RULES_DAYS = 382
+
+
 def _count(s, model, *where):
     return s.scalar(select(func.count()).select_from(model).where(*where))
 
@@ -31,8 +35,9 @@ def test_first_capture_loads_every_year(migrated_db, fed_html):
     assert out["years"] == [2026, 2027, 2028, 2029, 2030] == out["new_years"]
     assert out["added"] == out["closed_days"] == 50
     with db.session() as s:
-        assert _count(s, CalendarDay, CalendarDay.valid_to.is_(None)) == 50
-        assert _count(s, CalendarYear) == 5
+        # FED-RULES adds 1986-2025 (repo:fed.json) alongside K.8's five years.
+        assert _count(s, CalendarDay, CalendarDay.valid_to.is_(None)) == 50 + FED_RULES_DAYS
+        assert _count(s, CalendarYear) == 5 + 40
 
 
 def test_same_content_records_a_check_but_no_new_capture(migrated_db, fed_html):
@@ -42,9 +47,9 @@ def test_same_content_records_a_check_but_no_new_capture(migrated_db, fed_html):
         out = service.run_capture(s, "FED", _fetcher(fed_html))["sources"][0]
     assert out["new_capture"] is False and out["added"] == 0 and out["changed"] == [] == out["removed"]
     with db.session() as s:
-        assert _count(s, Capture) == 1
+        assert _count(s, Capture) == 2  # K.8 and the rules file, each once
         outcomes = s.scalars(select(SourceCheck.outcome).order_by(SourceCheck.id)).all()
-        assert outcomes == ["new", "unchanged"]
+        assert outcomes == ["new", "new", "unchanged", "unchanged"]
 
 
 def test_a_changed_date_keeps_history(migrated_db, fed_html):
@@ -59,8 +64,8 @@ def test_a_changed_date_keeps_history(migrated_db, fed_html):
     with db.session() as s:
         old = s.scalar(select(CalendarDay).where(CalendarDay.day == date(2026, 10, 12)))
         assert old.valid_to is not None  # closed off, not deleted
-        assert _count(s, CalendarDay, CalendarDay.valid_to.is_(None)) == 50
-        assert _count(s, Capture) == 2
+        assert _count(s, CalendarDay, CalendarDay.valid_to.is_(None)) == 50 + FED_RULES_DAYS
+        assert _count(s, Capture) == 3  # two K.8 versions and the rules file
 
 
 def test_parse_error_keeps_the_raw_capture(migrated_db, fed_html):
@@ -68,15 +73,16 @@ def test_parse_error_keeps_the_raw_capture(migrated_db, fed_html):
     with db.session() as s, pytest.raises(ParseError):
         service.run_capture(s, "FED", _fetcher(broken))
     with db.session() as s:
-        assert _count(s, Capture) == 1
-        assert _count(s, CalendarDay) == 0
+        assert _count(s, Capture) == 2  # K.8's (kept, though it didn't parse) and the rules file
+        assert _count(s, CalendarDay, CalendarDay.day >= date(2026, 1, 1)) == 0  # nothing from K.8
 
 
 def test_fetch_error_is_recorded(migrated_db):
     with db.session() as s, pytest.raises(service.SourceFetchError):
         service.run_capture(s, "FED", _failing)
     with db.session() as s:
-        assert s.scalars(select(SourceCheck.outcome)).all() == ["error"]
+        # K.8's fetch failed; the rules file (read from the repo, not fetched) still applied.
+        assert s.scalars(select(SourceCheck.outcome).order_by(SourceCheck.id)).all() == ["error", "new"]
 
 
 def test_business_day(migrated_db, fed_html):
@@ -88,12 +94,20 @@ def test_business_day(migrated_db, fed_html):
         assert service.business_day(s, "FED", date(2026, 10, 3))["status"] == "weekend"
         with pytest.raises(service.NotCovered):
             service.business_day(s, "FED", date(2031, 3, 4))
+        # Older years come from FED-RULES.
+        assert service.business_day(s, "FED", date(1986, 1, 20))["holiday"] == "Birthday of Martin Luther King, Jr."
+        assert service.business_day(s, "FED", date(2005, 12, 26))["holiday"] == "Christmas Day (observed)"
+        assert service.business_day(s, "FED", date(2004, 12, 24))["business_day"] is True  # Saturday Christmas
+        assert service.business_day(s, "FED", date(2021, 6, 18))["business_day"] is True  # Juneteenth 2021
+        with pytest.raises(service.NotCovered):
+            service.business_day(s, "FED", date(1985, 3, 4))
 
 
 def test_sifma_capture_and_early_close(migrated_db, sifma_fetch):
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)
-    page, archive, history = out["sources"]
+    page, archive, history, exceptions = out["sources"]
+    assert exceptions["source"] == "SIFMA-US-EXCEPTIONS" and exceptions["years"] == []
     assert page["source"] == "SIFMA-US-HOLIDAYS" and archive["source"] == "SIFMA-US-ARCHIVE"
     assert history["source"] == "SIFMA-US-HISTORY" and history["years"] == list(range(1996, 2020))
     assert page["years"] == [2026] and page["added"] == page["closed_days"] == 19
@@ -158,7 +172,8 @@ def test_one_source_failing_does_not_stop_the_other(migrated_db, sifma_html):
         service.run_capture(s, "SIFMA-US", fetch)
     with db.session() as s:
         assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
-        assert _count(s, Capture) == 2  # the page and the PDF source (this fake answers every URL with the page)
+        # The page, the PDF source (this fake answers every URL with the page) and the exceptions file.
+        assert _count(s, Capture) == 3
 
 
 def test_calendars_are_independent(migrated_db, fed_html, sifma_fetch):
@@ -169,7 +184,7 @@ def test_calendars_are_independent(migrated_db, fed_html, sifma_fetch):
         # Good Friday: the Fed is open; SIFMA recommends a noon close.
         assert service.business_day(s, "FED", date(2026, 4, 3))["status"] == "open"
         assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
-        assert _count(s, Capture) == 4  # FED's page, SIFMA's page, archive and historical PDF
+        assert _count(s, Capture) == 6  # FED's page and rules; SIFMA's page, archive, PDF and exceptions
 
 
 def test_nyse_capture_and_early_close(migrated_db, nyse_html):
@@ -196,14 +211,14 @@ def test_good_friday_across_the_three_calendars(migrated_db, fed_html, sifma_fet
     with db.session() as s:
         statuses = {n: service.business_day(s, n, date(2026, 4, 3))["status"] for n in service.CALENDARS}
         assert statuses == {"FED": "open", "SIFMA-US": "early_close", "NYSE": "closed"}
-        assert _count(s, Capture) == 5
+        assert _count(s, Capture) == 7
 
 
 def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_history_pdf, monkeypatch):
     # A new document is first captured with no parser (parse=None), as the PDF was.
     spec = service.CALENDARS["SIFMA-US"]
     raw = replace(spec.sources[2], parse=None)
-    monkeypatch.setitem(service.CALENDARS, "SIFMA-US", replace(spec, sources=(*spec.sources[:2], raw)))
+    monkeypatch.setitem(service.CALENDARS, "SIFMA-US", replace(spec, sources=(*spec.sources[:2], raw, *spec.sources[3:])))
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
     assert out == {
@@ -235,3 +250,22 @@ def test_the_pdf_fills_older_years_and_archive_gaps(migrated_db, sifma_fetch):
         assert bd(date(2012, 10, 30))["holiday"] == "Hurricane Sandy"
         assert bd(date(1999, 12, 31))["close_time"] == "13:00"
         assert bd(date(1996, 7, 5))["status"] == "early_close"
+
+
+def test_sifma_exceptions_add_carter_without_covering_a_year(migrated_db, sifma_fetch):
+    with db.session() as s:
+        out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][3]
+    assert out["source"] == "SIFMA-US-EXCEPTIONS" and out["added"] == 1 and out["years"] == []
+    with db.session() as s:
+        carter = service.business_day(s, "SIFMA-US", date(2025, 1, 9))
+        assert (carter["status"], carter["close_time"]) == ("early_close", "14:00")
+        cap = s.get(Capture, out["capture_id"])
+        assert cap.content_type == "application/json" and b"2025-01-09" in cap.body
+
+
+def test_a_missing_rules_file_is_a_fetch_error(migrated_db, fed_html, monkeypatch):
+    spec = service.CALENDARS["FED"]
+    gone = replace(spec.sources[1], url="repo:nope.json")
+    monkeypatch.setitem(service.CALENDARS, "FED", replace(spec, sources=(spec.sources[0], gone)))
+    with db.session() as s, pytest.raises(service.SourceFetchError, match="FED-RULES"):
+        service.run_capture(s, "FED", _fetcher(fed_html))

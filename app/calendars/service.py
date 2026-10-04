@@ -21,6 +21,9 @@ doesn't stop the others.
 A source can have no parser yet (`parse=None`): it's fetched and kept raw,
 and applies nothing. That's how a new document is first captured, so its
 parser can be written against the real bytes.
+
+A `repo:` source is a rules file in this repo (app/calendars/rules.py): its
+"fetch" reads the file, so its captures are the rule set's versions.
 """
 
 import hashlib
@@ -32,7 +35,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, nyse, sifma, sifma_history
+from app.calendars import fed, nyse, rules, sifma, sifma_history
 from app.calendars.parsed import Day, ParsedCalendar, ParseError, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -76,6 +79,10 @@ CALENDARS: dict[str, CalendarSpec] = {
             SourceSpec(
                 "FED-K8", fed.URL, "Federal Reserve Board, K.8 Holidays Observed (current year + 4)", fed.parse
             ),
+            SourceSpec(
+                "FED-RULES", f"{rules.REPO_PREFIX}fed.json",
+                "Federal holidays as the Reserve Banks observe them, 1986-2025 (rules, cited)", rules.parse,
+            ),
         ),
     ),
     "SIFMA-US": CalendarSpec(
@@ -94,6 +101,10 @@ CALENDARS: dict[str, CalendarSpec] = {
             SourceSpec(
                 "SIFMA-US-HISTORY", sifma.HISTORY_URL,
                 "SIFMA, historical U.S. holiday recommendations PDF (1996-2019)", sifma_history.parse,
+            ),
+            SourceSpec(
+                "SIFMA-US-EXCEPTIONS", f"{rules.REPO_PREFIX}sifma_us_exceptions.json",
+                "SIFMA unscheduled recommendations its documents don't list (cited)", rules.parse,
             ),
         ),
     ),
@@ -153,11 +164,21 @@ def fetch(url: str) -> tuple[int, str | None, bytes]:
     return r.status_code, r.headers.get("content-type"), r.content
 
 
+def _read_repo(url: str) -> tuple[int, str, bytes]:
+    try:
+        return 200, "application/json", rules.read(url)
+    except FileNotFoundError as e:
+        raise SourceFetchError(f"{url}: {e}") from None
+
+
 def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool]:
     """Fetch the source; store the content if it's new. Returns (latest capture, is_new)."""
     src = _source(s, spec)
     try:
-        status, ctype, body = (fetcher or fetch)(src.url)
+        if src.url.startswith(rules.REPO_PREFIX):
+            status, ctype, body = _read_repo(src.url)
+        else:
+            status, ctype, body = (fetcher or fetch)(src.url)
     except SourceFetchError as e:
         s.add(SourceCheck(source_id=src.id, outcome="error", detail=str(e)[:2000]))
         s.commit()

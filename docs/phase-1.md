@@ -23,7 +23,7 @@ Each step is its own PR.
    - Fetch the publisher's page or file, store it raw, then parse it into `calendar_day`.
    - Re-fetching unchanged content records the check but adds no new capture (dedupe by hash).
    - Changes to dates already published are kept as history, not overwritten.
-5. **Backfill.** As far back as each source allows. Where a publisher only lists recent years, older years need a documented historical source or rule set. Find this out per calendar before building, and record each calendar's coverage.
+5. **Backfill.** As far back as each source allows. Sources researched 2026-10-04: see [backfill.md](backfill.md) (SIFMA-US 1996+ from its archive, FED from statute checked against NY Fed circulars from 2003, NYSE 1990+ from rules plus a cited exceptions list). Where a publisher only lists recent years, older years need a documented historical source or rule set. Find this out per calendar before building, and record each calendar's coverage.
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.
 7. **Monitoring.**
    - mkt-data exposes Prometheus gauges for the platform's data-quality pattern: last successful capture, rows per calendar and year, years covered, and parse failures.

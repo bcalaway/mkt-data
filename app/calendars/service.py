@@ -302,10 +302,16 @@ def apply(s: Session, cal_spec: CalendarSpec, rank: int, cap: Capture, parsed: P
         own -= set(retired)
     blocked = {r.day for r in rows if ranks.get(r.capture_id, lowest) < rank}
     d = diff(current, parsed, own=own, blocked=blocked)
-    for day in [x.day for x in d.changed] + list(d.removed) + retired:
+    # A day this source lists exactly as a lower-precedence source already
+    # holds it becomes this source's: diff sees no change, but left with the
+    # lower source, a projection would retire it as soon as this source
+    # covers the year (SIFMA-US 2027, 2026-10-04).
+    lower = {r.day for r in rows if ranks.get(r.capture_id, lowest) > rank}
+    adopted = [x for x in parsed.days if x.day in lower and x.day not in blocked and current.get(x.day) == x]
+    for day in [x.day for x in d.changed + tuple(adopted)] + list(d.removed) + retired:
         by_day[day].valid_to = now
     s.flush()  # close old versions before inserting new ones (unique current row)
-    for x in d.added + d.changed:
+    for x in d.added + d.changed + tuple(adopted):
         s.add(
             CalendarDay(
                 calendar_id=cal.id, day=x.day, status=x.status, close_time=x.close_time,
@@ -328,6 +334,8 @@ def apply(s: Session, cal_spec: CalendarSpec, rank: int, cap: Capture, parsed: P
         "changed": [x.day.isoformat() for x in d.changed],
         "removed": [x.isoformat() for x in d.removed],
     }
+    if adopted:
+        out["taken_from_lower_source"] = len(adopted)
     if d.held:
         out["held_by_higher_source"] = [x.isoformat() for x in d.held]
     if retired:

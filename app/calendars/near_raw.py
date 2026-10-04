@@ -6,7 +6,7 @@ No precedence and no projection rules apply here: two sources listing the
 same date both keep their row, and a projected source keeps every year it
 generates. Building one calendar out of its sources is calendar-svc's job.
 
-History works like `calendar_day`: within the years a capture covers, a new
+History works as phase 1's calendar_day did: within the years a capture covers, a new
 date is inserted, a changed date gets a new row (the old one gets
 `valid_to`), and a date no longer listed is closed off. Years a source stops
 listing are left alone. Times come from the captures (`fetched_at`), not the

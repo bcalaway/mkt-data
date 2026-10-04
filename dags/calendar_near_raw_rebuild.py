@@ -3,8 +3,7 @@
 Manual only (no schedule). Replays every stored capture of every calendar
 source, oldest first, into `source_year` and `source_day`: how near-raw is
 first filled from captures taken before it existed, and how a parser fix
-reaches a source's whole history. No fetch; the calendars themselves
-(`calendar_day`) are untouched. Safe to re-run: the result depends only on
+reaches a source's whole history. No fetch. Safe to re-run: the result depends only on
 the stored captures. Trigger from the Airflow UI or home-mcp
 (`airflow_trigger`).
 """

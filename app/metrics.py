@@ -1,23 +1,19 @@
-"""Prometheus metrics: the calendars' data quality (docs/phase-1.md, step 7).
+"""Prometheus metrics: the calendar sources' capture health (docs/phase-1.md step 7).
 
 GET /metrics, in Prometheus's text format, computed from the database on
-each scrape (a handful of small queries). Prometheus scrapes it on the
-home-platform network as mkt-data:8000; there's no auth, like the other
-scrape targets, and nothing in it is sensitive (counts, years, timestamps).
-Labels use readable names (calendar="SIFMA-US", source="SIFMA-US-ARCHIVE").
+each scrape. Prometheus scrapes it on the home-platform network as
+mkt-data:8000; no auth, like the other scrape targets, and nothing in it is
+sensitive (counts and timestamps). Labels use readable names
+(calendar="SIFMA-US", source="SIFMA-US-ARCHIVE", kind=published/rules/projected).
 
 The platform's Grafana alert rules (nyc_pa_aws_gitops) use:
 - mkt_data_source_last_success_timestamp_seconds: a capture is stale;
-- mkt_data_source_parse_ok: the latest parse of a source failed;
-- mkt_data_calendar_next_year_overdue: next year isn't published by a
-  publisher yet, past its usual date (projections don't count).
-The rest is for the market-data dashboard (step 8, the platform's Grafana
-"Market data" dashboard), including the coverage gaps and the upcoming closes
-(one series per date, labelled with the holiday; the value is days until it).
+- mkt_data_source_parse_ok: the latest parse of a source failed.
+The calendars' own gauges (coverage, gaps, upcoming closes, next year
+published) come from calendar-svc since phase 2, step A5.
 """
 
-from collections import defaultdict
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Response
 from sqlalchemy import func, select
@@ -25,15 +21,11 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.calendars import service
-from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
+from app.models import Capture, Source, SourceCheck
 
 router = APIRouter()
 
 FETCHED = ("new", "unchanged")
-# How far ahead mkt_data_calendar_upcoming_day lists closes: about two
-# quarters, a dozen or so series per calendar (one per date, so the series
-# set only changes as days roll in and out).
-UPCOMING_DAYS = 180
 
 
 class _Out:
@@ -63,16 +55,12 @@ def _num(v: float) -> str:
     return str(int(v)) if float(v).is_integer() else repr(float(v))
 
 
-def _today() -> date:
-    return datetime.now(UTC).date()  # a few hours' difference from Eastern doesn't matter here
-
-
 @router.get("/metrics", include_in_schema=False)
 def metrics() -> Response:
     out = _Out()
     try:
         with db.session() as s:
-            _collect(s, out, _today())
+            _collect(s, out)
         up = 1
     except (SQLAlchemyError, db.DatabaseNotConfigured):
         up = 0  # no database configured, or it's unreachable
@@ -80,7 +68,7 @@ def metrics() -> Response:
     return Response(out.text(), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
-def _collect(s, out: _Out, today: date) -> None:
+def _collect(s, out: _Out) -> None:
     specs = service.CALENDARS
     source_ids = {n: i for n, i in s.execute(select(Source.name, Source.id))}
     cal_of = {src.name: cal.name for cal in specs.values() for src in cal.sources}
@@ -119,77 +107,3 @@ def _collect(s, out: _Out, today: date) -> None:
     out.metric("mkt_data_source_parse_ok", "gauge", "1 if the source's latest parse worked, 0 if it failed.", parse_ok)
     out.metric("mkt_data_source_captures", "gauge", "Raw captures stored for the source.", captures)
     out.metric("mkt_data_source_capture_bytes", "gauge", "Raw bytes stored for the source.", size)
-
-    # Per calendar: covered years by kind, current rows, next year.
-    cal_ids = {n: i for n, i in s.execute(select(Calendar.name, Calendar.id))}
-    year_rows = s.execute(
-        select(CalendarYear.calendar_id, CalendarYear.year, Source.name)
-        .join(Capture, Capture.id == CalendarYear.capture_id).join(Source, Source.id == Capture.source_id)
-    ).all()
-    years = defaultdict(lambda: defaultdict(list))  # calendar id -> kind -> [years]
-    for cid, year, src in year_rows:
-        years[cid][kind_of.get(src, "published")].append(year)
-    days = defaultdict(int)
-    for cid, status, n in s.execute(
-        select(CalendarDay.calendar_id, CalendarDay.status, func.count())
-        .where(CalendarDay.valid_to.is_(None)).group_by(CalendarDay.calendar_id, CalendarDay.status)
-    ):
-        days[(cid, status)] = n
-
-    upcoming_rows = defaultdict(list)  # calendar id -> current rows in the next UPCOMING_DAYS days
-    for r in s.scalars(
-        select(CalendarDay).where(
-            CalendarDay.valid_to.is_(None),
-            CalendarDay.day >= today,
-            CalendarDay.day <= today + timedelta(days=UPCOMING_DAYS),
-        ).order_by(CalendarDay.day)
-    ):
-        upcoming_rows[r.calendar_id].append(r)
-
-    count, first, last, rows, published, overdue = [], [], [], [], [], []
-    gap_count, gap_years, upcoming = [], [], []
-    for cal in specs.values():
-        cid = cal_ids.get(cal.name)
-        if cid is None:
-            continue
-        for kind, ys in sorted(years[cid].items()):
-            labels = {"calendar": cal.name, "kind": kind}
-            count.append((labels, len(ys)))
-            first.append((labels, min(ys)))
-            last.append((labels, max(ys)))
-        for status in ("closed", "early_close"):
-            rows.append(({"calendar": cal.name, "status": status}, days[(cid, status)]))
-        covered = {y for ys in years[cid].values() for y in ys}
-        if covered:
-            missing = sorted(set(range(min(covered), max(covered) + 1)) - covered)
-            gap_count.append(({"calendar": cal.name}, len(missing)))
-            gap_years += [({"calendar": cal.name, "year": str(y)}, 1) for y in missing]
-        projected_years = set(years[cid]["projected"])
-        for d in upcoming_rows.get(cid, []):
-            upcoming.append(({
-                "calendar": cal.name,
-                "date": d.day.isoformat(),
-                "weekday": f"{d.day:%a}",
-                "holiday": d.holiday,
-                "status": d.status,
-                "close_time": d.close_time.strftime("%H:%M") if d.close_time else "",
-                "projected": "yes" if d.day.year in projected_years else "no",
-            }, (d.day - today).days))
-        nxt = today.year + 1
-        is_published = nxt in years[cid]["published"]
-        due = date(today.year, *cal.next_year_due)
-        published.append(({"calendar": cal.name, "year": str(nxt)}, int(is_published)))
-        overdue.append(({"calendar": cal.name, "year": str(nxt)}, int(not is_published and today >= due)))
-    out.metric("mkt_data_calendar_gap_years", "gauge",
-               "Years between the first and last covered year that no source covers.", gap_count)
-    out.metric("mkt_data_calendar_gap_year", "gauge", "1 for each uncovered year inside a calendar's range.", gap_years)
-    out.metric("mkt_data_calendar_upcoming_day", "gauge",
-               f"Days from today until each close or early close in the next {UPCOMING_DAYS} days.", upcoming)
-    out.metric("mkt_data_calendar_years", "gauge", "Years covered, by kind of source (published, rules, projected).", count)
-    out.metric("mkt_data_calendar_first_year", "gauge", "First covered year, by kind of source.", first)
-    out.metric("mkt_data_calendar_last_year", "gauge", "Last covered year, by kind of source.", last)
-    out.metric("mkt_data_calendar_days", "gauge", "Current closed and early-close weekdays.", rows)
-    out.metric("mkt_data_calendar_next_year_published", "gauge",
-               "1 if next year is covered by a publisher (not rules or a projection).", published)
-    out.metric("mkt_data_calendar_next_year_overdue", "gauge",
-               "1 if next year isn't published yet and is past the calendar's usual publish date.", overdue)

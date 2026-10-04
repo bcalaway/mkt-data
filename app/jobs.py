@@ -11,21 +11,20 @@ here, in this app's own container. Every endpoint:
 
 Errors come back as JSON with a reason, and with a status Airflow treats as
 a failure: 502 when the upstream source can't be fetched, 422 when its
-content can't be parsed (the raw capture is kept), 409 when a date isn't
-covered by any published calendar year.
+content can't be parsed (the raw capture is kept), 409 when there's nothing
+to reparse. The business-day answer moved to calendar-svc (phase 2, A5).
 """
 
 import hmac
-from datetime import date
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import select
 
 from app import db
-from app.calendars import compare, rsc, service, text
+from app.calendars import rsc, service, text
 from app.calendars.parsed import ParseError
 from app.config import settings
-from app.models import CalendarDay, CalendarYear, Capture, Source, SourceCheck
+from app.models import Capture, Source, SourceCheck, SourceDay, SourceYear
 
 router = APIRouter(prefix="/jobs")
 
@@ -97,34 +96,6 @@ def rebuild_near_raw(name: str) -> dict:
     key = _calendar(name)
     with db.session() as s:
         return service.run_near_raw_rebuild(s, key)
-
-
-@router.post("/calendars/compare-with-calendar-svc", dependencies=[Depends(require_token)])
-def compare_with_calendar_svc() -> dict:
-    """Phase 2, step A4: is calendar-svc's golden calendar the same as calendar_day?
-
-    Always 200 with the comparison (`equal`, then each calendar's differences);
-    502 only if calendar-svc can't be reached. The DAG fails its task when not equal.
-    """
-    svc = compare.CalendarSvc(settings.calendar_svc_grpc)
-    try:
-        with db.session() as s:
-            return compare.run(s, svc.read)
-    except Exception as e:  # grpc.RpcError and friends, without importing grpc here
-        if type(e).__module__.startswith("grpc"):
-            raise HTTPException(502, f"calendar-svc unreachable: {e}") from None
-        raise
-
-
-@router.get("/calendars/{name}/business-day", dependencies=[Depends(require_read_token)])
-def business_day(name: str, on: date) -> dict:
-    """Is `on` a business day for this calendar? For DAGs' short-circuit first task."""
-    key = _calendar(name)
-    try:
-        with db.session() as s:
-            return service.business_day(s, key, on)
-    except service.NotCovered as e:
-        raise HTTPException(409, str(e)) from None
 
 
 # Raw captures, read-only: for turning a real capture into a test fixture,
@@ -213,16 +184,16 @@ def _has_parser(source: str) -> bool:
 
 
 def _applied(s, ids: list[int]) -> set[int]:
-    """Captures some calendar row came from: their parse was applied.
+    """Captures some near-raw row came from: their parse was recorded.
 
     A capture newer than its source's applied one, and not applied itself,
-    usually failed to parse (the job answered 422). An older capture can also
-    read false once a later one has replaced every row it wrote.
+    usually failed to parse (the job answered 422), or changed nothing a
+    previous capture hadn't already said.
     """
     if not ids:
         return set()
-    years = s.scalars(select(CalendarYear.capture_id).where(CalendarYear.capture_id.in_(ids)))
-    days = s.scalars(select(CalendarDay.capture_id).where(CalendarDay.capture_id.in_(ids)))
+    years = s.scalars(select(SourceYear.capture_id).where(SourceYear.capture_id.in_(ids)))
+    days = s.scalars(select(SourceDay.capture_id).where(SourceDay.capture_id.in_(ids)))
     return set(years) | set(days)
 
 

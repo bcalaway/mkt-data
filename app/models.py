@@ -1,4 +1,4 @@
-"""SQLAlchemy models (docs/phase-1.md, step 3).
+"""SQLAlchemy models (docs/phase-1.md step 3, docs/phase-2.md Part A).
 
 Two layers:
 
@@ -8,10 +8,15 @@ Two layers:
 - **Near-raw** (`source_year`, `source_day`): each calendar source's parse
   as that source states it, one set of rows per source, no precedence
   (docs/phase-2.md, Part A). What calendar-svc builds golden calendars from.
-- **Processed** (`calendar`, `calendar_year`, `calendar_day`): parsed from
-  raw and always rebuildable from it. Retired once calendar-svc takes over. `calendar_day` keeps history: a date
-  that changes or disappears in a newer capture gets `valid_to` set and a
-  new row, never an overwrite. The current view is `valid_to IS NULL`.
+  Rebuildable from raw.
+
+Near-raw keeps history: a date that changes or disappears in a newer capture
+gets `valid_to` set and a new row, never an overwrite. The current view is
+`valid_to IS NULL`.
+
+The golden calendars (one per market, precedence applied) live in
+calendar-svc since phase 2, step A5; migration 0005 dropped mkt-data's
+`calendar`, `calendar_year` and `calendar_day`.
 
 Integer IDs internally; every table people look at has a short readable
 `name`. Every change here needs a matching Alembic migration
@@ -93,63 +98,10 @@ class SourceCheck(Base):
     parse_detail: Mapped[str | None] = mapped_column(Text)
 
 
-class Calendar(Base):
-    """A market or institution's holiday calendar, e.g. FED, SIFMA-US, NYSE."""
-
-    __tablename__ = "calendar"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(20), unique=True)
-    description: Mapped[str] = mapped_column(Text)
-    timezone: Mapped[str] = mapped_column(String(40))
-
-
-class CalendarYear(Base):
-    """A year this calendar has published dates for (coverage), and from which capture."""
-
-    __tablename__ = "calendar_year"
-
-    calendar_id: Mapped[int] = mapped_column(Integer, ForeignKey("calendar.id"), primary_key=True)
-    year: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
-    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
-    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-
-class CalendarDay(Base):
-    """A weekday the calendar is closed or closes early. Weekends are implicit."""
-
-    __tablename__ = "calendar_day"
-    __table_args__ = (
-        CheckConstraint("status IN ('closed', 'early_close')", name="ck_calendar_day_status"),
-        CheckConstraint(
-            "(status = 'early_close') = (close_time IS NOT NULL)", name="ck_calendar_day_close_time"
-        ),
-        # One current row per calendar and date; superseded rows keep valid_to.
-        Index(
-            "uq_calendar_day_current",
-            "calendar_id",
-            "day",
-            unique=True,
-            postgresql_where=text("valid_to IS NULL"),
-            sqlite_where=text("valid_to IS NULL"),
-        ),
-    )
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    calendar_id: Mapped[int] = mapped_column(Integer, ForeignKey("calendar.id"))
-    day: Mapped[date] = mapped_column(Date)
-    status: Mapped[str] = mapped_column(String(12))
-    close_time: Mapped[time | None] = mapped_column(Time)
-    holiday: Mapped[str] = mapped_column(String(100))
-    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
-    valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-
 class SourceYear(Base):
     """A year a calendar source covers, as of its latest capture listing it (near-raw).
 
-    Like `calendar_year`, a year the source stops listing is kept: dropping
+    As in phase 1's calendar_year, a year the source stops listing is kept: dropping
     off a page that rolls forward isn't a change to the calendar.
     """
 

@@ -33,15 +33,14 @@ def test_unknown_calendar(token):
     assert client.post("/jobs/calendars/NOPE/capture", headers=_auth()).status_code == 404
 
 
-def test_capture_and_business_day(token, migrated_db, fed_html, monkeypatch):
+def test_capture(token, migrated_db, fed_html, monkeypatch):
     monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", fed_html))
     r = client.post("/jobs/calendars/fed/capture", headers=_auth())
     assert r.status_code == 200, r.text
     assert r.json()["sources"][0]["added"] == 50
+    # The business-day answer moved to calendar-svc (phase 2, A5).
     r = client.get("/jobs/calendars/FED/business-day", params={"on": "2027-07-05"}, headers=_auth())
-    assert r.status_code == 200 and r.json()["business_day"] is False
-    r = client.get("/jobs/calendars/FED/business-day", params={"on": "2031-03-04"}, headers=_auth())
-    assert r.status_code == 409
+    assert r.status_code == 404
 
 
 def test_fetch_failure_is_a_502(token, migrated_db, monkeypatch):
@@ -64,8 +63,7 @@ def test_sifma_capture_via_the_api(token, migrated_db, sifma_fetch, monkeypatch)
     r = client.post("/jobs/calendars/sifma-us/capture", headers=_auth())
     assert r.status_code == 200, r.text
     assert r.json()["calendar"] == "SIFMA-US"
-    r = client.get("/jobs/calendars/SIFMA-US/business-day", params={"on": "2026-12-24"}, headers=_auth())
-    assert r.json()["close_time"] == "14:00" and r.json()["business_day"] is True
+    assert [x["source"] for x in r.json()["sources"]][:2] == ["SIFMA-US-HOLIDAYS", "SIFMA-US-ARCHIVE"]
 
 
 def test_nyse_capture_via_the_api(token, migrated_db, nyse_html, monkeypatch):
@@ -73,8 +71,6 @@ def test_nyse_capture_via_the_api(token, migrated_db, nyse_html, monkeypatch):
     r = client.post("/jobs/calendars/nyse/capture", headers=_auth())
     assert r.status_code == 200, r.text
     assert r.json()["calendar"] == "NYSE" and r.json()["sources"][0]["years"] == [2026, 2027, 2028]
-    r = client.get("/jobs/calendars/NYSE/business-day", params={"on": "2026-11-27"}, headers=_auth())
-    assert r.json()["close_time"] == "13:00" and r.json()["holiday"] == "Thanksgiving Day (early close)"
 
 
 def test_captures_list_and_raw_body(token, migrated_db, fed_html, sifma_html, sifma_fetch, monkeypatch):
@@ -132,8 +128,6 @@ def test_read_token_reads_but_cannot_run_jobs(both_tokens, migrated_db, nyse_htm
     assert client.get("/jobs/captures", headers=_auth(READ)).status_code == 200
     assert client.get("/jobs/captures/1", headers=_auth(READ)).status_code == 200
     assert client.get("/jobs/captures/1/text", headers=_auth(READ)).status_code == 200
-    r = client.get("/jobs/calendars/NYSE/business-day", params={"on": "2026-11-26"}, headers=_auth(READ))
-    assert r.json()["business_day"] is False
     assert client.get("/jobs/captures", headers=_auth("nope")).status_code == 401
 
 

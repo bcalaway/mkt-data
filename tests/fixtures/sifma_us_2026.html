@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!--
-  Test fixture: SIFMA's holiday schedule page, U.S. section.
-  The text (headings, dates, early-close lines, section order) is the live
-  page's as of 2026-10-04; the markup is a stand-in, because this fixture was
-  built without direct access to the page. Replace it with the first real
-  capture (capture.body for source SIFMA-US) once the hub has fetched it.
+  Test fixture: SIFMA's holiday schedule page (source SIFMA-US-HOLIDAYS).
+  Every visible line is the real page's text, in order, as mkt-data's capture
+  #3 (fetched 2026-10-04 01:28 UTC) reads through app/calendars/text.py:
+  213 lines, read back with home-mcp's mkt_data_capture_text. The markup is a
+  simplified stand-in (one block element per line); the real bytes are 292 KB
+  of CMS markup. One line is shortened: the long policy paragraph (line 14)
+  is cut where the text tool cut it, which the parser skips either way.
 -->
 <html lang="en">
 <head>
@@ -14,18 +16,40 @@
   <style>.holiday-item__title { font-weight: 700; }</style>
 </head>
 <body>
-  <header><nav><a href="/">SIFMA</a></nav></header>
+  <header><nav><ul>
+    <li>Issues</li>
+    <li>Advocacy</li>
+    <li>Research</li>
+    <li>News</li>
+    <li>Events</li>
+    <li>About</li>
+    <li>Membership</li>
+  </ul></nav>
+  <div class="region"><a href="#us">U.S.</a><a href="#uk">U.K.</a><a href="#japan">Japan</a></div></header>
   <main>
+    <p>Resources/</p>
+    <p>Guides &amp; Playbooks/</p>
     <h1>Holiday Schedule</h1>
-    <a class="button" href="/subscribe">Subscribe</a>
+    <p>On behalf of financial markets participants, SIFMA recommends a holiday schedule for financial markets in the U.S., U.K. and Japan.</p>
+    <p>All SIFMA holiday recommendations apply to the trading of U.S. dollar-denominated government securities, mortgage- and asset-backed securities, over-the-counter investment-grade and high-yield corporate bonds, municipal bonds and secondary money market trading in bankers’ acceptances, commercial pap</p>
+    <ul class="policies">
+      <li><a>Holiday Schedule Policy</a></li>
+      <li><a>Policy on Early Close Recommendations</a></li>
+      <li><a>Policy on Juneteenth National Holiday</a></li>
+      <li><a>Policy on Unscheduled Changes in Trading Hours</a></li>
+      <li><a>Unscheduled Close Market Matrix</a></li>
+      <li><a>Overview of Market Close Recommendation Process</a></li>
+    </ul>
+    <p>Subscribe</p>
+    <p>On behalf of financial markets participants, SIFMA recommends a holiday schedule for financial markets in the U.S., U.K. and Japan. Subscribe today to receive email alerts with the latest updates.</p>
+    <p>Subscribe</p>
     <section id="us">
       <h2>U.S. Holiday Recommendations</h2>
-      <a href="https://www.sifma.org/resources/guides-playbooks/us-holiday-archive">View Archive</a>
+      <a class="archive" href="#">View Archive</a>
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected="true">2026</button>
         <button role="tab">2027</button>
       </div>
-      <div class="tab-panel" role="tabpanel">
       <div class="holiday-item">
         <h3 class="holiday-item__title">New Year’s Day 2025/2026</h3>
         <p class="holiday-item__date">Thursday, January 1, 2026</p>
@@ -84,23 +108,279 @@
         <p class="holiday-item__date">Friday, January 1, 2027</p>
         <p class="holiday-item__early"><strong>Early Close (2:00 p.m. Eastern Time):</strong> Thursday, December 31, 2026</p>
       </div>
-      </div>
     </section>
     <section id="uk">
       <h2>U.K. Holiday Recommendations</h2>
-      <a href="https://www.sifma.org/resources/guides-playbooks/u-k-holiday-archive">View Archive</a>
-      <div class="tabs" role="tablist"><button role="tab">2026</button><button role="tab">2027</button></div>
-      <div class="tab-panel" role="tabpanel">
+      <a class="archive" href="#">View Archive</a>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true">2026</button>
+        <button role="tab">2027</button>
+      </div>
       <div class="holiday-item">
         <h3 class="holiday-item__title">New Year’s Day 2025/2026</h3>
         <p class="holiday-item__date">Thursday, January 1, 2026</p>
       </div>
       <div class="holiday-item">
+        <h3 class="holiday-item__title">Martin Luther King Day</h3>
+        <p class="holiday-item__date">Monday, January 19, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Presidents Day</h3>
+        <p class="holiday-item__date">Monday, February 16, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Good Friday</h3>
+        <p class="holiday-item__date">Friday, April 3, 2026</p>
+      </div>
+      <div class="holiday-item">
         <h3 class="holiday-item__title">Easter Monday</h3>
         <p class="holiday-item__date">Monday, April 6, 2026</p>
       </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">May Day</h3>
+        <p class="holiday-item__date">Monday, May 4, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Memorial Day</h3>
+        <p class="holiday-item__date">Monday, May 25, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Spring Bank Holiday</h3>
+        <p class="holiday-item__date">Monday, May 25, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Juneteenth</h3>
+        <p class="holiday-item__date">Friday, June 19, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">U.S. Independence Day</h3>
+        <p class="holiday-item__date">Friday, July 3, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Summer Bank Holiday</h3>
+        <p class="holiday-item__date">Monday, August 31, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Labor Day</h3>
+        <p class="holiday-item__date">Monday, September 7, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Columbus Day</h3>
+        <p class="holiday-item__date">Monday, October 12, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Veterans Day</h3>
+        <p class="holiday-item__date">Wednesday, November 11, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Thanksgiving Day</h3>
+        <p class="holiday-item__date">Thursday, November 26, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Christmas Day</h3>
+        <p class="holiday-item__date">Friday, December 25, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Boxing Day (Substitute)</h3>
+        <p class="holiday-item__date">Monday, December 28, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">New Year’s Day 2026/2027</h3>
+        <p class="holiday-item__date">Friday, January 1, 2027</p>
       </div>
     </section>
+    <section id="japan">
+      <h2>Japan Holiday Recommendations</h2>
+      <a class="archive" href="#">View Archive</a>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true">2026</button>
+        <button role="tab">2027</button>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">New Year’s Day 2025/2026</h3>
+        <p class="holiday-item__date">Thursday, January 1, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Bank Holiday</h3>
+        <p class="holiday-item__date">Friday, January 2, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Coming-of-Age Day</h3>
+        <p class="holiday-item__date">Monday, January 12, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Martin Luther King Day</h3>
+        <p class="holiday-item__date">Monday, January 19, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">National Foundation Day</h3>
+        <p class="holiday-item__date">Wednesday, February 11, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Presidents Day</h3>
+        <p class="holiday-item__date">Monday, February 16, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Emperor’s Birthday Holiday</h3>
+        <p class="holiday-item__date">Monday, February 23, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Vernal Equinox Day</h3>
+        <p class="holiday-item__date">Friday, March 20, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Good Friday</h3>
+        <p class="holiday-item__date">Friday, April 3, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Easter Monday</h3>
+        <p class="holiday-item__early"><strong>Early Close Only (3:00 p.m. Japan Standard Time):</strong> Monday, April 6, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Showa Day</h3>
+        <p class="holiday-item__date">Wednesday, April 29, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">May Day</h3>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Greenery Day</h3>
+        <p class="holiday-item__date">Monday, May 4, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Children’s Day</h3>
+        <p class="holiday-item__date">Tuesday, May 5, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Constitution Day (Observed)</h3>
+        <p class="holiday-item__date">Wednesday, May 6, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Memorial Day</h3>
+        <p class="holiday-item__date">Monday, May 25, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Spring Bank Holiday</h3>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Juneteenth</h3>
+        <p class="holiday-item__date">Friday, June 19, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">U.S. Independence Day</h3>
+        <p class="holiday-item__date">Friday, July 3, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Marine Day</h3>
+        <p class="holiday-item__date">Monday, July 20, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Mountain Day</h3>
+        <p class="holiday-item__date">Tuesday, August 11, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Summer Bank Holiday</h3>
+        <p class="holiday-item__early"><strong>Early Close Only (3:00 p.m. Japan Standard Time):</strong> Monday, August 31, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Labor Day</h3>
+        <p class="holiday-item__date">Monday, September 7, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Respect-for-the-Aged Day</h3>
+        <p class="holiday-item__date">Monday, September 21, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Silver Week Bridge Holiday</h3>
+        <p class="holiday-item__date">Tuesday, September 22, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Autumnal Equinox</h3>
+        <p class="holiday-item__date">Wednesday, September 23, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Health and Sports Day</h3>
+        <p class="holiday-item__date">Monday, October 12, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Culture Day</h3>
+        <p class="holiday-item__date">Tuesday, November 3, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Veterans Day</h3>
+        <p class="holiday-item__date">Wednesday, November 11, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Labour Thanksgiving Day</h3>
+        <p class="holiday-item__date">Monday, November 23, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Thanksgiving Day</h3>
+        <p class="holiday-item__date">Thursday, November 26, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Christmas Day</h3>
+        <p class="holiday-item__date">Friday, December 25, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Boxing Day</h3>
+        <p class="holiday-item__early"><strong>Early Close Only (3:00 p.m. Japan Standard Time):</strong> Monday, December 28, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">Bank Holiday</h3>
+        <p class="holiday-item__date">Thursday, December 31, 2026</p>
+      </div>
+      <div class="holiday-item">
+        <h3 class="holiday-item__title">New Year’s Day 2026/2027</h3>
+        <p class="holiday-item__date">Friday, January 1, 2027</p>
+      </div>
+    </section>
+    <aside>
+      <p>Details</p>
+      <p>Announcements</p>
+      <p>Press Releases</p>
+      <p>Dec 17, 2025</p>
+      <p>SIFMA Issues 2026 and 2027 Fixed Income Recommendations for Full &amp; Early Holiday Closes in the U.S., U.K., and Japan</p>
+      <p>Fixed Income Market Structure</p>
+      <p>Press Releases</p>
+      <p>Dec 12, 2025</p>
+      <p>SIFMA Fixed Income Market Close Recommendations in the U.S., the U.K. and Japan for the Christmas Day and U.K. Boxing Day Holidays</p>
+      <p>Fixed Income Market Structure</p>
+      <p>Details</p>
+      <p>Announcements</p>
+      <p>Press Releases</p>
+      <p>Dec 17, 2025</p>
+      <p>SIFMA Issues 2026 and 2027 Fixed Income Recommendations for Full &amp; Early Holiday Closes in the U.S., U.K., and Japan</p>
+      <p>Fixed Income Market Structure</p>
+      <p>Press Releases</p>
+      <p>Dec 12, 2025</p>
+      <p>SIFMA Fixed Income Market Close Recommendations in the U.S., the U.K. and Japan for the Christmas Day and U.K. Boxing Day Holidays</p>
+      <p>Fixed Income Market Structure</p>
+    </aside>
   </main>
+  <footer>
+    <p>Get the latest trends, stats, and research on financial markets and securities.</p>
+    <p>Email address*</p>
+    <p>Subscribe</p>
+    <p>SIFMA is the voice of the U.S. securities industry. We advocate for effective and resilient capital markets.</p>
+    <p>SIFMA</p>
+    <p>About Us</p>
+    <p>Contact Us</p>
+    <p>Careers</p>
+    <p>Member Resources</p>
+    <p>Manage Profile</p>
+    <p>Sources</p>
+    <p>Store</p>
+    <p>SIFMA Initiatives</p>
+    <p>SIFMA Foundation</p>
+    <p>The Stock Market Game</p>
+    <p>Project: Invested</p>
+    <p>Legal</p>
+    <p>Terms of Use</p>
+    <p>Privacy Policy</p>
+    <p>Emergency Alerts</p>
+    <p>Follow us</p>
+    <p>© 2026 Securities Industry and Financial Markets Association.</p>
+  </footer>
 </body>
 </html>

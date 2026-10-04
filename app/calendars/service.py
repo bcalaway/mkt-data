@@ -42,7 +42,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, nyse, rules, sifma, sifma_history
+from app.calendars import fed, nyse, rules, sifma, sifma_history, text
 from app.calendars.parsed import Day, ParsedCalendar, ParseError, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -57,6 +57,11 @@ class SourceSpec:
     description: str
     parse: Callable[[bytes], ParsedCalendar] | None  # None: captured raw, not parsed yet
     projected: bool = False  # fills only years no higher source covers (see the module docstring)
+    # True: a fetch whose visible text matches the last capture's is a check,
+    # not a new capture, even if the bytes differ. For pages whose markup
+    # changes on every request (K.8). Not for pages whose data might sit in
+    # blocks the text view skips (scripts, templates).
+    dedupe_on_text: bool = False
 
 
 @dataclass(frozen=True)
@@ -85,7 +90,8 @@ CALENDARS: dict[str, CalendarSpec] = {
         timezone="America/New_York",
         sources=(
             SourceSpec(
-                "FED-K8", fed.URL, "Federal Reserve Board, K.8 Holidays Observed (current year + 4)", fed.parse
+                "FED-K8", fed.URL, "Federal Reserve Board, K.8 Holidays Observed (current year + 4)", fed.parse,
+                dedupe_on_text=True,
             ),
             SourceSpec(
                 "FED-RULES", f"{rules.REPO_PREFIX}fed.json",
@@ -215,6 +221,13 @@ def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool]:
         s.add(SourceCheck(source_id=src.id, outcome="unchanged", capture_id=last.id))
         s.flush()
         return last, False
+    if last is not None and spec.dedupe_on_text and _visible_text(last.body) == _visible_text(body):
+        s.add(SourceCheck(
+            source_id=src.id, outcome="unchanged", capture_id=last.id,
+            detail=f"markup changed, visible text identical (sha256 {sha})",
+        ))
+        s.flush()
+        return last, False
     cap = Capture(
         source_id=src.id, http_status=status, content_type=ctype, sha256=sha, size_bytes=len(body), body=body
     )
@@ -223,6 +236,10 @@ def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool]:
     s.add(SourceCheck(source_id=src.id, outcome="new", capture_id=cap.id))
     s.flush()
     return cap, True
+
+
+def _visible_text(body: bytes) -> list[str]:
+    return text.lines(body.decode("utf-8", errors="replace"))
 
 
 def latest_capture(s: Session, spec: SourceSpec) -> Capture | None:

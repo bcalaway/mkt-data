@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from app import db
 from app.calendars import service
 from app.calendars.parsed import ParseError
-from app.models import Calendar, CalendarDay, CalendarYear, Capture, SourceCheck
+from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
 
 def _fetcher(body: bytes):
@@ -370,3 +370,32 @@ def test_sifma_us_runs_to_2100(migrated_db, sifma_fetch):
         assert bd(date(2025, 1, 9))["status"] == "early_close"  # Carter, from the exceptions file
         years = s.scalars(select(CalendarYear.year).join(Calendar).where(Calendar.name == "SIFMA-US")).all()
         assert sorted(years) == list(range(1996, 2101))
+
+
+def test_k8_markup_changes_with_identical_text_are_not_new_captures(migrated_db, fed_html):
+    with db.session() as s:
+        service.run_capture(s, "FED", _fetcher(fed_html))
+    # A per-request token in a script or attribute: different bytes, same visible text.
+    noisy = fed_html.replace(b"<head>", b'<head><script>var nonce = "a1b2c3";</script>', 1)
+    assert noisy != fed_html
+    with db.session() as s:
+        out = service.run_capture(s, "FED", _fetcher(noisy))["sources"][0]
+    assert out["new_capture"] is False
+    with db.session() as s:
+        k8 = select(Source.id).where(Source.name == "FED-K8").scalar_subquery()
+        assert _count(s, Capture, Capture.source_id == k8) == 1
+        check = s.scalars(select(SourceCheck).where(SourceCheck.source_id == k8).order_by(SourceCheck.id.desc())).first()
+        assert check.outcome == "unchanged" and check.detail.startswith("markup changed")
+    # A change to the text is a new capture as usual.
+    moved = fed_html.replace(b"<td>October 12</td>", b"<td>October 19</td>")
+    with db.session() as s:
+        assert service.run_capture(s, "FED", _fetcher(moved))["sources"][0]["new_capture"] is True
+
+
+def test_other_sources_still_compare_bytes(migrated_db, nyse_html):
+    with db.session() as s:
+        service.run_capture(s, "NYSE", _fetcher(nyse_html))
+    noisy = nyse_html.replace(b"<head>", b"<head><script>var nonce = 1;</script>", 1)
+    assert noisy != nyse_html
+    with db.session() as s:
+        assert service.run_capture(s, "NYSE", _fetcher(noisy))["sources"][0]["new_capture"] is True

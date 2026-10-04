@@ -38,7 +38,7 @@ gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app
 
 Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. The read-only `GET` endpoints also accept `$READ_TOKEN`, which home-mcp uses for its `mkt_data_captures` and `mkt_data_capture_text` tools. The platform generates it at `/home-platform/mkt-data/read-token`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED`, `SIFMA-US` or `NYSE`.
 
-- `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
+- `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history. "Changed" means different bytes. For K.8, whose markup changes on every request, it means different visible text (`dedupe_on_text`).
 - `POST /jobs/calendars/{name}/reparse` re-applies the latest capture, for example after a parser fix.
 - `GET /jobs/calendars/{name}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task. For a year no publisher covers yet, the answer comes from the calendar's projection and includes `"projected": true`: a best guess from the rules, not a published date.
 - `GET /jobs/captures?calendar=NYSE` (or `?source=NYSE-HOURS`, or neither; `limit` defaults to 20) lists raw captures, newest first: id, source, when, size, SHA-256, `applied` (some calendar row came from it; a newest capture that isn't applied usually failed to parse) and `parsed` (false when its source has no parser yet, so it's kept raw only).

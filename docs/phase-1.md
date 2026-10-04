@@ -105,4 +105,4 @@ All settled (2026-10-04). Where each was decided:
 
 ## Follow-ups after phase 1
 
-- Capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests).
+- ✅ **NY Fed circulars and NYSE's holiday history as sources** (raw plus a cross-check, Bill 2026-10-04; #39 raw, #40 parsers). `FED-NYFED-2003`…`2009` rank above `FED-RULES` and match it day for day. `NYSE-HISTORY` ranks above `NYSE-RULES` for the special closings it lists (1990–2010): 54 of 55 match, and it adds June 1, 2005 (a 3:56 p.m. systems halt, early close). Details in [backfill.md](backfill.md).

@@ -42,7 +42,7 @@ import httpx2
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, nyse, rules, sifma, sifma_history, text
+from app.calendars import fed, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
 from app.calendars.parsed import Day, ParsedCalendar, ParseError, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -100,8 +100,7 @@ CALENDARS: dict[str, CalendarSpec] = {
             ),
             *(
                 SourceSpec(
-                    f"FED-NYFED-{year}", url, f"NY Fed holiday-schedule circular for {year}",
-                    None,  # captured raw first; parsed once the real captures are fixtures
+                    f"FED-NYFED-{year}", url, f"NY Fed holiday-schedule circular for {year}", nyfed.parse,
                 )
                 for year, url in fed.NYFED_CIRCULARS.items()
             ),
@@ -151,8 +150,8 @@ CALENDARS: dict[str, CalendarSpec] = {
             SourceSpec("NYSE-HOURS", nyse.URL, "NYSE, Holidays & Trading Hours (current year + 2)", nyse.parse),
             SourceSpec(
                 "NYSE-HISTORY", nyse.HISTORY_URL,
-                "NYSE, History of New York Stock Exchange Holidays (PDF, 1885 to Jan 2011)",
-                None,  # captured raw first; parsed once the real capture is a fixture
+                "NYSE, History of New York Stock Exchange Holidays (PDF; its special closings, 1990-2010)",
+                nyse_history.parse,
             ),
             SourceSpec(
                 "NYSE-RULES", f"{rules.REPO_PREFIX}nyse.json",

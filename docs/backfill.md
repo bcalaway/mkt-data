@@ -27,7 +27,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
 
 ## FED: rules, confirmed against NY Fed circulars
 
-**Built (#19):** `rules/fed.json` (source `FED-RULES`, 1986–2025). All seven circulars (2003–2009) match it; 11720, 11797 and 11879 are 2006, 2007 and 2008. The circulars were read through a web-fetch summarizer, and their dates are pinned in `tests/test_rules.py`. They aren't captured as sources yet.
+**Built (#19):** `rules/fed.json` (source `FED-RULES`, 1986–2025). All seven circulars (2003–2009) match it; 11720, 11797 and 11879 are 2006, 2007 and 2008. The circulars were first read through a web-fetch summarizer, with their dates pinned in `tests/test_rules.py`. **Since #39/#40 (2026-10-04) each is its own source**, `FED-NYFED-2003` … `FED-NYFED-2009` (captures #15–#22), parsed by `app/calendars/nyfed.py` and ranked above `FED-RULES`, so the circulars are the record for 2003–2009. Parsed from the real captures, all seven match the rules day for day (`tests/test_nyfed_parser.py`).
 
 - **No archived K.8 is reachable.** `federalreserve.gov/releases/k8/k8a.htm` (2005) exists but its body didn't come through, and the Wayback Machine was blocked.
 - **Official per-year lists, 2003–2009:** NY Fed operating circulars, one per year. Found so far:
@@ -87,6 +87,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
   - Jan 8, 1996, 2:00 p.m. (snow)
   - Oct 27, 1997, 3:30 p.m. (circuit breakers)
 - **Reliability:** 1990 onward. Earlier is possible from the History PDF if ever needed.
+- **The History PDF as a source (#39/#40, 2026-10-04):** `NYSE-HISTORY` (capture #17, the January 2011 copy), parsed by `app/calendars/nyse_history.py`. It's a list of special closings, not a per-year table, so it covers no years: it contributes the special full and early closes it lists for 1990–2010 and outranks `NYSE-RULES` on those dates. Cross-check: 54 of its 55 days match the rules exactly, and every special day in the rules is in it. The one addition is **June 1, 2005**, a systems halt at 3:56 p.m. after which trading didn't resume, kept as an early close like the 1997 circuit-breaker halt (`tests/test_nyse_history_parser.py`). Not counted: July 2, 2009's 4:15 p.m. late close, opening delays, halts that resumed, and moments of silence.
 
 ## Approach (agreed with Bill, 2026-10-04)
 

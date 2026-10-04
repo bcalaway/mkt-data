@@ -22,6 +22,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import db
 from app.calendars import service
 from app.models import Capture, Source, SourceCheck
+from app.rates import sources as rates
 
 router = APIRouter()
 
@@ -73,6 +74,9 @@ def _collect(s, out: _Out) -> None:
     source_ids = {n: i for n, i in s.execute(select(Source.name, Source.id))}
     cal_of = {src.name: cal.name for cal in specs.values() for src in cal.sources}
     kind_of = {src.name: service.source_kind(src) for cal in specs.values() for src in cal.sources}
+    # The CMT sources (phase 2, Part B), labelled with their publication calendar.
+    cal_of |= {name: src.calendar for name, src in rates.SOURCES.items()}
+    kind_of |= {name: "published" for name in rates.SOURCES}
 
     # Per source: last successful fetch, latest parse outcome, captures and bytes.
     last_ok = dict(s.execute(

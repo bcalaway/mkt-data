@@ -61,13 +61,13 @@ Things the data model has to absorb (checked 2026-10-04):
 | Source | What | URL | History | When | Role |
 |---|---|---|---|---|---|
 | `UST-PAR` | Daily Treasury Par Yield Curve Rates, XML feed | `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=YYYYMM` (or `field_tdr_date_value=YYYY` for a year) | 1990 on | Usually by 6:00 p.m. Eastern the same day | Primary |
-| `H15-TCM` | Fed H.15 Treasury constant maturities, Data Download Program CSV (business-day series such as `RIFLGFCY10_N.B`) | `https://www.federalreserve.gov/datadownload/` (exact package URL fixed in step B1) | 1962 on for the 10-year (checked); other tenors start later, recorded in step B6 | 4:15 p.m. Eastern the next business day | History before 1990, and a cross-check |
+| `H15-TCM` | Fed H.15 Treasury constant maturities, nominal, business day: the Data Download Program's package of 11 series (`RIFLGFCM01_N.B` … `RIFLGFCY30_N.B`), CSV, by month (`&from=MM/01/YYYY&to=…`) | `https://www.federalreserve.gov/datadownload/Output.aspx?rel=H15&series=bf17364827e38702b42a58cf8eaa3f78&…` | 1962 on for 1, 3, 5, 10 and 20 years; 7-year from 1969, 2-year 1976, 30-year 1977, 3- and 6-month 1981, 1-month 2001 (checked 2026-10-04). **No 1.5-, 2- or 4-month series.** Holidays are rows of `ND` | 4:15 p.m. Eastern the next business day | History before 1990, and a cross-check |
 
 Notes:
 
 - **No Fiscal Data, no FRED.** The design listed Fiscal Data for the par curve, but the curve isn't one of its datasets; it lives on home.treasury.gov. FRED's `DGS*` series are H.15 again and need an API key; the H.15 Data Download Program serves the same series without one, so the FRED registration can wait until a series only FRED has.
 - **XML over CSV** for Treasury: the feed is documented, takes a month or year parameter, and has named elements per tenor, so a new tenor is a new element rather than a shifted column. It pages at 300 rows (zero-based `page=`), so a year fits in one page.
-- **Capture unit:** one capture per source per month (Treasury) or per series package (H.15). During a month, each day's fetch of the current month either matches the last capture (unchanged) or is a new version that adds the day. A changed value for a day already held is a **revision**: a new observation version in near-raw, and history in the quote store.
+- **Capture unit:** one capture per source per month (`capture.period`, `2026-10`), for both sources. During a month, each day's fetch of the current month either matches the last capture (unchanged) or is a new version that adds the day. A changed value for a day already held is a **revision**: a new observation version in near-raw, and history in the quote store.
 - **Terms:** Treasury and Board data are U.S. Government works. Step 1 records each source's terms page next to its URL.
 - **Lookback risk is nil** for both: each serves its full history, which is why backup capture can wait.
 - **Publication calendar:** Treasury publishes on U.S. Government Securities Business Days, which is calendar SIFMA-US. To verify in step B6 from the data itself: every SIFMA-US business day from 1996 has a curve, no full close has one, and what happens on SIFMA's early-close days (expected: published). Any exception becomes a cited exception in a publication calendar, like phase 1's rules files.
@@ -115,7 +115,7 @@ Yields are rendered in our own UI, not Grafana (Bill, 2026-10-04). Phase 2 start
   - **Yield curve:** the curve on a date, with comparison dates (a week, a month, a year ago).
   - **Series:** one or more CMTs over time, with spreads (2s10s, 3m10y), source shown on hover.
   - **Security master:** search by short name or identifier, an instrument's identifiers, notes and sources.
-- **Ingress and auth:** `mkt.billandjessie.com` (name to confirm) with a Traefik route and Route 53 record; Authentik OIDC (Pattern A). Reached like the platform's other apps.
+- **Ingress and auth:** `mkt.billandjessie.com` (Bill, 2026-10-04) with a Traefik route and Route 53 record; Authentik OIDC (Pattern A). Reached like the platform's other apps.
 
 ## Grafana (operational)
 
@@ -153,7 +153,7 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 
 ### Part B: Treasury CMT yields
 
-1. **Raw capture first** (mkt-data). Sources `UST-PAR` and `H15-TCM`, fetched and kept raw with no parser yet, as phase 1 did with new documents, so the parsers are written against real bytes. One schema change: CMT captures need a **period key** (`2026-10` for a month, or the H.15 package) so dedupe and revisions are per period. A migration: `capture.period` (nullable for the calendar sources), dedupe on `(source, period, sha256)`. Fixtures via `capture-export.yml`.
+1. **Raw capture first** (mkt-data, this PR). Sources `UST-PAR` and `H15-TCM` (`app/rates/sources.py`), fetched a month at a time and kept raw with no parser yet, so the parsers are written against real bytes. Migration 0006: `capture.period` and `source_check.period`, with dedupe per source and period (calendar sources keep an empty period and dedupe as before). `POST /jobs/rates/{source}/capture?period=YYYY-MM` (default: the current month in New York). DAG `mkt_data__treasury_cmt_capture`, weekdays 23:37 UTC, captures the current month of each (and the previous one in a month's first five days) from now on, so the raw history starts accumulating before the parsers exist; the existing stale-capture and parse alerts cover both sources (labelled `calendar="SIFMA-US"`, their publication calendar). Fixtures via `capture-export.yml`.
 2. **Near-raw** (mkt-data). The `observation` table, the `UST-PAR` XML and `H15-TCM` CSV parsers (`ND` and blanks are no value), revisions as new versions, and the gRPC read API.
 3. **Platform onboarding** (nyc_pa_aws_gitops). `secmaster-svc`, `quote-svc`, `mkt-api` and `mkt-ui` in `apps/registry.yml` (databases for the two services; `airflow: true` for quote-svc and secmaster-svc; Authentik for mkt-ui), their `github_repo_id`s, scrape jobs, then each repo's first PR from `templates/python` or `templates/react`. mkt-ui's DNS record and Authentik client.
 4. **secmaster-svc.** Schema, the CMT seed file and seed job, the gRPC API, metrics, tests.
@@ -170,6 +170,7 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 - **calendar-svc** owns calendars' golden copy, as its own service rather than part of secmaster-svc.
 - **Layering:** ingestion in mkt-data (raw and near-raw); golden copies owned by services (calendars, security master, quotes to start); services pull from near-raw; Airflow orchestrates and the services hold the logic. Build secmaster-svc and quote-svc in this phase.
 - **Yields are rendered in the custom UI,** not Grafana; Grafana stays operational. So mkt-api and mkt-ui start in this phase.
+- **mkt-ui's hostname:** `mkt.billandjessie.com`.
 - **Short names** as listed, `UST-1.5M-CMT` with `UST-6W-CMT` as an alias.
 - **Near-raw stores values as published, with a unit;** golden quotes convert to decimals.
 - **One generic observation table** for time series; calendars keep their own.
@@ -180,7 +181,6 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 ## Still open
 
 1. **Chart library for mkt-ui** (from the design): TradingView Lightweight Charts (fast canvas time series), ECharts (general, good for curves) or Plotly. Recommendation: Lightweight Charts for series, ECharts for the curve, both behind the UI's own chart components so either can be swapped.
-2. **mkt-ui's hostname:** `mkt.billandjessie.com` or another name.
 
 Settled in the steps:
 

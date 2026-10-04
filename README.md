@@ -42,7 +42,7 @@ Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitop
 - `POST /jobs/calendars/{FED}/reparse` re-applies the latest capture, for example after a parser fix.
 - `GET /jobs/calendars/{FED}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
 
-DAGs live in `dags/mkt-data/` and the deploy delivers them to Airflow. Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
+DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 
 ## Data model
 

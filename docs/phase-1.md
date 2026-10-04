@@ -19,7 +19,7 @@ Each step is its own PR.
    - `source` and `capture` (raw: what was fetched, when, from where, a content hash and the payload, kept forever);
    - `calendar` (integer ID plus a short name such as `SIFMA-US`, `FED`, `NYSE`);
    - `calendar_day` (calendar, date, status `closed` / `early_close`, close time when early, and the capture it came from).
-4. **Sourcing, one PR per calendar.** FED is done (K.8 page, weekly DAG `mkt_data__fed_calendar`); SIFMA-US and NYSE come next.
+4. **Sourcing, one PR per calendar.** FED is done (K.8 page, weekly DAG `mkt_data__fed_calendar`; first run 2026-10-04: 5 years, 50 closed weekdays); SIFMA-US and NYSE come next.
    - Fetch the publisher's page or file, store it raw, then parse it into `calendar_day`.
    - Re-fetching unchanged content records the check but adds no new capture (dedupe by hash).
    - Changes to dates already published are kept as history, not overwritten.

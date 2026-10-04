@@ -6,6 +6,8 @@ psycopg2-binary==2.9.13
 authlib==1.8.0
 httpx==0.28.1
 itsdangerous==2.2.0
+# SIFMA's 1996-2019 PDF (app/calendars/sifma_history.py): words with their positions.
+pdfplumber==0.11.10
 # gRPC (ADR-0020). protobuf is left to grpcio-tools/-health-checking's own
 # compatible range rather than pinned separately.
 grpcio==1.84.0

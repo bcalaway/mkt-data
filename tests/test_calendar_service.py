@@ -1,5 +1,6 @@
 """The capture → parse → apply flow against a real (SQLite) database at head."""
 
+from dataclasses import replace
 from datetime import date
 
 import pytest
@@ -94,7 +95,7 @@ def test_sifma_capture_and_early_close(migrated_db, sifma_fetch):
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)
     page, archive, history = out["sources"]
     assert page["source"] == "SIFMA-US-HOLIDAYS" and archive["source"] == "SIFMA-US-ARCHIVE"
-    assert history["source"] == "SIFMA-US-HISTORY" and history["parsed"] is False and history["new_capture"]
+    assert history["source"] == "SIFMA-US-HISTORY" and history["years"] == list(range(1996, 2020))
     assert page["years"] == [2026] and page["added"] == page["closed_days"] == 19
     assert archive["years"] == list(range(2015, 2026))
     with db.session() as s:
@@ -120,9 +121,9 @@ def test_sifma_archive_backfills_past_years(migrated_db, sifma_fetch):
         assert bd(date(2022, 6, 20))["business_day"] is False  # Juneteenth observed
         assert bd(date(2019, 6, 19))["status"] == "open"  # before Juneteenth
         with pytest.raises(service.NotCovered):
-            bd(date(2014, 6, 2))
+            bd(date(1995, 6, 1))
         years = s.scalars(select(CalendarYear.year).join(Calendar).where(Calendar.name == "SIFMA-US")).all()
-        assert sorted(years) == list(range(2015, 2027))
+        assert sorted(years) == list(range(1996, 2027))  # the PDF, then the archive, then the page
 
 
 def test_the_page_outranks_the_archive(migrated_db, sifma_html, sifma_archive_html, sifma_history_pdf):
@@ -198,7 +199,11 @@ def test_good_friday_across_the_three_calendars(migrated_db, fed_html, sifma_fet
         assert _count(s, Capture) == 5
 
 
-def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_history_pdf):
+def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_history_pdf, monkeypatch):
+    # A new document is first captured with no parser (parse=None), as the PDF was.
+    spec = service.CALENDARS["SIFMA-US"]
+    raw = replace(spec.sources[2], parse=None)
+    monkeypatch.setitem(service.CALENDARS, "SIFMA-US", replace(spec, sources=(*spec.sources[:2], raw)))
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
     assert out == {
@@ -213,3 +218,20 @@ def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_h
         again = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
         assert again["capture_id"] == cap.id and again["new_capture"] is False
         assert service.run_reparse(s, "SIFMA-US")["sources"][2]["parsed"] is False
+
+
+def test_the_pdf_fills_older_years_and_archive_gaps(migrated_db, sifma_fetch):
+    with db.session() as s:
+        history = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][2]
+    # The archive outranks the PDF where they disagree: Good Friday 2015 (noon early close, not a full close).
+    assert history["held_by_higher_source"] == ["2015-04-03"]
+    with db.session() as s:
+        bd = lambda d: service.business_day(s, "SIFMA-US", d)
+        assert bd(date(2015, 4, 3))["close_time"] == "12:00"
+        # Dates the archive leaves out: Presidents Day 2015 and 2016, and the Bush day of mourning.
+        assert bd(date(2015, 2, 16))["business_day"] is False
+        assert bd(date(2016, 2, 15))["holiday"] == "Presidents Day"
+        assert bd(date(2018, 12, 5))["holiday"] == "Former President George H.W. Bush"
+        assert bd(date(2012, 10, 30))["holiday"] == "Hurricane Sandy"
+        assert bd(date(1999, 12, 31))["close_time"] == "13:00"
+        assert bd(date(1996, 7, 5))["status"] == "early_close"

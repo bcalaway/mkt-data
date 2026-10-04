@@ -49,6 +49,13 @@ from app.calendars.text import lines as _lines
 
 URL = "https://www.sifma.org/resources/general/holiday-schedule/"
 ARCHIVE_URL = "https://www.sifma.org/resources/guides-playbooks/us-holiday-archive"
+# Historical recommendations, 1996 onward, as one PDF table (linked from the
+# archive page as "US Holiday Archives 1996-2017"). It never changes. For now
+# it's captured raw only: its parser reads cell positions and is built
+# against the real capture (docs/backfill.md).
+HISTORY_URL = (
+    "https://www.sifma.org/wp-content/uploads/2017/08/Misc-US-Historical-Holiday-Market-Recommendations-SIFMA.pdf"
+)
 
 MONTHS = {
     m: i

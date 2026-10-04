@@ -32,7 +32,7 @@ Each step is its own PR.
      - the "US Holiday Archives 1996-2017" PDF link ends the years, so the footer is never read.
 
      The test fixture is now capture #4's exact visible text (all 389 lines, in simplified markup). Parsed: 2015–2025 covered, 184 days. **Gap on SIFMA's own page:** Presidents Day 2015 (Feb 16) and 2016 (Feb 15) have no date, so 2015 has 9 full closes, exactly the minimum; the PDF should fill both.
-   - Next for SIFMA-US: the 1996–2019 PDF (needs a cell-position table parser; parse once and keep the PDF raw), then the unscheduled closes (Sandy 2012, Bush 2018, Carter 2025) as a cited exceptions list.
+   - Next for SIFMA-US: the 1996–2019 PDF, then the unscheduled closes (Sandy 2012, Bush 2018, Carter 2025) as a cited exceptions list. **PDF, part 1 (#15):** source `SIFMA-US-HISTORY`, third in SIFMA-US's precedence, with no parser yet: capture jobs fetch and keep the PDF raw and apply nothing. Part 2, once the hub has a capture: pull its bytes with the README one-liner, then build the cell-position table parser and its fixture against them, and check the result by hand.
    - Then FED (`FED-RULES`, 1986+, checked against NY Fed circulars 2003+), then NYSE (`NYSE-RULES` + cited exceptions, 1990+).
    - Small follow-up: replace the SIFMA-US and NYSE live-page stand-in fixtures with their real captures (NYSE capture 2, SIFMA-US capture 3) via `GET /jobs/captures/{id}` (README one-liner), or from their visible text via `mkt_data_capture_text` as for the archive.
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.

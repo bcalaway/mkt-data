@@ -130,10 +130,17 @@ def list_captures(
                 "id": r.id, "source": r.name, "fetched_at": r.fetched_at.isoformat(),
                 "http_status": r.http_status, "content_type": r.content_type,
                 "sha256": r.sha256, "size_bytes": r.size_bytes, "applied": r.id in used,
+                # False for a source with no parser yet: kept raw, never applied.
+                "parsed": _has_parser(r.name),
             }
             for r in rows
         ]
     }
+
+
+def _has_parser(source: str) -> bool:
+    spec = service.SOURCES.get(source)
+    return spec is not None and spec.parse is not None
 
 
 def _applied(s, ids: list[int]) -> set[int]:

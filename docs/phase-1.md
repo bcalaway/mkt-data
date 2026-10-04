@@ -72,7 +72,9 @@ Each step is its own PR.
    - capture history;
    - storage (raw bytes and rows). Monthly AWS cost comes from the platform's cost-exporter.
 9. **home-mcp tools.** Market data status, open gaps and backfill as named tools, so they can be asked about by voice.
-   - **Deployed 2026-10-04, not yet verified** (platform #115, mkt-data #28). Claude's session that built them loaded its tool list before the deploy, so it couldn't call them. The deploy itself is healthy: home-mcp restarted on the new code, and Grafana logged the service account's creation (`POST /api/serviceaccounts` → 201).
+   - ✅ **Tools deployed and verified 2026-10-04** (platform #115, mkt-data #28). Every check below passed, after two fixes:
+     - **Grafana token:** #115's hub deploy ran a minute before Terraform granted the hub role `PutParameter` on the token parameter (both workflows start on the same merge). The script made the service account and a token, couldn't save it, and wrote `none` as designed. A hub-only redeploy (13:55 UTC) stored a fresh token, and `grafana_alerts("mkt-data")` shows the three rules inactive and healthy. The first token is orphaned on the `home-mcp` account (Viewer only).
+     - **SIFMA-US 2027 lost its full closes** (Good Friday, MLK Day, Labor Day, Thanksgiving read as open). Each day SIFMA published exactly as the projection already had it stayed owned by the projection, which then retired it as the publisher's year. A second run re-adds them, so the hub was repaired by triggering `mkt_data__sifma_calendar` (13:46 UTC). The code fix is #30: the publisher takes over identical days from a lower source (`taken_from_lower_source`). FED and NYSE would hit the same when K.8 and the hours page roll forward.
    - New tools:
      - `grafana_alerts`: alert rules and state, read through a Viewer service account. The hub deploy creates its token at `/home-platform/grafana/home-mcp-token`.
      - `airflow_runs` and `airflow_task_log`: read-only.
@@ -80,12 +82,11 @@ Each step is its own PR.
      - `mkt_data_business_day`: says whether a day's answer is projected.
      - `mkt_data_checks`: `GET /jobs/checks`.
      - `mkt_data_capture_text` gains `embedded=true`, the Next.js embedded data (`rsc.lines`).
-   - **To verify in the next session:**
-     1. `grafana_alerts("mkt-data")` shows three rules, inactive and healthy. If it says access isn't set up or Grafana answers 401, the token step failed: the deploy writes `none` on failure; check the hub deploy log and `grafana_home_mcp_token()` in `scripts/hub/deploy-hub-stack.sh`.
-     2. `airflow_trigger("mkt_data__nyse_calendar")`, then `airflow_runs("mkt_data__nyse_calendar")` shows it succeed, and `mkt_data_checks(calendar="NYSE")` shows a fresh check, unchanged and parsed OK.
-     3. `mkt_data_business_day("SIFMA-US", "2027-03-26")` gives Good Friday 2027, closed and not projected. `mkt_data_business_day("FED", "2040-07-04")` is projected.
-     4. `mkt_data_capture_text(3, embedded=true, contains="2027")` finds the 2027 tab.
-     5. Then mark this step done here and tick the roadmap's home-mcp task (docs-only PRs, auto-merge).
+   - **Checks run 2026-10-04, all passing** (rerun them after a home-mcp change):
+     1. ✅ `grafana_alerts("mkt-data")`: three rules, inactive and healthy. If it says access isn't set up or Grafana answers 401, the token step failed: the deploy writes `none` on failure; check the hub deploy log and `grafana_home_mcp_token()` in `scripts/hub/deploy-hub-stack.sh`.
+     2. ✅ `airflow_trigger("mkt_data__nyse_calendar")`, then `airflow_runs` shows it succeed, and `mkt_data_checks(calendar="NYSE")` shows fresh checks, unchanged and parsed OK.
+     3. ✅ `mkt_data_business_day("SIFMA-US", "2027-03-26")`: closed (Good Friday), not projected. `mkt_data_business_day("FED", "2040-07-04")`: closed, projected.
+     4. ✅ `mkt_data_capture_text(3, embedded=true, contains="2027")` finds the 2027 tab.
    - Still to do for this step: voice-friendly status answers (coverage per calendar, open gaps), if the tools above don't already cover them.
 
 ## Open questions

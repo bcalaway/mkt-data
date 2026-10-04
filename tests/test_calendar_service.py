@@ -10,6 +10,7 @@ from app import db
 from app.calendars import service
 from app.calendars.parsed import ParseError
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
+from tests.conftest import FIXTURES
 
 
 def _fetcher(body: bytes):
@@ -439,20 +440,43 @@ def test_other_sources_still_compare_bytes(migrated_db, nyse_html):
 
 
 @pytest.mark.history_documents
-def test_history_documents_are_captured_raw_above_the_rules(migrated_db, fed_html, nyse_html):
-    """The NY Fed circulars and NYSE's holiday history: kept raw, ranked above the rules."""
-    from app.calendars import fed, nyse
+def test_history_documents_outrank_the_rules_and_report_disagreements(migrated_db, fed_html, nyse_html):
+    """The NY Fed circulars and NYSE's holiday history: parsed, ranked above the rules.
 
-    pages = {fed.URL: fed_html, nyse.URL: nyse_html}
-    fetch = lambda url: (200, "text/html", pages.get(url, f"document at {url}".encode()))
+    The circulars agree with FED-RULES, so nothing is held. NYSE's history agrees
+    with NYSE-RULES on every date it lists, and adds June 1, 2005 (a systems halt).
+    """
+    from app.calendars import fed, nyse
+    from tests.test_nyfed_parser import CAPTURES
+
+    pages = {fed.URL: fed_html, nyse.URL: nyse_html,
+             nyse.HISTORY_URL: (FIXTURES / "nyse_history_capture17.pdf").read_bytes()}
+    for year, url in fed.NYFED_CIRCULARS.items():
+        pages[url] = (FIXTURES / f"nyfed_circular_{year}_capture{CAPTURES[year][0]}.html").read_bytes()
+    fetch = lambda url: (200, "text/html", pages[url])
     with db.session() as s:
         fed_out = service.run_capture(s, "FED", fetch)["sources"]
         nyse_out = service.run_capture(s, "NYSE", fetch)["sources"]
-    names = [x["source"] for x in fed_out]
-    assert names == ["FED-K8", *(f"FED-NYFED-{y}" for y in range(2009, 2002, -1)), "FED-RULES"]
+    assert [x["source"] for x in fed_out] == ["FED-K8", *(f"FED-NYFED-{y}" for y in range(2009, 2002, -1)), "FED-RULES"]
     assert [x["source"] for x in nyse_out] == ["NYSE-HOURS", "NYSE-HISTORY", "NYSE-RULES"]
-    for x in fed_out[1:8] + nyse_out[1:2]:
-        assert x["new_capture"] is True and x["parsed"] is False
+    assert all("held_by_higher_source" not in x for x in fed_out + nyse_out)
+    circulars = {x["source"]: x for x in fed_out[1:8]}
+    assert circulars["FED-NYFED-2005"]["years"] == [2005] and circulars["FED-NYFED-2005"]["closed_days"] == 9
+    assert nyse_out[1]["years"] == [] and nyse_out[1]["closed_days"] == 55
     with db.session() as s:
-        assert service.business_day(s, "FED", date(2005, 12, 26))["status"] == "closed"  # still from FED-RULES
-        assert service.business_day(s, "NYSE", date(2001, 9, 11))["status"] == "closed"  # still from NYSE-RULES
+        bd = lambda cal, d: service.business_day(s, cal, d)
+        assert bd("FED", date(2005, 12, 26))["holiday"] == "Christmas Day (observed)"
+        assert bd("FED", date(2002, 12, 25))["status"] == "closed"  # before the circulars: still FED-RULES
+        assert bd("NYSE", date(2005, 6, 1)) == {
+            "calendar": "NYSE", "date": "2005-06-01", "business_day": True, "status": "early_close",
+            "holiday": "Systems halt (early close)", "close_time": "15:56",
+        }
+        assert bd("NYSE", date(2001, 9, 11))["status"] == "closed"
+        # Years: the circulars are credited with 2003-2009; the history with none.
+        src = lambda cal, y: s.scalar(
+            select(Source.name).join(Capture, Capture.source_id == Source.id).join(
+                CalendarYear, CalendarYear.capture_id == Capture.id
+            ).join(Calendar, Calendar.id == CalendarYear.calendar_id).where(Calendar.name == cal, CalendarYear.year == y)
+        )
+        assert src("FED", 2005) == "FED-NYFED-2005" and src("FED", 2002) == "FED-RULES"
+        assert src("NYSE", 2005) == "NYSE-RULES"

@@ -36,7 +36,7 @@ gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app
 
 ## Jobs and DAGs
 
-Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED` or `SIFMA-US`.
+Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED`, `SIFMA-US` or `NYSE`.
 
 - `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
 - `POST /jobs/calendars/{name}/reparse` re-applies the latest capture, for example after a parser fix.

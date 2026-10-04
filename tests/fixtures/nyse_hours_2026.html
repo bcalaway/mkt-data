@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--
+  Test fixture: NYSE's hours and calendars page, holidays section.
+  The text (table headers, cells, footnotes) is the live page's as of
+  2026-10-04; the markup is a stand-in, because this fixture was built
+  without direct access to the page. Replace it with the first real capture
+  (capture.body for source NYSE-HOURS) once the hub has fetched it.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Holidays &amp; Trading Hours | NYSE</title>
+  <script>var promo = "Each market will close early at 1:00 p.m. on Friday, November 28, 2025.";</script>
+  <style>.holidays td { padding: 4px; }</style>
+</head>
+<body>
+  <header><nav><a href="/">NYSE</a></nav></header>
+  <main>
+    <h1>Holidays &amp; Trading Hours</h1>
+    <section class="trading-hours">
+      <h2>Trading Hours</h2>
+      <table>
+        <tr><th>Session</th><th>NYSE</th></tr>
+        <tr><td>Early Trading Session</td><td>4:00 a.m. - 9:30 a.m. ET</td></tr>
+        <tr><td>Core Trading Session</td><td>9:30 a.m. - 4:00 p.m. ET</td></tr>
+        <tr><td>Late Trading Session</td><td>4:00 p.m. - 8:00 p.m. ET</td></tr>
+      </table>
+    </section>
+    <section class="holidays">
+      <h2>Holidays</h2>
+      <p>All NYSE markets observe U.S. holidays as listed below for 2026, 2027, and 2028.</p>
+      <table>
+        <thead>
+          <tr><th>Holiday</th><th>2026</th><th>2027</th><th>2028</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>New Year’s Day</td><td>Thursday, January 1</td><td>Friday, January 1</td><td>—*</td></tr>
+          <tr><td>Martin Luther King, Jr. Day</td><td>Monday, January 19</td><td>Monday, January 18</td><td>Monday, January 17</td></tr>
+          <tr><td>Washington’s Birthday</td><td>Monday, February 16</td><td>Monday, February 15</td><td>Monday, February 21</td></tr>
+          <tr><td>Good Friday</td><td>Friday, April 3</td><td>Friday, March 26</td><td>Friday, April 14</td></tr>
+          <tr><td>Memorial Day</td><td>Monday, May 25</td><td>Monday, May 31</td><td>Monday, May 29</td></tr>
+          <tr><td>Juneteenth National Independence Day</td><td>Friday, June 19</td><td>Friday, June 18 (Juneteenth National Independence Day observed)</td><td>Monday, June 19</td></tr>
+          <tr><td>Independence Day</td><td>Friday, July 3 (Independence Day observed)</td><td>Monday, July 5 (Independence Day observed)</td><td>Tuesday, July 4**</td></tr>
+          <tr><td>Labor Day</td><td>Monday, September 7</td><td>Monday, September 6</td><td>Monday, September 4</td></tr>
+          <tr><td>Thanksgiving Day</td><td>Thursday, November 26***</td><td>Thursday, November 25***</td><td>Thursday, November 23***</td></tr>
+          <tr><td>Christmas Day</td><td>Friday, December 25****</td><td>Friday, December 24 (Christmas Day observed)</td><td>Monday, December 25</td></tr>
+        </tbody>
+      </table>
+      <p>* Because the holiday falls on Saturday, January 1, 2028, no New Year’s Day holiday is observed.</p>
+      <p>** Each market will close early at 1:00 p.m. (1:15 p.m. for eligible options) on Monday, July 3, 2028. Late trading sessions close at 5:00 p.m. Eastern Time.</p>
+      <p>*** Each market will close early at 1:00 p.m. (1:15 p.m. for eligible options) on Friday, November 27, 2026, Friday, November 26, 2027, and Friday, November 24, 2028 (the day after Thanksgiving). Late trading sessions close at 5:00 p.m. Eastern Time.</p>
+      <p>**** Each market will close early at 1:00 p.m. (1:15 p.m. for eligible options) on Thursday, December 24, 2026. Late trading sessions close at 5:00 p.m. Eastern Time.</p>
+    </section>
+  </main>
+  <footer><p>© 2026 Intercontinental Exchange, Inc.</p></footer>
+</body>
+</html>

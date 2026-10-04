@@ -74,7 +74,7 @@ def parse(content: bytes) -> ParsedCalendar:
     if not isinstance(spec, dict) or not spec.get("calendar"):
         raise ParseError("rules file needs a 'calendar'")
     first, last = spec.get("first_year"), spec.get("last_year")
-    if (first is None) != (last is None) or (first is not None and not 1900 < first <= last < 2100):
+    if (first is None) != (last is None) or (first is not None and not 1900 < first <= last <= 2100):
         raise ParseError(f"bad year range {first}-{last}")
     years = tuple(range(first, last + 1)) if first is not None else ()
     default = {"saturday": "none", "sunday": "monday"} | spec.get("observance", {})

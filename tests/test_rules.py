@@ -200,3 +200,50 @@ def test_early_close_rules_only_apply_on_their_weekdays():
     spec["holidays"][0]["weekdays"] = ["saturday"]
     with pytest.raises(ParseError, match="Monday to Friday"):
         _parse(spec)
+
+
+# --- Projections (rules/*_projected.json)
+
+
+@pytest.mark.parametrize("name", ["fed_projected.json", "sifma_us_projected.json", "nyse_projected.json"])
+def test_projections_cover_2026_to_2100_with_full_closes_only(name):
+    p = rules.parse(rules.read(f"repo:{name}"))
+    assert p.years == tuple(range(2026, 2101))
+    assert {d.status for d in p.days} == {"closed"} and all(d.day.weekday() < 5 for d in p.days)
+
+
+def test_fed_projection_uses_the_same_rules_and_reproduces_k8(fed_html):
+    proj, hist = (json.loads(rules.read(f"repo:{f}")) for f in ("fed_projected.json", "fed.json"))
+    assert proj["holidays"] == hist["holidays"] and proj["observance"] == hist["observance"]
+    assert _parse(proj | {"last_year": 2030}) == fed.parse(fed_html)
+
+
+def test_nyse_projection_has_the_full_closes_of_the_hours_page(nyse_html):
+    proj, hist = (json.loads(rules.read(f"repo:{f}")) for f in ("nyse_projected.json", "nyse.json"))
+    assert proj["holidays"] == [h for h in hist["holidays"] if h.get("status", "closed") == "closed"]
+    closed = {d for d in nyse.parse(nyse_html).days if d.status == "closed"}
+    assert set(_parse(proj | {"last_year": 2028}).days) == closed
+
+
+def test_sifma_projection_matches_sifmas_record_1996_to_2026():
+    from app.calendars import sifma, sifma_history
+    from tests.conftest import FIXTURES
+
+    published = {}  # lowest precedence first, so higher sources overwrite
+    for parsed in (
+        sifma_history.parse((FIXTURES / "sifma_us_history_1996_2019.pdf").read_bytes()),
+        sifma.parse_archive((FIXTURES / "sifma_us_archive.html").read_bytes()),
+        sifma.parse((FIXTURES / "sifma_us_2026.html").read_bytes()),
+    ):
+        published |= {d.day: d for d in parsed.days}
+    closed = {d for d, x in published.items() if x.status == "closed" and 1996 <= d.year <= 2026}
+    spec = json.loads(rules.read("repo:sifma_us_projected.json")) | {"first_year": 1996}
+    projected = {d.day for d in _parse(spec | {"last_year": 2026}).days}
+    # One-off closes can't be projected.
+    assert closed - projected == {date(2012, 10, 30), date(2018, 12, 5)}
+    # Good Fridays SIFMA turned into early closes (jobs-report years; 11 a.m. in 2007).
+    assert projected - closed == {
+        date(1999, 4, 2), date(2007, 4, 6), date(2010, 4, 2), date(2012, 4, 6), date(2015, 4, 3),
+        date(2021, 4, 2), date(2023, 4, 7), date(2026, 4, 3),
+    }
+    assert all(published[d].status == "early_close" for d in projected - closed)

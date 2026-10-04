@@ -99,3 +99,15 @@ Research done 2026-10-04, before building anything. Every source below was read 
 - **Order:** SIFMA-US first (the HTML archive reuses the current parser), then FED, then NYSE.
 - **Ranges:** SIFMA-US from 1996, FED from 1986 (2003 onward checked against the circulars), NYSE from 1990.
 - **Getting the documents:** the hub fetches them through the job API like today's pages. The sandbox can't, so each source is first fetched once by a `capture` job, and its bytes come back through `GET /jobs/captures/{id}` to build test fixtures.
+
+## Forward: projected to 2100 (Bill, 2026-10-04)
+
+Payment schedules for bonds and swaps need business days decades ahead. FED gives New York banking days (USD swap and bond payments); SIFMA-US gives U.S. Government Securities Business Days (SOFR fixings and Treasury settlement). Publishers list 1–5 years ahead, so each calendar's rules run forward to 2100 as a projected source.
+
+- **Lowest precedence:** a projection fills only years no other source covers.
+- **Whole years:** once a publisher covers a year, the projection's rows for that year are retired, not just the dates the publisher lists.
+- **Full closes only.**
+- **Flagged:** `business-day` answers from projected years say `"projected": true`.
+- **Known uncertainty:**
+  - SIFMA's Good Friday is a noon early close in jobs-report years, which can't be predicted decades ahead.
+  - A future change to the statutory holidays (as Juneteenth was in 2021) needs a rules-file update. The old projected rows are then kept as history.

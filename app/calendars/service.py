@@ -24,6 +24,13 @@ parser can be written against the real bytes.
 
 A `repo:` source is a rules file in this repo (app/calendars/rules.py): its
 "fetch" reads the file, so its captures are the rule set's versions.
+
+A projected source (`projected=True`, always a calendar's last) runs the
+rules forward, to 2100, for payment schedules that need dates decades out.
+It only fills years no higher source covers, and it works by whole years:
+once a published source covers a year, the projection's rows for that year
+are retired, not just the dates the publisher happens to list. Answers from
+a projected year say so (`business_day` adds "projected": true).
 """
 
 import hashlib
@@ -49,6 +56,7 @@ class SourceSpec:
     url: str
     description: str
     parse: Callable[[bytes], ParsedCalendar] | None  # None: captured raw, not parsed yet
+    projected: bool = False  # fills only years no higher source covers (see the module docstring)
 
 
 @dataclass(frozen=True)
@@ -83,6 +91,10 @@ CALENDARS: dict[str, CalendarSpec] = {
                 "FED-RULES", f"{rules.REPO_PREFIX}fed.json",
                 "Federal holidays as the Reserve Banks observe them, 1986-2025 (rules, cited)", rules.parse,
             ),
+            SourceSpec(
+                "FED-PROJECTED", f"{rules.REPO_PREFIX}fed_projected.json",
+                "FED projected from its rules to 2100 (years K.8 doesn't cover)", rules.parse, projected=True,
+            ),
         ),
     ),
     "SIFMA-US": CalendarSpec(
@@ -106,6 +118,10 @@ CALENDARS: dict[str, CalendarSpec] = {
                 "SIFMA-US-EXCEPTIONS", f"{rules.REPO_PREFIX}sifma_us_exceptions.json",
                 "SIFMA unscheduled recommendations its documents don't list (cited)", rules.parse,
             ),
+            SourceSpec(
+                "SIFMA-US-PROJECTED", f"{rules.REPO_PREFIX}sifma_us_projected.json",
+                "SIFMA-US full closes projected to 2100 (years SIFMA hasn't published)", rules.parse, projected=True,
+            ),
         ),
     ),
     "NYSE": CalendarSpec(
@@ -117,6 +133,10 @@ CALENDARS: dict[str, CalendarSpec] = {
             SourceSpec(
                 "NYSE-RULES", f"{rules.REPO_PREFIX}nyse.json",
                 "NYSE holidays, early closes and one-off closes, 1990-2025 (rules, cited)", rules.parse,
+            ),
+            SourceSpec(
+                "NYSE-PROJECTED", f"{rules.REPO_PREFIX}nyse_projected.json",
+                "NYSE full closes projected to 2100 (years the hours page doesn't cover)", rules.parse, projected=True,
             ),
         ),
     ),
@@ -235,9 +255,21 @@ def apply(s: Session, cal_spec: CalendarSpec, rank: int, cap: Capture, parsed: P
     by_day = {r.day: r for r in rows}
     current = {r.day: Day(r.day, r.status, r.holiday, r.close_time) for r in rows}
     own = {r.day for r in rows if ranks.get(r.capture_id, lowest) == rank}
+    years = {y.year: y for y in s.scalars(select(CalendarYear).where(CalendarYear.calendar_id == cal.id))}
+    retired: list[date] = []
+    if cal_spec.sources[rank].projected:
+        # Whole years: leave every year a higher source covers, and retire this
+        # projection's rows in those years (they're the publisher's now).
+        higher = {y for y, row in years.items() if ranks.get(row.capture_id, lowest) < rank}
+        parsed = ParsedCalendar(
+            tuple(y for y in parsed.years if y not in higher),
+            tuple(x for x in parsed.days if x.day.year not in higher),
+        )
+        retired = sorted(day for day in own if day.year in higher)
+        own -= set(retired)
     blocked = {r.day for r in rows if ranks.get(r.capture_id, lowest) < rank}
     d = diff(current, parsed, own=own, blocked=blocked)
-    for day in [x.day for x in d.changed] + list(d.removed):
+    for day in [x.day for x in d.changed] + list(d.removed) + retired:
         by_day[day].valid_to = now
     s.flush()  # close old versions before inserting new ones (unique current row)
     for x in d.added + d.changed:
@@ -247,7 +279,6 @@ def apply(s: Session, cal_spec: CalendarSpec, rank: int, cap: Capture, parsed: P
                 holiday=x.holiday, capture_id=cap.id, valid_from=now,
             )
         )
-    years = {y.year: y for y in s.scalars(select(CalendarYear).where(CalendarYear.calendar_id == cal.id))}
     new_years = []
     for y in parsed.years:
         row = years.get(y)
@@ -266,6 +297,8 @@ def apply(s: Session, cal_spec: CalendarSpec, rank: int, cap: Capture, parsed: P
     }
     if d.held:
         out["held_by_higher_source"] = [x.isoformat() for x in d.held]
+    if retired:
+        out["retired_for_published_years"] = len(retired)
     return out
 
 
@@ -329,8 +362,14 @@ def business_day(s: Session, name: str, day: date) -> dict:
     if day.weekday() >= 5:
         return out | {"business_day": False, "status": "weekend"}
     cal = _calendar(s, spec)
-    if s.get(CalendarYear, (cal.id, day.year)) is None:
+    year = s.get(CalendarYear, (cal.id, day.year))
+    if year is None:
         raise NotCovered(f"{name} has no published dates for {day.year}")
+    source = s.scalar(
+        select(Source.name).join(Capture, Capture.source_id == Source.id).where(Capture.id == year.capture_id)
+    )
+    if source in {x.name for x in spec.sources if x.projected}:
+        out["projected"] = True
     row = s.scalar(
         select(CalendarDay).where(
             CalendarDay.calendar_id == cal.id, CalendarDay.day == day, CalendarDay.valid_to.is_(None)

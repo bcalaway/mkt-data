@@ -10,10 +10,12 @@ from app.config import settings
 from app.db import DatabaseNotConfigured, check_connection
 from app.grpc_server import start_grpc_server
 from app.jobs import router as jobs_router
+from app.metrics import router as metrics_router
 
 # Routes reachable without an authenticated session -- everything else is
 # gated by RequireAuthMiddleware below.
-PUBLIC_PATHS = {"/health", "/login", "/auth/callback"}
+# /metrics: Prometheus scrapes it on the home-platform network (app/metrics.py).
+PUBLIC_PATHS = {"/health", "/login", "/auth/callback", "/metrics"}
 
 
 @asynccontextmanager
@@ -77,6 +79,7 @@ if _auth_configured:
 
 
 app.include_router(jobs_router)
+app.include_router(metrics_router)
 
 
 @app.exception_handler(DatabaseNotConfigured)

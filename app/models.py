@@ -67,12 +67,17 @@ class Capture(Base):
 
 
 class SourceCheck(Base):
-    """Every fetch attempt: new content, unchanged content, or an error."""
+    """Every fetch attempt (new content, unchanged content, or an error) and every reparse.
+
+    `parse_outcome` is whether that check's parse worked ('ok' / 'error', the
+    error in `parse_detail`); empty for a fetch error or a source with no parser.
+    """
 
     __tablename__ = "source_check"
     __table_args__ = (
         Index("ix_source_check_source_checked", "source_id", "checked_at"),
-        CheckConstraint("outcome IN ('new', 'unchanged', 'error')", name="ck_source_check_outcome"),
+        CheckConstraint("outcome IN ('new', 'unchanged', 'error', 'reparse')", name="ck_source_check_outcome"),
+        CheckConstraint("parse_outcome IN ('ok', 'error')", name="ck_source_check_parse_outcome"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -81,6 +86,8 @@ class SourceCheck(Base):
     outcome: Mapped[str] = mapped_column(String(12))
     capture_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("capture.id"))
     detail: Mapped[str | None] = mapped_column(Text)
+    parse_outcome: Mapped[str | None] = mapped_column(String(8))
+    parse_detail: Mapped[str | None] = mapped_column(Text)
 
 
 class Calendar(Base):

@@ -214,3 +214,13 @@ def test_capture_text_embedded_view(both_tokens, migrated_db, sifma_page_capture
     client.post("/jobs/calendars/NYSE/capture", headers=_auth())
     nyse = client.get("/jobs/captures", params={"source": "NYSE-HOURS"}, headers=_auth()).json()["captures"][0]
     assert client.get(f"/jobs/captures/{nyse['id']}/text", params={"embedded": "true"}, headers=_auth()).status_code == 404
+
+
+def test_near_raw_rebuild(token, migrated_db, fed_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", fed_html))
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 200
+    r = client.post("/jobs/calendars/fed/near-raw/rebuild", headers=_auth())
+    assert r.status_code == 200, r.text
+    k8 = r.json()["sources"][0]
+    assert (k8["source"], k8["captures"], k8["current_days"]) == ("FED-K8", 1, 50)
+    assert client.post("/jobs/calendars/FED/near-raw/rebuild", headers=_auth("nope")).status_code == 401

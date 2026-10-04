@@ -86,6 +86,19 @@ def reparse_calendar(name: str) -> dict:
         raise HTTPException(422, f"parse failed: {e}") from None
 
 
+@router.post("/calendars/{name}/near-raw/rebuild", dependencies=[Depends(require_token)])
+def rebuild_near_raw(name: str) -> dict:
+    """Rebuild the calendar's sources' near-raw rows by replaying every capture. No fetch.
+
+    For filling near-raw from captures taken before it existed, or applying a
+    parser fix to a source's whole history. A capture that fails to parse is
+    skipped and listed under its source's `parse_failed`.
+    """
+    key = _calendar(name)
+    with db.session() as s:
+        return service.run_near_raw_rebuild(s, key)
+
+
 @router.get("/calendars/{name}/business-day", dependencies=[Depends(require_read_token)])
 def business_day(name: str, on: date) -> dict:
     """Is `on` a business day for this calendar? For DAGs' short-circuit first task."""

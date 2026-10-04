@@ -1,0 +1,25 @@
+name: Debug tests (temporary)
+# Runs pytest in the dev image and turns each failure into an annotation,
+# because job logs aren't readable from Claude's session. Removed before merge.
+on:
+  pull_request:
+jobs:
+  pytest:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - run: docker build --target dev -t mkt-dev .
+      - name: pytest
+        run: |
+          set +e
+          docker run --rm mkt-dev pytest -q -rf --tb=short -p no:cacheprovider > out.txt 2>&1
+          rc=$?
+          tail -c 20000 out.txt | python3 -c '
+          import sys, re
+          txt = sys.stdin.read()
+          blocks = re.split(r"\n(?=_{5,} )", txt)
+          for b in blocks[:12]:
+              msg = b.strip().replace("%", "%25").replace("\r", "").replace("\n", "%0A")[:3500]
+              print("::error title=pytest::" + msg)
+          '
+          exit $rc

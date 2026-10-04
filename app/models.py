@@ -88,7 +88,7 @@ class Calendar(Base):
 
     __tablename__ = "calendar"
 
-    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(20), unique=True)
     description: Mapped[str] = mapped_column(Text)
     timezone: Mapped[str] = mapped_column(String(40))
@@ -99,7 +99,7 @@ class CalendarYear(Base):
 
     __tablename__ = "calendar_year"
 
-    calendar_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey("calendar.id"), primary_key=True)
+    calendar_id: Mapped[int] = mapped_column(Integer, ForeignKey("calendar.id"), primary_key=True)
     year: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -126,7 +126,7 @@ class CalendarDay(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    calendar_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey("calendar.id"))
+    calendar_id: Mapped[int] = mapped_column(Integer, ForeignKey("calendar.id"))
     day: Mapped[date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(12))
     close_time: Mapped[time | None] = mapped_column(Time)

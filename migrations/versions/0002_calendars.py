@@ -57,14 +57,14 @@ def upgrade() -> None:
     op.create_index("ix_source_check_source_checked", "source_check", ["source_id", "checked_at"])
     op.create_table(
         "calendar",
-        sa.Column("id", sa.SmallInteger(), primary_key=True),
+        sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("name", sa.String(length=20), nullable=False, unique=True),
         sa.Column("description", sa.Text(), nullable=False),
         sa.Column("timezone", sa.String(length=40), nullable=False),
     )
     op.create_table(
         "calendar_year",
-        sa.Column("calendar_id", sa.SmallInteger(), sa.ForeignKey("calendar.id"), primary_key=True),
+        sa.Column("calendar_id", sa.Integer(), sa.ForeignKey("calendar.id"), primary_key=True),
         sa.Column("year", sa.SmallInteger(), primary_key=True),
         sa.Column("capture_id", sa.Integer(), sa.ForeignKey("capture.id"), nullable=False),
         sa.Column("first_seen_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -72,7 +72,7 @@ def upgrade() -> None:
     op.create_table(
         "calendar_day",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("calendar_id", sa.SmallInteger(), sa.ForeignKey("calendar.id"), nullable=False),
+        sa.Column("calendar_id", sa.Integer(), sa.ForeignKey("calendar.id"), nullable=False),
         sa.Column("day", sa.Date(), nullable=False),
         sa.Column("status", sa.String(length=12), nullable=False),
         sa.Column("close_time", sa.Time(), nullable=True),

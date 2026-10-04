@@ -1,7 +1,7 @@
 """The capture → parse → apply flow against a real (SQLite) database at head."""
 
 from dataclasses import replace
-from datetime import date
+from datetime import date, time
 
 import pytest
 from sqlalchemy import func, select
@@ -283,3 +283,90 @@ def test_nyse_rules_fill_1990_to_2025(migrated_db, nyse_html):
         assert bd(date(2022, 1, 3))["status"] == "open"  # Saturday New Year's: no Friday or Monday off
         with pytest.raises(service.NotCovered):
             bd(date(1989, 6, 1))
+
+
+# --- Projected sources (marked `projections`; see conftest._no_projections)
+
+
+def _json_source(name: str, projected: bool = False):
+    """A source whose page is JSON: {"years": [...], "days": [[iso date, status, holiday, "HH:MM" or null]]}."""
+    import json
+
+    from app.calendars.parsed import Day, ParsedCalendar
+
+    def parse(body: bytes) -> ParsedCalendar:
+        data = json.loads(body)
+        days = tuple(Day(date.fromisoformat(d), st, h, time.fromisoformat(t) if t else None) for d, st, h, t in data["days"])
+        return ParsedCalendar(tuple(data["years"]), days)
+
+    return service.SourceSpec(name, f"https://example.org/{name}", name, parse, projected=projected)
+
+
+@pytest.mark.projections
+def test_a_projection_fills_only_unpublished_years_and_gives_way_by_whole_years(migrated_db, monkeypatch):
+    import json
+
+    pages = {
+        "X-PUB": {"years": [2026], "days": [["2026-01-01", "closed", "New Year's Day", None]]},
+        "X-PROJ": {
+            "years": [2026, 2027, 2028],
+            "days": [
+                ["2026-01-01", "closed", "New Year's Day", None],
+                ["2026-12-25", "closed", "Christmas Day", None],
+                ["2027-03-26", "closed", "Good Friday", None],
+                ["2027-12-24", "closed", "Christmas Day (observed)", None],
+                ["2028-01-03", "closed", "New Year's Day (observed)", None],
+            ],
+        },
+    }
+    spec = service.CalendarSpec("X", "test", "America/New_York", (_json_source("X-PUB"), _json_source("X-PROJ", True)))
+    monkeypatch.setitem(service.CALENDARS, "X", spec)
+    fetch = lambda url: (200, "application/json", json.dumps(pages[url.rsplit("/", 1)[1]]).encode())
+
+    with db.session() as s:
+        proj = service.run_capture(s, "X", fetch)["sources"][1]
+    assert proj["years"] == [2027, 2028] and proj["added"] == 3  # 2026 is the publisher's
+    with db.session() as s:
+        bd = lambda d: service.business_day(s, "X", d)
+        assert bd(date(2026, 12, 25)) == {"calendar": "X", "date": "2026-12-25", "business_day": True, "status": "open"}
+        assert bd(date(2027, 3, 26))["projected"] is True and bd(date(2027, 3, 26))["business_day"] is False
+
+    # The publisher adds 2027: an early close on Dec 24, and no Good Friday close.
+    pages["X-PUB"] = {
+        "years": [2026, 2027],
+        "days": [["2026-01-01", "closed", "New Year's Day", None], ["2027-12-24", "early_close", "Christmas Eve", "13:00"]],
+    }
+    with db.session() as s:
+        pub, proj = service.run_capture(s, "X", fetch)["sources"]
+    assert pub["changed"] == ["2027-12-24"]  # overrides the projected row
+    assert proj["years"] == [2028] and proj["retired_for_published_years"] == 1  # Good Friday 2027
+    with db.session() as s:
+        bd = lambda d: service.business_day(s, "X", d)
+        assert bd(date(2027, 3, 26)) == {"calendar": "X", "date": "2027-03-26", "business_day": True, "status": "open"}
+        assert bd(date(2027, 12, 24))["close_time"] == "13:00" and "projected" not in bd(date(2027, 12, 24))
+        assert bd(date(2028, 1, 3))["projected"] is True
+        retired = s.scalar(select(CalendarDay).where(CalendarDay.day == date(2027, 3, 26)))
+        assert retired.valid_to is not None  # kept as history
+    # Running again changes nothing.
+    with db.session() as s:
+        again = service.run_reparse(s, "X")["sources"][1]
+    assert again["added"] == 0 and "retired_for_published_years" not in again
+
+
+@pytest.mark.projections
+def test_sifma_us_runs_to_2100(migrated_db, sifma_fetch):
+    with db.session() as s:
+        out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"]
+    assert [x["source"] for x in out][-1] == "SIFMA-US-PROJECTED"
+    assert out[-1]["years"] == list(range(2027, 2101))  # 2026 is published
+    with db.session() as s:
+        bd = lambda d: service.business_day(s, "SIFMA-US", d)
+        assert "projected" not in bd(date(2026, 4, 3))  # the page's noon early close
+        assert bd(date(2027, 3, 26)) | {"holiday": ""} == {
+            "calendar": "SIFMA-US", "date": "2027-03-26", "business_day": False, "status": "closed",
+            "holiday": "", "projected": True,
+        }
+        assert bd(date(2099, 12, 25))["projected"] is True
+        assert bd(date(2025, 1, 9))["status"] == "early_close"  # Carter, from the exceptions file
+        years = s.scalars(select(CalendarYear.year).join(Calendar).where(Calendar.name == "SIFMA-US")).all()
+        assert sorted(years) == list(range(1996, 2101))

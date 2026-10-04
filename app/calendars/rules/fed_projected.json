@@ -1,0 +1,88 @@
+{
+  "calendar": "FED",
+  "about": "Federal Reserve Banks' closed weekdays projected forward to 2100 (the same rules as fed.json), for payment schedules that need dates decades out (New York banking days for USD swaps and bonds). Fills only years K.8 doesn't cover; a year's projected rows are retired once K.8 lists it. The same rules reproduce K.8's 2026-2030 table exactly (tests).",
+  "first_year": 2026,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "monday"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Birthday of Martin Luther King, Jr.",
+      "month": 1,
+      "weekday": "monday",
+      "n": 3,
+      "from": 1986
+    },
+    {
+      "name": "Washington's Birthday",
+      "month": 2,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Memorial Day",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Juneteenth National Independence Day",
+      "month": 6,
+      "day": 19,
+      "from": 2021
+    },
+    {
+      "name": "Independence Day",
+      "month": 7,
+      "day": 4
+    },
+    {
+      "name": "Labor Day",
+      "month": 9,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Columbus Day",
+      "month": 10,
+      "weekday": "monday",
+      "n": 2
+    },
+    {
+      "name": "Veterans Day",
+      "month": 11,
+      "day": 11
+    },
+    {
+      "name": "Thanksgiving Day",
+      "month": 11,
+      "weekday": "thursday",
+      "n": 4
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.law.cornell.edu/uscode/text/5/6103",
+    "https://www.federalreserve.gov/aboutthefed/k8.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/other20210617b.htm",
+    "https://www.newyorkfed.org/banking/circulars/11465.html",
+    "https://www.newyorkfed.org/banking/circulars/11532.html",
+    "https://www.newyorkfed.org/banking/circulars/11615.html",
+    "https://www.newyorkfed.org/banking/circulars/11720.html",
+    "https://www.newyorkfed.org/banking/circulars/11797.html",
+    "https://www.newyorkfed.org/banking/circulars/11879.html",
+    "https://www.newyorkfed.org/banking/circulars/11980.html"
+  ]
+}

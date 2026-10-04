@@ -61,3 +61,25 @@ def migrated_db(tmp_path, monkeypatch):
     command.upgrade(cfg, "head")
     yield url
     db._engine.cache_clear()
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "projections: keep the projected sources (FED/SIFMA-US/NYSE-PROJECTED)")
+
+
+@pytest.fixture(autouse=True)
+def _no_projections(request, monkeypatch):
+    """Tests run without the projected sources unless marked `projections`.
+
+    The projections fill every year to 2100, which would change the counts and
+    "not covered" answers that the other tests are about.
+    """
+    if request.node.get_closest_marker("projections"):
+        return
+    from dataclasses import replace
+
+    from app.calendars import service
+
+    for name, spec in list(service.CALENDARS.items()):
+        kept = tuple(src for src in spec.sources if not src.projected)
+        monkeypatch.setitem(service.CALENDARS, name, replace(spec, sources=kept))

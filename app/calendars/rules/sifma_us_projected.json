@@ -1,0 +1,33 @@
+{
+  "calendar": "SIFMA-US",
+  "about": "SIFMA-US full closes projected forward from its recommendation rules, for payment schedules that need dates decades out (U.S. Government Securities Business Days, e.g. SOFR). Full closes only: early closes don't move payment dates. Fills only years no published SIFMA source covers; a year's projected rows are retired once SIFMA publishes it. Checked against SIFMA's own record for 1996-2026 (tests/test_rules.py lists every difference).",
+  "first_year": 2026,
+  "last_year": 2100,
+  "observance": {"saturday": "friday", "sunday": "monday"},
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1, "observance": {"saturday": "none"}},
+    {"name": "Martin Luther King Day", "month": 1, "weekday": "monday", "n": 3},
+    {"name": "Presidents Day", "month": 2, "weekday": "monday", "n": 3},
+    {"name": "Good Friday", "easter": -2},
+    {"name": "Memorial Day", "month": 5, "weekday": "monday", "n": -1},
+    {"name": "Juneteenth", "month": 6, "day": 19, "from": 2022},
+    {"name": "U.S. Independence Day", "month": 7, "day": 4},
+    {"name": "Labor Day", "month": 9, "weekday": "monday", "n": 1},
+    {"name": "Columbus Day", "month": 10, "weekday": "monday", "n": 2},
+    {"name": "Veterans Day", "month": 11, "day": 11, "observance": {"saturday": "none"}},
+    {"name": "Thanksgiving Day", "month": 11, "weekday": "thursday", "n": 4},
+    {"name": "Christmas Day", "month": 12, "day": 25}
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.sifma.org/resources/guides-playbooks/holiday-schedule",
+    "https://www.sifma.org/resources/guides-playbooks/us-holiday-archive",
+    "https://www.sifma.org/wp-content/uploads/2017/08/Misc-US-Historical-Holiday-Market-Recommendations-SIFMA.pdf",
+    "https://x.com/SIFMA/status/1405594850272198657"
+  ],
+  "notes": {
+    "Good Friday": "Projected as a full close. In jobs-report years SIFMA usually recommends a noon early close instead (2010, 2012, 2015, 2021, 2023, 2026); those can't be known decades ahead, so a projected Good Friday is the most likely date to change when SIFMA publishes.",
+    "Saturday holidays": "SIFMA closes the Friday before, except for New Year's Day (no close in 2000, 2005, 2011, 2022) and Veterans Day (no close in 2000, 2006, 2017, 2023).",
+    "Juneteenth": "First a SIFMA holiday in 2022: in 2021 it fell on a Saturday with Fedwire open and SIFMA recommended no close. A Saturday Juneteenth since then (first: 2027) is projected like other Saturday holidays (the Friday before) until SIFMA's published year says otherwise."
+  }
+}

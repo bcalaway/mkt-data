@@ -6,6 +6,8 @@ Platform roadmap: Milestone 22 in `nyc_pa_aws_gitops/docs/roadmap.md`.
 
 **Scope (Bill, 2026-10-03):** SIFMA US bond market (full closes and recommended early closes), the Federal Reserve's holidays, and NYSE (full closes and early closes). CME comes later.
 
+**Forward horizon (Bill, 2026-10-04):** calendars must reach far enough ahead to generate payment schedules for bonds and swaps. FED gives New York banking days and SIFMA-US gives U.S. Government Securities Business Days (SOFR); NYSE is for equities. No publisher lists more than five years ahead, so each calendar is projected from its rules to 2100, full closes only.
+
 ## Steps
 
 Each step is its own PR.
@@ -45,6 +47,14 @@ Each step is its own PR.
      - Result: 406 days. The same rules reproduce the hours page's 2026–2028 table exactly and match ICE's 2023–2025 announcement.
      - 1990–2010 follow NYSE's own holiday history, read through a summarizer. Aug 9, 1996 (a 3 p.m. close for a hurricane watch) is left out, unconfirmed.
    - **Step 5's agreed ranges are all in and applied on the hub (2026-10-04):** SIFMA-US from 1996, FED from 1986, NYSE from 1990.
+   - **Projection to 2100 (#22):** `rules/*_projected.json`, the last source in each calendar (`projected=True`).
+     - Full closes only: early closes don't move payment dates.
+     - Fills only years no other source covers. Once a publisher covers a year, the projection's rows for it are retired as a whole, kept as history.
+     - `business-day` answers from a projected year carry `"projected": true`.
+     - FED's projection uses `fed.json`'s rules, which reproduce K.8 exactly. NYSE's uses `nyse.json`'s holidays.
+     - SIFMA's rules reproduce SIFMA's published full closes for 1996–2026, except the two one-off closes (Sandy, Bush) and the jobs-report Good Fridays that became early closes. A projected Good Friday is the date most likely to change.
+     - Juneteenth on a Saturday (first in 2027) is projected to the Friday before, until SIFMA's 2027 tab is captured.
+     - Step 6's "next year published" check must count published sources only, so a projection can't hide a missing year.
    - Possible follow-ups: capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests). Also, K.8's page bytes changed between two fetches with an identical parse; check whether every run will store a new copy.
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.

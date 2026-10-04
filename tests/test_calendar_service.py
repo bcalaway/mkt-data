@@ -354,6 +354,43 @@ def test_a_projection_fills_only_unpublished_years_and_gives_way_by_whole_years(
 
 
 @pytest.mark.projections
+def test_a_published_day_matching_the_projection_survives_the_handover(migrated_db, monkeypatch):
+    """The publisher adds a year whose dates the projection already holds, word for word.
+
+    The hub's SIFMA-US 2027 (#27, 2026-10-04): every full close that matched
+    the projection exactly (Good Friday, MLK Day, Labor Day, Thanksgiving)
+    stayed owned by the projection, which then retired it as the publisher's
+    year, so those days read as open.
+    """
+    import json
+
+    gf = ["2027-03-26", "closed", "Good Friday", None]
+    pages = {
+        "X-PUB": {"years": [2026], "days": [["2026-01-01", "closed", "New Year's Day", None]]},
+        "X-PROJ": {"years": [2026, 2027], "days": [["2026-01-01", "closed", "New Year's Day", None], gf]},
+    }
+    spec = service.CalendarSpec("X", "test", "America/New_York", (_json_source("X-PUB"), _json_source("X-PROJ", True)))
+    monkeypatch.setitem(service.CALENDARS, "X", spec)
+    fetch = lambda url: (200, "application/json", json.dumps(pages[url.rsplit("/", 1)[1]]).encode())
+    with db.session() as s:
+        service.run_capture(s, "X", fetch)
+
+    pages["X-PUB"] = {"years": [2026, 2027], "days": [["2026-01-01", "closed", "New Year's Day", None], gf]}
+    for taken in (1, None):  # the handover, then a later run that must leave it alone
+        with db.session() as s:
+            pub, proj = service.run_capture(s, "X", fetch)["sources"]
+        assert pub.get("taken_from_lower_source") == taken and pub["added"] == 0
+        with db.session() as s:
+            assert service.business_day(s, "X", date(2027, 3, 26)) == {
+                "calendar": "X", "date": "2027-03-26", "business_day": False, "status": "closed", "holiday": "Good Friday",
+            }
+        assert "retired_for_published_years" not in proj
+    with db.session() as s:
+        rows = s.scalars(select(CalendarDay).where(CalendarDay.day == date(2027, 3, 26))).all()
+        assert sum(r.valid_to is None for r in rows) == 1  # one current row, now the publisher's
+
+
+@pytest.mark.projections
 def test_sifma_us_runs_to_2100(migrated_db, sifma_fetch):
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"]

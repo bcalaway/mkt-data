@@ -22,7 +22,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, sifma
+from app.calendars import fed, nyse, sifma
 from app.calendars.parsed import Day, ParsedCalendar, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -59,6 +59,15 @@ CALENDARS: dict[str, CalendarSpec] = {
         source_url=sifma.URL,
         source_description="SIFMA, U.S. Holiday Recommendations (published years only)",
         parse=sifma.parse,
+    ),
+    "NYSE": CalendarSpec(
+        name="NYSE",
+        description="NYSE equities: full closes and early closes (equities close time)",
+        timezone="America/New_York",
+        source_name="NYSE-HOURS",
+        source_url=nyse.URL,
+        source_description="NYSE, Holidays & Trading Hours (current year + 2)",
+        parse=nyse.parse,
     ),
 }
 

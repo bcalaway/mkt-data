@@ -22,6 +22,11 @@ def sifma_html() -> bytes:
 
 
 @pytest.fixture
+def nyse_html() -> bytes:
+    return (FIXTURES / "nyse_hours_2026.html").read_bytes()
+
+
+@pytest.fixture
 def migrated_db(tmp_path, monkeypatch):
     """A throwaway SQLite database at the head migration, used by db.session()."""
     url = f"sqlite:///{tmp_path / 'app.db'}"

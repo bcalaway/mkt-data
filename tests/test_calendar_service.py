@@ -114,3 +114,30 @@ def test_calendars_are_independent(migrated_db, fed_html, sifma_html):
         assert service.business_day(s, "FED", date(2026, 4, 3))["status"] == "open"
         assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
         assert _count(s, Capture) == 2
+
+
+def test_nyse_capture_and_early_close(migrated_db, nyse_html):
+    with db.session() as s:
+        out = service.run_capture(s, "NYSE", _fetcher(nyse_html))
+    # 29 holidays over 2026-2028 (no New Year's Day in 2028) plus 5 early closes.
+    assert out["years"] == [2026, 2027, 2028] and out["added"] == out["closed_days"] == 34
+    with db.session() as s:
+        eve = service.business_day(s, "NYSE", date(2026, 12, 24))
+        assert eve == {
+            "calendar": "NYSE", "date": "2026-12-24", "business_day": True,
+            "status": "early_close", "holiday": "Christmas Day (early close)", "close_time": "13:00",
+        }
+        assert service.business_day(s, "NYSE", date(2027, 12, 24))["status"] == "closed"
+        assert service.business_day(s, "NYSE", date(2027, 12, 31))["status"] == "open"
+        with pytest.raises(service.NotCovered):
+            service.business_day(s, "NYSE", date(2029, 1, 2))
+
+
+def test_good_friday_across_the_three_calendars(migrated_db, fed_html, sifma_html, nyse_html):
+    with db.session() as s:
+        for name, html in [("FED", fed_html), ("SIFMA-US", sifma_html), ("NYSE", nyse_html)]:
+            service.run_capture(s, name, _fetcher(html))
+    with db.session() as s:
+        statuses = {n: service.business_day(s, n, date(2026, 4, 3))["status"] for n in service.CALENDARS}
+        assert statuses == {"FED": "open", "SIFMA-US": "early_close", "NYSE": "closed"}
+        assert _count(s, Capture) == 3

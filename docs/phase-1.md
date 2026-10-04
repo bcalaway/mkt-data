@@ -89,7 +89,7 @@ Each step is its own PR.
      2. ✅ `airflow_trigger("mkt_data__nyse_calendar")`, then `airflow_runs` shows it succeed, and `mkt_data_checks(calendar="NYSE")` shows fresh checks, unchanged and parsed OK.
      3. ✅ `mkt_data_business_day("SIFMA-US", "2027-03-26")`: closed (Good Friday), not projected. `mkt_data_business_day("FED", "2040-07-04")`: closed, projected.
      4. ✅ `mkt_data_capture_text(3, embedded=true, contains="2027")` finds the 2027 tab.
-   - Still to do for this step: voice-friendly status answers (coverage per calendar, open gaps), if the tools above don't already cover them.
+   - Voice-friendly status answers: covered by the tools above. Bill's voice test of market data status worked (2026-10-04), so no combined tool is needed.
 
 ## Open questions
 

@@ -5,7 +5,7 @@ from datetime import date, time
 
 import pytest
 
-from app.calendars import fed, rules
+from app.calendars import fed, nyse, rules
 from app.calendars.parsed import Day, ParseError
 
 
@@ -132,3 +132,71 @@ def test_read_only_reads_files_in_the_rules_folder():
     for name in ("repo:../rules.py", "repo:nope.json", "repo:"):
         with pytest.raises(FileNotFoundError):
             rules.read(name)
+
+
+# --- NYSE-RULES (repo:nyse.json)
+
+
+def test_nyse_rules_cover_1990_to_2025():
+    p = rules.parse(rules.read("repo:nyse.json"))
+    assert p.years == tuple(range(1990, 2026))
+    assert (len(p.days), sum(d.status == "early_close" for d in p.days)) == (406, 80)
+
+
+def test_nyse_rules_reproduce_the_hours_page_exactly(nyse_html):
+    spec = json.loads(rules.read("repo:nyse.json")) | {"first_year": 2026, "last_year": 2028, "exceptions": []}
+    assert _parse(spec) == nyse.parse(nyse_html)
+
+
+# ICE's announcement of the 2023-2025 holiday and early-close calendar.
+ICE_2023_2025 = {
+    "closed": [
+        "2023-01-02", "2023-01-16", "2023-02-20", "2023-04-07", "2023-05-29", "2023-06-19", "2023-07-04",
+        "2023-09-04", "2023-11-23", "2023-12-25", "2024-01-01", "2024-01-15", "2024-02-19", "2024-03-29",
+        "2024-05-27", "2024-06-19", "2024-07-04", "2024-09-02", "2024-11-28", "2024-12-25", "2025-01-01",
+        "2025-01-20", "2025-02-17", "2025-04-18", "2025-05-26", "2025-06-19", "2025-07-04", "2025-09-01",
+        "2025-11-27", "2025-12-25",
+        "2025-01-09",  # announced later: Carter's day of mourning
+    ],
+    "early_close": [
+        "2023-07-03", "2023-11-24", "2024-07-03", "2024-11-29", "2024-12-24", "2025-07-03", "2025-11-28",
+        "2025-12-24",
+    ],
+}
+
+
+def test_nyse_rules_match_ice_2023_to_2025():
+    days = rules.parse(rules.read("repo:nyse.json")).days
+    for status, expected in ICE_2023_2025.items():
+        got = {d.day for d in days if 2023 <= d.day.year <= 2025 and d.status == status}
+        assert got == {date.fromisoformat(x) for x in expected}, status
+
+
+def test_nyse_rules_history():
+    days = {d.day: d for d in rules.parse(rules.read("repo:nyse.json")).days}
+    assert date(1997, 1, 20) not in days and days[date(1998, 1, 19)].holiday == "Martin Luther King, Jr. Day"
+    assert date(2021, 6, 18) not in days and date(2022, 6, 20) in days  # Juneteenth from 2022
+    assert date(1999, 12, 31) in days and days[date(1999, 12, 31)].close_time == time(13)
+    assert date(2010, 12, 31) not in days  # Saturday New Year's Day: no Friday holiday
+    assert days[date(1993, 12, 24)] == Day(date(1993, 12, 24), "closed", "Christmas Day (observed)")
+    assert date(1996, 7, 3) not in days and days[date(1996, 7, 5)].close_time == time(13)
+    assert days[date(1992, 11, 27)].close_time == time(14) and days[date(1993, 11, 26)].close_time == time(13)
+    assert days[date(1990, 12, 24)].close_time == time(14) and date(1991, 7, 3) not in days
+
+
+def test_easter():
+    assert [rules.easter(y) for y in (1990, 2000, 2015, 2019, 2024, 2027)] == [
+        date(1990, 4, 15), date(2000, 4, 23), date(2015, 4, 5), date(2019, 4, 21), date(2024, 3, 31), date(2027, 3, 28),
+    ]
+
+
+def test_early_close_rules_only_apply_on_their_weekdays():
+    spec = {
+        "calendar": "X", "first_year": 2024, "last_year": 2025,
+        "holidays": [{"name": "Eve (early close)", "month": 12, "day": 24, "weekdays": ["tuesday"],
+                      "status": "early_close", "close_time": "13:00"}],
+    }
+    assert _parse(spec).days == (Day(date(2024, 12, 24), "early_close", "Eve (early close)", time(13)),)
+    spec["holidays"][0]["weekdays"] = ["saturday"]
+    with pytest.raises(ParseError, match="Monday to Friday"):
+        _parse(spec)

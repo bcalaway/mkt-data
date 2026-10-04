@@ -211,7 +211,7 @@ def test_good_friday_across_the_three_calendars(migrated_db, fed_html, sifma_fet
     with db.session() as s:
         statuses = {n: service.business_day(s, n, date(2026, 4, 3))["status"] for n in service.CALENDARS}
         assert statuses == {"FED": "open", "SIFMA-US": "early_close", "NYSE": "closed"}
-        assert _count(s, Capture) == 7
+        assert _count(s, Capture) == 8  # FED 2, SIFMA-US 4, NYSE 2 (the hours page and its rules)
 
 
 def test_a_source_without_a_parser_is_kept_raw(migrated_db, sifma_fetch, sifma_history_pdf, monkeypatch):
@@ -269,3 +269,17 @@ def test_a_missing_rules_file_is_a_fetch_error(migrated_db, fed_html, monkeypatc
     monkeypatch.setitem(service.CALENDARS, "FED", replace(spec, sources=(spec.sources[0], gone)))
     with db.session() as s, pytest.raises(service.SourceFetchError, match="FED-RULES"):
         service.run_capture(s, "FED", _fetcher(fed_html))
+
+
+def test_nyse_rules_fill_1990_to_2025(migrated_db, nyse_html):
+    with db.session() as s:
+        out = service.run_capture(s, "NYSE", _fetcher(nyse_html))["sources"][1]
+    assert out["source"] == "NYSE-RULES" and out["years"] == list(range(1990, 2026))
+    with db.session() as s:
+        bd = lambda d: service.business_day(s, "NYSE", d)
+        assert bd(date(2001, 9, 13))["holiday"] == "September 11 attacks"
+        assert bd(date(1997, 10, 27))["close_time"] == "15:30"
+        assert bd(date(2021, 12, 24))["holiday"] == "Christmas Day (observed)"
+        assert bd(date(2022, 1, 3))["status"] == "open"  # Saturday New Year's: no Friday or Monday off
+        with pytest.raises(service.NotCovered):
+            bd(date(1989, 6, 1))

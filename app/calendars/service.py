@@ -114,6 +114,10 @@ CALENDARS: dict[str, CalendarSpec] = {
         timezone="America/New_York",
         sources=(
             SourceSpec("NYSE-HOURS", nyse.URL, "NYSE, Holidays & Trading Hours (current year + 2)", nyse.parse),
+            SourceSpec(
+                "NYSE-RULES", f"{rules.REPO_PREFIX}nyse.json",
+                "NYSE holidays, early closes and one-off closes, 1990-2025 (rules, cited)", rules.parse,
+            ),
         ),
     ),
 }

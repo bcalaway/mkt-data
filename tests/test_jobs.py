@@ -149,8 +149,11 @@ def test_applied_flags_a_capture_that_failed_to_parse(token, migrated_db, fed_ht
     broken = fed_html.replace(b"<td>July 4**</td>", b"<td>July 4</td>")
     monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", broken))
     assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 422
-    caps = client.get("/jobs/captures", params={"calendar": "FED"}, headers=_auth()).json()["captures"]
+    caps = client.get("/jobs/captures", params={"source": "FED-K8"}, headers=_auth()).json()["captures"]
     assert [c["applied"] for c in caps] == [False, True]  # newest (broken) first
+    # The rules file was captured once and stays applied.
+    fed = client.get("/jobs/captures", params={"calendar": "FED"}, headers=_auth()).json()["captures"]
+    assert [(c["source"], c["applied"]) for c in fed] == [("FED-K8", False), ("FED-RULES", True), ("FED-K8", True)]
 
 
 def test_capture_text(token, migrated_db, nyse_html, monkeypatch):

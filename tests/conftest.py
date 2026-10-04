@@ -75,21 +75,35 @@ def migrated_db(tmp_path, monkeypatch):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "projections: keep the projected sources (FED/SIFMA-US/NYSE-PROJECTED)")
+    config.addinivalue_line(
+        "markers", "history_documents: keep the historical document sources (FED-NYFED-*, NYSE-HISTORY)"
+    )
+
+
+def _is_history_document(src) -> bool:
+    return src.name.startswith("FED-NYFED-") or src.name == "NYSE-HISTORY"
 
 
 @pytest.fixture(autouse=True)
 def _no_projections(request, monkeypatch):
-    """Tests run without the projected sources unless marked `projections`.
+    """Tests run without the projected sources unless marked `projections`,
+    and without the historical document sources unless marked `history_documents`.
 
     The projections fill every year to 2100, which would change the counts and
-    "not covered" answers that the other tests are about.
+    "not covered" answers that the other tests are about. The document sources
+    add fetches and source positions those tests don't expect.
     """
-    if request.node.get_closest_marker("projections"):
+    keep_projections = request.node.get_closest_marker("projections") is not None
+    keep_history = request.node.get_closest_marker("history_documents") is not None
+    if keep_projections and keep_history:
         return
     from dataclasses import replace
 
     from app.calendars import service
 
     for name, spec in list(service.CALENDARS.items()):
-        kept = tuple(src for src in spec.sources if not src.projected)
+        kept = tuple(
+            src for src in spec.sources
+            if (keep_projections or not src.projected) and (keep_history or not _is_history_document(src))
+        )
         monkeypatch.setitem(service.CALENDARS, name, replace(spec, sources=kept))

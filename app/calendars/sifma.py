@@ -20,8 +20,8 @@ is kept either way, so a fixed parser can re-run on it (`reparse`).
 Coverage: a year counts as covered only when the page lists a plausible full
 set of closes for it (MIN_FULL_CLOSES). The New Year's entry that ends one
 year's tab ("New Year's Day 2026/2027") is stored, but doesn't on its own make
-2027 covered, so `business-day` keeps answering "not published" for 2027
-until SIFMA posts it. Close times are Eastern (the calendar's timezone).
+2027 covered, so calendar-svc keeps 2027 on the projection until SIFMA
+posts it. Close times are Eastern (the calendar's timezone).
 
 The U.S. Holiday Archive (ARCHIVE_URL, `parse_archive`) has the same entries
 for past years (2015-2025 as of 2026-10-04), one section per year, newest

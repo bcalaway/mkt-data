@@ -34,10 +34,11 @@ def _tables(cfg):
 def test_upgrade_then_downgrade(alembic_cfg):
     command.upgrade(alembic_cfg, "head")
     tables = _tables(alembic_cfg)
-    assert {"source", "capture", "source_check", "calendar", "calendar_year", "calendar_day"} <= tables
-    assert "items" not in tables
+    assert {"source", "capture", "source_check", "source_year", "source_day"} <= tables
+    # The golden calendar moved to calendar-svc (migration 0005).
+    assert not {"items", "calendar", "calendar_year", "calendar_day"} & tables
     command.downgrade(alembic_cfg, "base")
-    assert not {"capture", "calendar_day", "items"} & _tables(alembic_cfg)
+    assert not {"capture", "source_day", "calendar_day", "items"} & _tables(alembic_cfg)
 
 
 def test_models_match_migrations(alembic_cfg):

@@ -1,6 +1,6 @@
 # Phase 1: holiday calendars end to end
 
-**Status: complete (2026-10-04).** All nine steps are done and verified on the hub. Platform roadmap: Milestone 22, now in `nyc_pa_aws_gitops/docs/roadmap-archive.md`. Follow-ups are at the end of this file.
+**Status: complete (2026-10-04).** Since phase 2 (step A5, [phase-2.md](phase-2.md)) the golden calendars and the business-day answer live in calendar-svc; mkt-data keeps the sources, their raw captures and near-raw rows. This file describes phase 1 as built. All nine steps are done and verified on the hub. Platform roadmap: Milestone 22, now in `nyc_pa_aws_gitops/docs/roadmap-archive.md`. Follow-ups are at the end of this file.
 
 **Goal:** before adding more sources, build one vertical slice through the whole data layer: sourcing → raw store → processed tables → Airflow schedule → monitoring and alerts → Grafana dashboard. Calendars come first because every later dataset's schedule and staleness checks depend on them ("was today a trading day for this market?").
 

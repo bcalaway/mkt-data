@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from app import db
 from app.calendars import near_raw, service
 from app.calendars.parsed import ParseError
-from app.models import CalendarDay, SourceDay, SourceYear
+from app.models import SourceDay, SourceYear
 
 
 def _fetcher(body: bytes):
@@ -23,8 +23,8 @@ def test_a_capture_fills_its_sources_near_raw(migrated_db, fed_html):
     with db.session() as s:
         out = service.run_capture(s, "FED", _fetcher(fed_html))["sources"]
     k8, rules = out
-    assert k8["near_raw"] == {"new_years": 5, "added": 50, "changed": 0, "removed": 0}
-    assert rules["near_raw"]["added"] == 382
+    assert {k: k8[k] for k in ("new_years", "added", "changed", "removed")} == {"new_years": 5, "added": 50, "changed": 0, "removed": 0}
+    assert rules["added"] == 382
     with db.session() as s:
         assert near_raw.years(s, "FED-K8") == [2026, 2027, 2028, 2029, 2030]
         assert len(near_raw.current_days(s, "FED-K8")) == 50
@@ -32,18 +32,16 @@ def test_a_capture_fills_its_sources_near_raw(migrated_db, fed_html):
 
 
 def test_both_sources_keep_a_date_that_precedence_gives_to_one(migrated_db, sifma_fetch):
-    """Good Friday 2015: the archive says early close, the PDF says something else; the
-    calendar keeps the archive's (held_by_higher_source), near-raw keeps both."""
+    """Good Friday 2015: the archive says early close, the PDF says something else; near-raw
+    keeps both (which one wins is calendar-svc's call)."""
     with db.session() as s:
         service.run_capture(s, "SIFMA-US", sifma_fetch)
     gf = date(2015, 4, 3)
     with db.session() as s:
         archive = [d for d in near_raw.current_days(s, "SIFMA-US-ARCHIVE") if d.day == gf]
         pdf = [d for d in near_raw.current_days(s, "SIFMA-US-HISTORY") if d.day == gf]
-        cal = s.scalars(select(CalendarDay).where(CalendarDay.day == gf, CalendarDay.valid_to.is_(None))).all()
-    assert len(archive) == 1 and len(pdf) == 1 and len(cal) == 1
+    assert len(archive) == 1 and len(pdf) == 1
     assert archive[0].status == "early_close" and archive[0].close_time == time(12, 0)
-    assert (cal[0].status, cal[0].close_time) == (archive[0].status, archive[0].close_time)
 
 
 def test_same_content_changes_nothing(migrated_db, fed_html):
@@ -51,7 +49,7 @@ def test_same_content_changes_nothing(migrated_db, fed_html):
         service.run_capture(s, "FED", _fetcher(fed_html))
     with db.session() as s:
         out = service.run_capture(s, "FED", _fetcher(fed_html))["sources"][0]
-    assert out["near_raw"] == {"new_years": 0, "added": 0, "changed": 0, "removed": 0}
+    assert {k: out[k] for k in ("new_years", "added", "changed", "removed")} == {"new_years": 0, "added": 0, "changed": 0, "removed": 0}
     with db.session() as s:
         assert _count(s, SourceDay, SourceDay.valid_to.is_not(None)) == 0
 
@@ -62,7 +60,7 @@ def test_a_changed_date_keeps_history_with_capture_times(migrated_db, fed_html):
     moved = fed_html.replace(b"<td>October 12</td>", b"<td>October 19</td>")
     with db.session() as s:
         out = service.run_capture(s, "FED", _fetcher(moved))["sources"][0]
-    assert out["near_raw"]["added"] == 1 and out["near_raw"]["removed"] == 1
+    assert out["added"] == 1 and out["removed"] == 1
     with db.session() as s:
         old = s.scalar(select(SourceDay).where(SourceDay.day == date(2026, 10, 12)))
         new = s.scalar(select(SourceDay).where(SourceDay.day == date(2026, 10, 19)))

@@ -66,11 +66,13 @@ Each step is its own PR.
 7. ✅ **Monitoring** (done 2026-10-04, verified live: the `mkt-data` scrape target is up and all 11 sources read `parse_ok` 1; K.8's text dedupe held it at 3 captures. #24 here, with the scrape job and alert rules in nyc_pa_aws_gitops). `GET /metrics`; each capture and reparse records its parse outcome (migration 0003).
    - mkt-data exposes Prometheus gauges for the platform's data-quality pattern: last successful capture, rows per calendar and year, years covered, and parse failures.
    - Grafana alert rules email when a capture is stale, a parse fails, or next year is missing past its usual publish date.
-8. **Dashboard.** A Grafana dashboard covering:
-   - each calendar's upcoming closes and early closes;
-   - backfill coverage per calendar (first year, last year, gaps);
-   - capture history;
-   - storage (raw bytes and rows). Monthly AWS cost comes from the platform's cost-exporter.
+8. ✅ **Dashboard** (done 2026-10-04: Grafana **Market data**, `uid: market-data`, platform #118; gauges in #32). Filterable by calendar:
+   - at a glance: database reachable, parse failures, oldest successful fetch, coverage gaps, next year published;
+   - each calendar's upcoming closes and early closes over the next 180 days (`mkt_data_calendar_upcoming_day`: one series per date, labelled with the holiday, status, Eastern close time and whether it's projected; the value is days until it). Prometheus drops empty labels, so a full close has no `close_time`;
+   - backfill coverage per calendar and kind of source (first year, last year, years), gap years (`mkt_data_calendar_gap_years`, `_gap_year`; all 0) and stored days;
+   - capture history: per-source last success, parse outcome, captures and raw bytes, over time;
+   - storage and cost: database size (`pg_database_size_bytes{datname="mkt-data"}`, from postgres-exporter), raw capture bytes, calendar rows, and the whole account's AWS month-to-date and forecast from the cost-exporter.
+   - Checked live 2026-10-04: 7 upcoming days for FED, 12 for SIFMA-US, 8 for NYSE; the next is Columbus Day (FED and SIFMA-US, NYSE open).
 9. **home-mcp tools.** Market data status, open gaps and backfill as named tools, so they can be asked about by voice.
    - ✅ **Tools deployed and verified 2026-10-04** (platform #115, mkt-data #28). Every check below passed, after two fixes:
      - **Grafana token:** #115's hub deploy ran a minute before Terraform granted the hub role `PutParameter` on the token parameter (both workflows start on the same merge). The script made the service account and a token, couldn't save it, and wrote `none` as designed. A hub-only redeploy (13:55 UTC) stored a fresh token, and `grafana_alerts("mkt-data")` shows the three rules inactive and healthy. The first token is orphaned on the `home-mcp` account (Viewer only).

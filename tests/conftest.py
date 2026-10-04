@@ -22,6 +22,16 @@ def sifma_html() -> bytes:
 
 
 @pytest.fixture
+def sifma_page_capture3() -> bytes:
+    """SIFMA's schedule page as the hub captured it (#3, 2026-10-04), byte for byte.
+
+    Unlike sifma_us_2026.html (its visible text in simple markup), this has the
+    page's embedded React data, where the 2027 tab lives.
+    """
+    return (FIXTURES / "sifma_us_page_capture3.html").read_bytes()
+
+
+@pytest.fixture
 def sifma_archive_html() -> bytes:
     return (FIXTURES / "sifma_us_archive.html").read_bytes()
 

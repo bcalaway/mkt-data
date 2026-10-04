@@ -211,3 +211,36 @@ def test_pdf_link_ends_the_years(sifma_archive_html):
     # Without the stop, the footer would read as holiday headings; a date after it is ignored.
     extra = sifma_archive_html.replace(b"<p>Subscribe</p>", b"<p>Monday, March 2, 2026</p>")
     assert date(2026, 3, 2) not in {d.day for d in sifma.parse_archive(extra).days}
+
+
+# --- The real page (capture #3): year tabs from its embedded React data
+
+
+def test_real_page_covers_2026_and_2027(sifma_page_capture3):
+    p = sifma.parse(sifma_page_capture3)
+    assert p.years == (2026, 2027)
+    full = {y: sum(d.status == "closed" and d.day.year == y for d in p.days) for y in (2026, 2027)}
+    assert full == {2026: 11, 2027: 12}
+    assert len(p.days) == 36
+
+
+def test_real_page_2026_matches_the_visible_text(sifma_page_capture3, sifma_html):
+    embedded = {d for d in sifma.parse(sifma_page_capture3).days if d.day <= date(2027, 1, 1)}
+    assert embedded == set(sifma.parse(sifma_html).days)
+
+
+def test_real_page_2027_dates(sifma_page_capture3):
+    days = {d.day: d for d in sifma.parse(sifma_page_capture3).days}
+    # Juneteenth falls on a Saturday in 2027: the Friday before is a full close.
+    assert days[date(2027, 6, 18)] == Day(date(2027, 6, 18), "closed", "Juneteenth")
+    # Good Friday 2027 is a full close, with a 2 p.m. early close the day before.
+    assert days[date(2027, 3, 26)].status == "closed"
+    assert days[date(2027, 3, 25)].close_time == time(14)
+    # Christmas 2027 is a Saturday: closed Friday Dec 24, early close Thursday.
+    assert days[date(2027, 12, 24)].status == "closed" and days[date(2027, 12, 23)].status == "early_close"
+    # New Year's Day 2028 is a Saturday too: only the Dec 31 early close.
+    assert days[date(2027, 12, 31)].close_time == time(14) and date(2028, 1, 1) not in days
+
+
+def test_year_tabs_run_together_still_count():
+    assert sifma.YEAR_TABS.fullmatch("20262027") and not sifma.YEAR_TABS.fullmatch("2026 2027")

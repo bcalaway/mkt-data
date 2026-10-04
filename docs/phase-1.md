@@ -45,7 +45,7 @@ Each step is its own PR.
      - Early closes at 1 p.m.: the day after Thanksgiving (from 1993), July 3 when it falls Monday–Thursday (from 1995), and Dec 24 when it falls Monday–Thursday (from 1996).
      - 25 cited exceptions: the 2 p.m. closes of 1990–92, July 5 instead of July 3 in 1996 and 2002, Dec 26 in 1997 and 2003, Dec 31, 1999, the 1994/1996 snow closes, the 1997 circuit-breaker halt, and the one-off full closes (Nixon, 9/11, Reagan, Ford, Sandy, Bush, Carter).
      - Result: 406 days. The same rules reproduce the hours page's 2026–2028 table exactly and match ICE's 2023–2025 announcement.
-     - 1990–2010 follow NYSE's own holiday history, read through a summarizer. Aug 9, 1996 (a 3 p.m. close for a hurricane watch) is left out, unconfirmed.
+     - 1990–2010 follow NYSE's own holiday history, read through a summarizer. An "Aug 9, 1996" 3 p.m. hurricane-watch close that the summarizer reported is really **Aug 9, 1976** (a Monday, Hurricane Belle), as the 2008 revision of the same history prints it; checked 2026-10-04. Nothing is missing for 1996.
    - **Step 5's agreed ranges are all in and applied on the hub (2026-10-04):** SIFMA-US from 1996, FED from 1986, NYSE from 1990.
    - **Projection to 2100 (#22):** `rules/*_projected.json`, the last source in each calendar (`projected=True`).
      - Full closes only: early closes don't move payment dates.
@@ -93,12 +93,16 @@ Each step is its own PR.
 
 ## Open questions
 
-These are settled in the step that needs them.
+All settled (2026-10-04). Where each was decided:
 
-- **SIFMA backfill:** SIFMA keeps a U.S. holiday archive (linked from the schedule page as "View Archive") for earlier years.
-- **Exact sources for each calendar.** For each one, check its official page's format and how many years back it goes before writing the parser.
-- **NYSE early closes:** half-day close times differ by venue and asset class (options 1:15 p.m., late trading sessions 5:00 p.m.). Settled for now: calendar NYSE stores the equities close (1:00 p.m.); add others when a dataset needs them.
-- **NYSE backfill:** the page lists the current year and the next two. Earlier years need NYSE's published history or the exchange's holiday rules (including one-off closures such as national days of mourning).
-- **The Fed's holiday list vs FedWire / Fedwire Securities operating days:** they normally match; confirm, then model them as one calendar or two. For now FED is the Reserve Banks' calendar: when a holiday falls on a Saturday, the Banks stay open the Friday before, and only the Board of Governors closes.
-- **FED backfill:** K.8 only lists the current year and the next four. Earlier years need the federal holiday rules (Juneteenth from 2021) or archived copies of the page.
-- **Backup capture path** (Lambda + S3, independent of the hub) is a platform roadmap item. Calendars change rarely, so phase 1 doesn't depend on it.
+- **SIFMA backfill:** the U.S. Holiday Archive (2015–2025) and the 1996–2019 PDF, step 5 and [backfill.md](backfill.md).
+- **Exact sources for each calendar:** step 4 (current pages) and step 5 (history, rules, projection).
+- **NYSE early closes:** calendar NYSE stores the equities close (1:00 p.m.). Other venues' times (options 1:15 p.m., late sessions 5:00 p.m.) get added when a dataset needs them.
+- **NYSE backfill:** rules plus cited exceptions from 1990 (`NYSE-RULES`), step 5.
+- **FED vs Fedwire:** one calendar. The Fedwire Funds Service observes "all Saturdays, all Sundays and the holidays listed on the Federal Reserve Banks' Holiday Schedules", and the Fedwire Securities Service is open every day that isn't a Reserve Bank holiday ([Funds](https://www.frbservices.org/resources/financial-services/wires/operating-hours.html), [Securities](https://www.frbservices.org/resources/financial-services/securities/operating-hours), checked 2026-10-04). That's exactly calendar FED: when a holiday falls on a Saturday, the Banks and Fedwire stay open the Friday before, and only the Board of Governors closes.
+- **FED backfill:** federal holiday rules from 1986 (`FED-RULES`), checked against the NY Fed circulars for 2003–2009, step 5.
+- **Backup capture path** (Lambda + S3, independent of the hub): a platform roadmap item, not part of phase 1. Calendars change rarely.
+
+## Follow-ups after phase 1
+
+- Capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests).

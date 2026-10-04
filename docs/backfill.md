@@ -83,7 +83,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
   - Oct 27, 1997, 3:30 p.m. (circuit breakers)
 - **Reliability:** 1990 onward. Earlier is possible from the History PDF if ever needed.
 
-## Approach (proposed, not yet decided)
+## Approach (agreed with Bill, 2026-10-04)
 
 - **Raw stays raw.** Each document becomes a `capture` under its own `source`, so processed rows still point at what justifies them:
   - the SIFMA archive page and PDF;
@@ -92,4 +92,5 @@ Research done 2026-10-04, before building anything. Every source below was read 
 - **Rule-generated years** get their own source per calendar, e.g. `FED-RULES` and `NYSE-RULES`. Their "capture" is the rule set's version: a small, versioned file in the repo listing the rules and the exceptions, each with a citation URL.
 - **Precedence:** where a published document and the rules disagree, the published document wins. The disagreement is reported in the capture's summary rather than silently overwritten.
 - **Order:** SIFMA-US first (the HTML archive reuses the current parser), then FED, then NYSE.
+- **Ranges:** SIFMA-US from 1996, FED from 1986 (2003 onward checked against the circulars), NYSE from 1990.
 - **Getting the documents:** the hub fetches them through the job API like today's pages. The sandbox can't, so each source is first fetched once by a `capture` job, and its bytes come back through `GET /jobs/captures/{id}` to build test fixtures.

@@ -3,7 +3,7 @@ from datetime import date, time
 import pytest
 
 from app.calendars import sifma
-from app.calendars.parsed import ParseError
+from app.calendars.parsed import Day, ParseError
 
 
 def _days(html):
@@ -91,3 +91,50 @@ def test_partial_year_is_not_covered(sifma_html):
 def test_no_us_section():
     with pytest.raises(ParseError, match="no 'U.S. Holiday Recommendations'"):
         sifma.parse(b"<html><h2>U.K. Holiday Recommendations</h2><p>Monday, April 6, 2026</p></html>")
+
+
+# --- The U.S. Holiday Archive (parse_archive)
+
+
+def test_archive_covers_2015_to_2025(sifma_archive_html):
+    p = sifma.parse_archive(sifma_archive_html)
+    assert p.years == tuple(range(2015, 2026))
+    days = {d.day: d for d in p.days}
+    assert days[date(2014, 12, 31)].status == "early_close"  # stored, but 2014 isn't covered
+    assert days[date(2024, 7, 3)] == Day(date(2024, 7, 3), "early_close", "U.S. Independence Day (early close)", time(14))
+
+
+def test_archive_early_close_formats(sifma_archive_html):
+    days = {d.day: d for d in sifma.parse_archive(sifma_archive_html).days}
+    # "Early Close Only (12:00 p.m. …): Friday, April 2, 2021 – Confirmed based on …"
+    assert (days[date(2021, 4, 2)].status, days[date(2021, 4, 2)].close_time) == ("early_close", time(12))
+    # "Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015" (no colon)
+    assert days[date(2015, 4, 3)].close_time == time(12)
+    # New Year's Day 2022 fell on a Saturday: only the Dec 31, 2021 early close.
+    assert days[date(2021, 12, 31)].close_time == time(14) and date(2022, 1, 1) not in days
+
+
+def test_archive_year_sections_overlap_cleanly(sifma_archive_html):
+    # "New Year's Day 2020/2021" ends the 2020 section and starts 2021's: listed twice, identically.
+    assert sifma_archive_html.count(b"Thursday, December 31, 2020") == 2
+    days = [d.day for d in sifma.parse_archive(sifma_archive_html).days]
+    assert days.count(date(2020, 12, 31)) == 1
+
+
+def test_archive_year_with_a_missed_line_fails(sifma_archive_html):
+    broken = sifma_archive_html.replace(b"<p>Monday, September 2, 2019</p>", b"<p>Labor Day: see notice</p>")
+    broken = broken.replace(b"<p>Monday, October 14, 2019</p>", b"")
+    broken = broken.replace(b"<p>Monday, November 11, 2019</p>", b"")
+    with pytest.raises(ParseError, match="too few full closes"):
+        sifma.parse_archive(broken)
+
+
+def test_noon_must_be_twelve(sifma_archive_html):
+    broken = sifma_archive_html.replace(b"(12:00 Noon Eastern Time)", b"(11:00 Noon Eastern Time)")
+    with pytest.raises(ParseError, match="noon"):
+        sifma.parse_archive(broken)
+
+
+def test_archive_needs_year_headings():
+    with pytest.raises(ParseError, match="no year headings"):
+        sifma.parse_archive(b"<html><h1>US Holiday Archive</h1><p>Monday, May 25, 2015</p></html>")

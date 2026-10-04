@@ -1,0 +1,287 @@
+{
+  "calendar": "NYSE",
+  "about": "NYSE equities' closed and early-close weekdays before the hours page's years (1990-2025): Rule 7.2's holidays with the exchange's weekend observance, the early-close rules, and every one-off close and early close, each cited. 1990-2010 follow NYSE's 'History of New York Stock Exchange Holidays' (third-party copy; read through a summarizer, see docs/backfill.md); later one-offs cite ICE's announcements. The same rules reproduce the hours page's 2026-2028 table exactly (tests).",
+  "first_year": 1990,
+  "last_year": 2025,
+  "observance": {
+    "saturday": "friday",
+    "sunday": "monday"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1,
+      "observance": {
+        "saturday": "none"
+      },
+      "note": "A Saturday New Year's Day closes no Friday (exchange policy since 1959)."
+    },
+    {
+      "name": "Martin Luther King, Jr. Day",
+      "month": 1,
+      "weekday": "monday",
+      "n": 3,
+      "from": 1998
+    },
+    {
+      "name": "Washington's Birthday",
+      "month": 2,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Memorial Day",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Juneteenth National Independence Day",
+      "month": 6,
+      "day": 19,
+      "from": 2022
+    },
+    {
+      "name": "Independence Day",
+      "month": 7,
+      "day": 4
+    },
+    {
+      "name": "Labor Day",
+      "month": 9,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Thanksgiving Day",
+      "month": 11,
+      "weekday": "thursday",
+      "n": 4
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Thanksgiving Day (early close)",
+      "month": 11,
+      "weekday": "thursday",
+      "n": 4,
+      "offset": 1,
+      "status": "early_close",
+      "close_time": "13:00",
+      "from": 1993
+    },
+    {
+      "name": "Independence Day (early close)",
+      "month": 7,
+      "day": 3,
+      "weekdays": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday"
+      ],
+      "status": "early_close",
+      "close_time": "13:00",
+      "from": 1995
+    },
+    {
+      "name": "Christmas Day (early close)",
+      "month": 12,
+      "day": 24,
+      "weekdays": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday"
+      ],
+      "status": "early_close",
+      "close_time": "13:00",
+      "from": 1996
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "1990-12-24",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "Christmas Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1991-12-24",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "Christmas Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1992-11-27",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "Thanksgiving Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1992-12-24",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "Christmas Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1994-02-11",
+      "status": "early_close",
+      "close_time": "14:30",
+      "holiday": "Snowstorm (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1994-04-27",
+      "status": "closed",
+      "holiday": "Funeral of President Nixon",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1996-01-08",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "Snowstorm (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+      "note": "Also opened late, at 11:00 a.m."
+    },
+    {
+      "date": "1996-07-03",
+      "status": "open",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+      "note": "The early close was July 5 instead."
+    },
+    {
+      "date": "1996-07-05",
+      "status": "early_close",
+      "close_time": "13:00",
+      "holiday": "Independence Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1997-10-27",
+      "status": "early_close",
+      "close_time": "15:30",
+      "holiday": "Circuit breaker halt (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+      "note": "Trading halted for the day at 3:30 p.m. after the second circuit breaker."
+    },
+    {
+      "date": "1997-12-26",
+      "status": "early_close",
+      "close_time": "13:00",
+      "holiday": "Christmas Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "1999-12-31",
+      "status": "early_close",
+      "close_time": "13:00",
+      "holiday": "New Year's Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2001-09-11",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2001-09-12",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2001-09-13",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2001-09-14",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2002-07-03",
+      "status": "open",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+      "note": "The early close was July 5 instead."
+    },
+    {
+      "date": "2002-07-05",
+      "status": "early_close",
+      "close_time": "13:00",
+      "holiday": "Independence Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2003-12-26",
+      "status": "early_close",
+      "close_time": "13:00",
+      "holiday": "Christmas Day (early close)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2004-06-11",
+      "status": "closed",
+      "holiday": "National Day of Mourning (President Reagan)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2007-01-02",
+      "status": "closed",
+      "holiday": "National Day of Mourning (President Ford)",
+      "citation": "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
+    },
+    {
+      "date": "2012-10-29",
+      "status": "closed",
+      "holiday": "Hurricane Sandy",
+      "citation": "https://money.cnn.com/2012/10/28/investing/hurricane-sandy-stock-exchange/index.html"
+    },
+    {
+      "date": "2012-10-30",
+      "status": "closed",
+      "holiday": "Hurricane Sandy",
+      "citation": "https://www.forbes.com/sites/ericsavitz/2012/10/29/nyse-confirms-u-s-markets-to-close-again-on-tuesday/"
+    },
+    {
+      "date": "2018-12-05",
+      "status": "closed",
+      "holiday": "National Day of Mourning (President George H.W. Bush)",
+      "citation": "https://ir.theice.com/press/news-details/2018/New-York-Stock-Exchange-to-Honor-President-George-H-W-Bush/default.aspx"
+    },
+    {
+      "date": "2025-01-09",
+      "status": "closed",
+      "holiday": "National Day of Mourning (President Carter)",
+      "citation": "https://ir.theice.com/press/news-details/2024/The-New-York-Stock-Exchange-Will-Close-Markets-on-January-9-to-Honor-the-Passing-of-Former-President-Jimmy-Carter-on-National-Day-of-Mourning/default.aspx"
+    }
+  ],
+  "citations": [
+    "https://www.sec.gov/files/rules/sro/nyse/2021/34-93183.pdf",
+    "https://www.ltadvisors.net/Info/research/closings.pdf",
+    "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+    "https://ir.theice.com/press/news-details/2018/NYSE-Group-Announces-2019-2020-and-2021-Holiday-and-Early-Closings-Calendar/default.aspx",
+    "https://ir.theice.com/press/news-details/2022/NYSE-Group-Announces-2023-2024-and-2025-Holiday-and-Early-Closings-Calendar/default.aspx"
+  ],
+  "notes": {
+    "Late openings and short halts": "Not stored: the calendar holds closed days and early closes only.",
+    "Unverified": "The history document's Aug 9, 1996 'floor closed at 3:00 pm, hurricane watch' isn't included: it came through the summarizer only and isn't confirmed elsewhere."
+  }
+}

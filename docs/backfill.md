@@ -53,6 +53,8 @@ Research done 2026-10-04, before building anything. Every source below was read 
 
 ## NYSE: rules plus a cited exceptions table, 1990 onward
 
+**Built (#20):** `rules/nyse.json` (source `NYSE-RULES`, 1990–2025). It reproduces the hours page's 2026–2028 table and ICE's 2023–2025 announcement exactly. MLK Day is confirmed from 1998. ICE's 2019–2021 announcement came through the summarizer garbled, so it isn't used as a check.
+
 - **Sources:**
   - **"History of New York Stock Exchange Holidays"** (NYSE PDF): 1885 to Jan 2011, with regular closings, special closings and early closes with times. Only third-party copies were found:
     - [through Nov 2008](https://www.ltadvisors.net/Info/research/closings.pdf)

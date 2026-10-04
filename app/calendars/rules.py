@@ -25,8 +25,15 @@ A file looks like this (every field but "calendar" is optional):
       "citations": ["https://..."]
     }
 
-- A holiday is a fixed date ("day") or the n-th weekday of a month ("weekday"
-  and "n", where -1 is the last), optionally limited to years "from"/"to".
+- A holiday is a fixed date ("month" and "day"), the n-th weekday of a month
+  ("month", "weekday" and "n", where -1 is the last) or a day relative to
+  Easter Sunday ("easter": -2 is Good Friday), optionally limited to years
+  "from"/"to". "offset" shifts it by that many days (the day after
+  Thanksgiving is the 4th Thursday of November, offset 1).
+- A holiday is a full close unless it says "status": "early_close" with a
+  "close_time". Such a rule can be limited to some days of the week
+  ("weekdays": ["monday", ...]); on any other day it doesn't apply, and it's
+  never moved.
 - Observance moves a weekend holiday: "saturday" is "none" (no weekday
   closes) or "friday"; "sunday" is "none" or "monday". A holiday can
   override either for itself. A moved day is named "<holiday> (observed)".
@@ -77,7 +84,11 @@ def parse(content: bytes) -> ParsedCalendar:
         for y in years:
             if not h.get("from", y) <= y <= h.get("to", y):
                 continue
-            day = _observed(_nominal(h, y), {**default, **h.get("observance", {})}, h)
+            nominal = _nominal(h, y) + timedelta(days=h.get("offset", 0))
+            if h.get("status", "closed") == "early_close":
+                day = _early(nominal, h)
+            else:
+                day = _observed(nominal, {**default, **h.get("observance", {})}, h)
             if day is None:
                 continue
             if day.day in days and days[day.day] != day:
@@ -110,6 +121,8 @@ def _nominal(h: dict, year: int) -> date:
     name = h.get("name")
     if not name:
         raise ParseError(f"holiday without a name: {h}")
+    if "easter" in h:
+        return easter(year) + timedelta(days=h["easter"])
     month = h.get("month")
     if not isinstance(month, int) or not 1 <= month <= 12:
         raise ParseError(f"{name}: bad month {month!r}")
@@ -124,6 +137,32 @@ def _nominal(h: dict, year: int) -> date:
         return d - timedelta(days=(d.weekday() - target) % 7)
     d = date(year, month, 1)
     return d + timedelta(days=(target - d.weekday()) % 7 + 7 * (n - 1))
+
+
+def easter(year: int) -> date:
+    """Easter Sunday (Gregorian calendar; the anonymous algorithm)."""
+    a, b, c = year % 19, year // 100, year % 100
+    d, e = b // 4, b % 4
+    g = (8 * b + 13) // 25
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 19 * l) // 433
+    month = (h + l - 7 * m + 90) // 25
+    return date(year, month, (h + l - 7 * m + 33 * month + 19) % 32)
+
+
+def _early(d: date, h: dict) -> Day | None:
+    allowed = h.get("weekdays", WEEKDAYS[:5])
+    if any(w not in WEEKDAYS[:5] for w in allowed):
+        raise ParseError(f"{h['name']}: 'weekdays' can only list Monday to Friday")
+    if WEEKDAYS[d.weekday()] not in allowed:
+        return None
+    try:
+        close = time.fromisoformat(h["close_time"])
+    except (KeyError, TypeError, ValueError):
+        raise ParseError(f"{h['name']}: an early-close rule needs 'close_time' as HH:MM") from None
+    return Day(d, "early_close", h["name"], close)
 
 
 def _observed(d: date, observance: dict, h: dict) -> Day | None:

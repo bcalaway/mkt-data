@@ -38,7 +38,13 @@ Each step is its own PR.
    - **Rules and cited exceptions (#19):** versioned JSON files in `app/calendars/rules/`, read as `repo:` sources. The capture is the file's bytes, so a rule change becomes a new capture.
      - `SIFMA-US-EXCEPTIONS`, lowest precedence and covering no years, adds Carter (Jan 9, 2025, 2 p.m. early close; SIFMA press release of Dec 30, 2024).
      - `FED-RULES` (1986–2025) generates the federal holidays (5 U.S.C. 6103) as the Reserve Banks observe them: a Saturday holiday closes no weekday, and a Sunday holiday closes the Monday after. 382 closed weekdays. Checked against the NY Fed circulars for 2003–2009 (all seven match). The same rules reproduce K.8's 2026–2030 table exactly. Juneteenth 2021 fell on a Saturday, so no weekday closed; the Board confirmed Fed services ran normally on June 18, 2021. 1986–2002 rest on the statute alone.
-   - Next: NYSE (`NYSE-RULES` + cited exceptions, 1990+). It needs Good Friday (Easter), the Saturday→Friday rule with the New Year's exception, early-close rules, and the one-off closes.
+   - **NYSE-RULES (#20, 1990–2025):** `rules/nyse.json`, below the hours page.
+     - Holidays: Rule 7.2's list, with MLK Day from 1998, Juneteenth from 2022, and Good Friday from Easter. A Saturday holiday closes the Friday before, except New Year's Day.
+     - Early closes at 1 p.m.: the day after Thanksgiving (from 1993), July 3 when it falls Monday–Thursday (from 1995), and Dec 24 when it falls Monday–Thursday (from 1996).
+     - 25 cited exceptions: the 2 p.m. closes of 1990–92, July 5 instead of July 3 in 1996 and 2002, Dec 26 in 1997 and 2003, Dec 31, 1999, the 1994/1996 snow closes, the 1997 circuit-breaker halt, and the one-off full closes (Nixon, 9/11, Reagan, Ford, Sandy, Bush, Carter).
+     - Result: 406 days. The same rules reproduce the hours page's 2026–2028 table exactly and match ICE's 2023–2025 announcement.
+     - 1990–2010 follow NYSE's own holiday history, read through a summarizer. Aug 9, 1996 (a 3 p.m. close for a hurricane watch) is left out, unconfirmed.
+   - **Step 5's agreed ranges are all in:** SIFMA-US from 1996, FED from 1986, NYSE from 1990.
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.
 7. **Monitoring.**

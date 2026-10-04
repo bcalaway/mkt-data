@@ -25,6 +25,7 @@ from app.calendars import rsc, service, text
 from app.calendars.parsed import ParseError
 from app.config import settings
 from app.models import Capture, Source, SourceCheck, SourceDay, SourceYear
+from app.rates import sources as rates
 
 router = APIRouter(prefix="/jobs")
 
@@ -98,6 +99,24 @@ def rebuild_near_raw(name: str) -> dict:
         return service.run_near_raw_rebuild(s, key)
 
 
+@router.post("/rates/{source}/capture", dependencies=[Depends(require_token)])
+def capture_rates(source: str, period: str | None = None) -> dict:
+    """Fetch one month (default: the current one, in New York) of a CMT source; keep it raw if new.
+
+    `source` is UST-PAR or H15-TCM (app/rates/sources.py), `period` YYYY-MM.
+    """
+    key = source.upper()
+    if key not in rates.SOURCES:
+        raise HTTPException(404, f"unknown rate source {source!r}; known: {sorted(rates.SOURCES)}")
+    try:
+        with db.session() as s:
+            return rates.run_capture(s, key, period or rates.current_period())
+    except rates.BadPeriod as e:
+        raise HTTPException(400, str(e)) from None
+    except service.SourceFetchError as e:
+        raise HTTPException(502, f"fetch failed: {e}") from None
+
+
 # Raw captures, read-only: for turning a real capture into a test fixture,
 # or checking what a parser saw. home-mcp's mkt_data_captures and
 # mkt_data_capture_text tools read these with the read-only token.
@@ -115,7 +134,7 @@ def list_captures(
         names = service.CALENDARS[_calendar(calendar)].source_names
     q = (
         select(Capture.id, Source.name, Capture.fetched_at, Capture.http_status,
-               Capture.content_type, Capture.sha256, Capture.size_bytes)
+               Capture.content_type, Capture.sha256, Capture.size_bytes, Capture.period)
         .join(Source, Source.id == Capture.source_id)
         .order_by(Capture.id.desc())
         .limit(limit)
@@ -130,7 +149,7 @@ def list_captures(
             {
                 "id": r.id, "source": r.name, "fetched_at": r.fetched_at.isoformat(),
                 "http_status": r.http_status, "content_type": r.content_type,
-                "sha256": r.sha256, "size_bytes": r.size_bytes, "applied": r.id in used,
+                "sha256": r.sha256, "size_bytes": r.size_bytes, "period": r.period, "applied": r.id in used,
                 # False for a source with no parser yet: kept raw, never applied.
                 "parsed": _has_parser(r.name),
             }
@@ -157,7 +176,7 @@ def list_checks(
         names = service.CALENDARS[_calendar(calendar)].source_names
     q = (
         select(SourceCheck.id, Source.name, SourceCheck.checked_at, SourceCheck.outcome, SourceCheck.capture_id,
-               SourceCheck.detail, SourceCheck.parse_outcome, SourceCheck.parse_detail)
+               SourceCheck.detail, SourceCheck.parse_outcome, SourceCheck.parse_detail, SourceCheck.period)
         .join(Source, Source.id == SourceCheck.source_id)
         .order_by(SourceCheck.id.desc())
         .limit(limit)
@@ -171,7 +190,7 @@ def list_checks(
             {
                 "id": r.id, "source": r.name, "checked_at": r.checked_at.isoformat(), "outcome": r.outcome,
                 "capture_id": r.capture_id, "detail": r.detail,
-                "parse_outcome": r.parse_outcome, "parse_detail": r.parse_detail,
+                "parse_outcome": r.parse_outcome, "parse_detail": r.parse_detail, "period": r.period,
             }
             for r in rows
         ]
@@ -179,7 +198,7 @@ def list_checks(
 
 
 def _has_parser(source: str) -> bool:
-    spec = service.SOURCES.get(source)
+    spec = service.SOURCES.get(source) or (rates.SOURCES[source].spec if source in rates.SOURCES else None)
     return spec is not None and spec.parse is not None
 
 

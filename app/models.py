@@ -62,7 +62,10 @@ class Capture(Base):
     """One distinct version of a source's content. Append-only, kept forever."""
 
     __tablename__ = "capture"
-    __table_args__ = (Index("ix_capture_source_fetched", "source_id", "fetched_at"),)
+    __table_args__ = (
+        Index("ix_capture_source_fetched", "source_id", "fetched_at"),
+        Index("ix_capture_source_period", "source_id", "period", "id"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source_id: Mapped[int] = mapped_column(Integer, ForeignKey("source.id"))
@@ -72,6 +75,10 @@ class Capture(Base):
     sha256: Mapped[str] = mapped_column(String(64))
     size_bytes: Mapped[int] = mapped_column(Integer)
     body: Mapped[bytes] = mapped_column(LargeBinary)
+    # For sources fetched a period at a time (Treasury's par curve by month,
+    # phase 2 Part B): "2026-10". Dedupe and revisions are per source and
+    # period. Empty for sources fetched whole (the calendar pages).
+    period: Mapped[str | None] = mapped_column(String(10))
 
 
 class SourceCheck(Base):
@@ -96,6 +103,7 @@ class SourceCheck(Base):
     detail: Mapped[str | None] = mapped_column(Text)
     parse_outcome: Mapped[str | None] = mapped_column(String(8))
     parse_detail: Mapped[str | None] = mapped_column(Text)
+    period: Mapped[str | None] = mapped_column(String(10))  # the period fetched, for period sources
 
 
 class SourceYear(Base):

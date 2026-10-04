@@ -202,41 +202,51 @@ def _read_repo(url: str) -> tuple[int, str, bytes]:
         raise SourceFetchError(f"{url}: {e}") from None
 
 
-def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool, SourceCheck]:
-    """Fetch the source; store the content if it's new. Returns (latest capture, is_new, the check)."""
+def capture(
+    s: Session, spec: SourceSpec, fetcher=None, *, url: str | None = None, period: str | None = None
+) -> tuple[Capture, bool, SourceCheck]:
+    """Fetch the source; store the content if it's new. Returns (latest capture, is_new, the check).
+
+    A source fetched a period at a time (Treasury's par curve by month) passes
+    that period's `url` and the `period` ("2026-10"): "new" then means new for
+    that source and period.
+    """
     src = _source(s, spec)
+    url = url or src.url
     try:
-        if src.url.startswith(rules.REPO_PREFIX):
-            status, ctype, body = _read_repo(src.url)
+        if url.startswith(rules.REPO_PREFIX):
+            status, ctype, body = _read_repo(url)
         else:
-            status, ctype, body = (fetcher or fetch)(src.url)
+            status, ctype, body = (fetcher or fetch)(url)
     except SourceFetchError as e:
-        s.add(SourceCheck(source_id=src.id, outcome="error", detail=str(e)[:2000]))
+        s.add(SourceCheck(source_id=src.id, outcome="error", detail=str(e)[:2000], period=period))
         s.commit()
         raise
     sha = hashlib.sha256(body).hexdigest()
+    same_period = Capture.period.is_(None) if period is None else Capture.period == period
     last = s.scalar(
-        select(Capture).where(Capture.source_id == src.id).order_by(Capture.id.desc()).limit(1)
+        select(Capture).where(Capture.source_id == src.id, same_period).order_by(Capture.id.desc()).limit(1)
     )
     if last is not None and last.sha256 == sha:
-        check = SourceCheck(source_id=src.id, outcome="unchanged", capture_id=last.id)
+        check = SourceCheck(source_id=src.id, outcome="unchanged", capture_id=last.id, period=period)
         s.add(check)
         s.flush()
         return last, False, check
     if last is not None and spec.dedupe_on_text and _visible_text(last.body) == _visible_text(body):
         check = SourceCheck(
-            source_id=src.id, outcome="unchanged", capture_id=last.id,
+            source_id=src.id, outcome="unchanged", capture_id=last.id, period=period,
             detail=f"markup changed, visible text identical (sha256 {sha})",
         )
         s.add(check)
         s.flush()
         return last, False, check
     cap = Capture(
-        source_id=src.id, http_status=status, content_type=ctype, sha256=sha, size_bytes=len(body), body=body
+        source_id=src.id, http_status=status, content_type=ctype, sha256=sha, size_bytes=len(body), body=body,
+        period=period,
     )
     s.add(cap)
     s.flush()
-    check = SourceCheck(source_id=src.id, outcome="new", capture_id=cap.id)
+    check = SourceCheck(source_id=src.id, outcome="new", capture_id=cap.id, period=period)
     s.add(check)
     s.flush()
     return cap, True, check

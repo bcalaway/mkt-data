@@ -17,12 +17,14 @@ covered by any published calendar year.
 import hmac
 from datetime import date
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
+from sqlalchemy import select
 
 from app import db
 from app.calendars import service
 from app.calendars.parsed import ParseError
 from app.config import settings
+from app.models import Capture, Source
 
 router = APIRouter(prefix="/jobs")
 
@@ -77,3 +79,63 @@ def business_day(name: str, on: date) -> dict:
             return service.business_day(s, key, on)
     except service.NotCovered as e:
         raise HTTPException(409, str(e)) from None
+
+
+# Raw captures, read-only: for turning a real capture into a test fixture,
+# or checking what a parser saw. Same token as the jobs above.
+
+
+@router.get("/captures", dependencies=[Depends(require_token)])
+def list_captures(
+    source: str | None = None, calendar: str | None = None, limit: int = Query(20, ge=1, le=200)
+) -> dict:
+    """Newest captures first, metadata only. Filter by source or calendar name."""
+    if source and calendar:
+        raise HTTPException(400, "give source or calendar, not both")
+    if calendar:
+        source = service.CALENDARS[_calendar(calendar)].source_name
+    q = (
+        select(Capture.id, Source.name, Capture.fetched_at, Capture.http_status,
+               Capture.content_type, Capture.sha256, Capture.size_bytes)
+        .join(Source, Source.id == Capture.source_id)
+        .order_by(Capture.id.desc())
+        .limit(limit)
+    )
+    if source:
+        q = q.where(Source.name == source.upper())
+    with db.session() as s:
+        rows = s.execute(q).all()
+    return {
+        "captures": [
+            {
+                "id": r.id, "source": r.name, "fetched_at": r.fetched_at.isoformat(),
+                "http_status": r.http_status, "content_type": r.content_type,
+                "sha256": r.sha256, "size_bytes": r.size_bytes,
+            }
+            for r in rows
+        ]
+    }
+
+
+@router.get("/captures/{capture_id}", dependencies=[Depends(require_token)])
+def get_capture(capture_id: int) -> Response:
+    """One capture's body, byte for byte as fetched, as a download."""
+    with db.session() as s:
+        row = s.execute(
+            select(Capture, Source.name).join(Source, Source.id == Capture.source_id).where(Capture.id == capture_id)
+        ).first()
+        if row is None:
+            raise HTTPException(404, f"no capture {capture_id}")
+        cap, source = row
+        body, ctype, sha = cap.body, cap.content_type, cap.sha256
+    return Response(
+        content=body,
+        media_type=ctype or "application/octet-stream",
+        headers={
+            # A download, never rendered: it's someone else's page.
+            "Content-Disposition": f'attachment; filename="{source}-{capture_id}"',
+            "X-Content-Type-Options": "nosniff",
+            "X-Capture-Source": source,
+            "X-Capture-Sha256": sha,
+        },
+    )

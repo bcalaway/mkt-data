@@ -57,3 +57,12 @@ def test_parse_failure_is_a_422(token, migrated_db, fed_html, monkeypatch):
     monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", broken))
     r = client.post("/jobs/calendars/FED/capture", headers=_auth())
     assert r.status_code == 422 and "raw capture kept" in r.json()["detail"]
+
+
+def test_sifma_capture_via_the_api(token, migrated_db, sifma_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", sifma_html))
+    r = client.post("/jobs/calendars/sifma-us/capture", headers=_auth())
+    assert r.status_code == 200, r.text
+    assert r.json()["calendar"] == "SIFMA-US"
+    r = client.get("/jobs/calendars/SIFMA-US/business-day", params={"on": "2026-12-24"}, headers=_auth())
+    assert r.json()["close_time"] == "14:00" and r.json()["business_day"] is True

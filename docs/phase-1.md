@@ -19,7 +19,7 @@ Each step is its own PR.
    - `source` and `capture` (raw: what was fetched, when, from where, a content hash and the payload, kept forever);
    - `calendar` (integer ID plus a short name such as `SIFMA-US`, `FED`, `NYSE`);
    - `calendar_day` (calendar, date, status `closed` / `early_close`, close time when early, and the capture it came from).
-4. **Sourcing, one PR per calendar.** FED is done (K.8 page, weekly DAG `mkt_data__fed_calendar`; first run 2026-10-04: 5 years, 50 closed weekdays); SIFMA-US and NYSE come next.
+4. **Sourcing, one PR per calendar.** FED is done (K.8 page, weekly DAG `mkt_data__fed_calendar`; first run 2026-10-04: 5 years, 50 closed weekdays). SIFMA-US: SIFMA's U.S. Holiday Recommendations page, weekly DAG `mkt_data__sifma_calendar`. Full closes are `closed`; recommended early closes are `early_close` with the Eastern close time (Good Friday 2026 is a 12:00 p.m. early close, not a full close). The page only lists published years (2026 as of 2026-10-04; the 2027 tab was empty), and a year counts as covered only with a full set of closes. Its test fixture has the live page's text in stand-in markup (the build sandbox couldn't reach sifma.org), so the first real capture checks the parser; on a 422 the raw page is kept and a fix is a `reparse`. NYSE comes next.
    - Fetch the publisher's page or file, store it raw, then parse it into `calendar_day`.
    - Re-fetching unchanged content records the check but adds no new capture (dedupe by hash).
    - Changes to dates already published are kept as history, not overwritten.
@@ -39,6 +39,7 @@ Each step is its own PR.
 
 These are settled in the step that needs them.
 
+- **SIFMA backfill:** SIFMA keeps a U.S. holiday archive (linked from the schedule page as "View Archive") for earlier years.
 - **Exact sources for each calendar.** For each one, check its official page's format and how many years back it goes before writing the parser.
 - **NYSE early closes:** half-day close times differ by venue and asset class. Store the equities close time, and add others when a dataset needs them.
 - **The Fed's holiday list vs FedWire / Fedwire Securities operating days:** they normally match; confirm, then model them as one calendar or two. For now FED is the Reserve Banks' calendar: when a holiday falls on a Saturday, the Banks stay open the Friday before, and only the Board of Governors closes.

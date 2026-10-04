@@ -104,3 +104,62 @@ def test_captures_need_the_token_and_exist(token, migrated_db):
     assert client.get("/jobs/captures", params={"calendar": "nope"}, headers=_auth()).status_code == 404
     r = client.get("/jobs/captures", params={"calendar": "FED", "source": "FED-K8"}, headers=_auth())
     assert r.status_code == 400
+
+
+READ = "read-only-token"
+
+
+@pytest.fixture
+def both_tokens(monkeypatch):
+    monkeypatch.setattr(jobs, "settings", Settings(airflow_token=TOKEN, read_token=READ))
+
+
+def test_read_token_reads_but_cannot_run_jobs(both_tokens, migrated_db, nyse_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", nyse_html))
+    assert client.post("/jobs/calendars/NYSE/capture", headers=_auth(READ)).status_code == 401
+    assert client.post("/jobs/calendars/NYSE/reparse", headers=_auth(READ)).status_code == 401
+    assert client.post("/jobs/calendars/NYSE/capture", headers=_auth()).status_code == 200
+    assert client.get("/jobs/captures", headers=_auth(READ)).status_code == 200
+    assert client.get("/jobs/captures/1", headers=_auth(READ)).status_code == 200
+    assert client.get("/jobs/captures/1/text", headers=_auth(READ)).status_code == 200
+    r = client.get("/jobs/calendars/NYSE/business-day", params={"on": "2026-11-26"}, headers=_auth(READ))
+    assert r.json()["business_day"] is False
+    assert client.get("/jobs/captures", headers=_auth("nope")).status_code == 401
+
+
+def test_read_token_alone(monkeypatch, migrated_db):
+    monkeypatch.setattr(jobs, "settings", Settings(read_token=READ))
+    assert client.get("/jobs/captures", headers=_auth(READ)).status_code == 200
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth(READ)).status_code == 503
+
+
+def test_applied_flags_a_capture_that_failed_to_parse(token, migrated_db, fed_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", fed_html))
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 200
+    broken = fed_html.replace(b"<td>July 4**</td>", b"<td>July 4</td>")
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", broken))
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 422
+    caps = client.get("/jobs/captures", params={"calendar": "FED"}, headers=_auth()).json()["captures"]
+    assert [c["applied"] for c in caps] == [False, True]  # newest (broken) first
+
+
+def test_capture_text(token, migrated_db, nyse_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", nyse_html))
+    client.post("/jobs/calendars/NYSE/capture", headers=_auth())
+    r = client.get("/jobs/captures/1/text", params={"contains": "close early"}, headers=_auth()).json()
+    assert r["source"] == "NYSE-HOURS" and r["matches"] == 3 and not r["truncated"]
+    assert all("close early" in ln["text"] for ln in r["lines"])
+    assert not any("promo" in ln["text"] or "November 28, 2025" in ln["text"] for ln in r["lines"])  # no scripts
+    ctx = client.get(
+        "/jobs/captures/1/text", params={"contains": "December 24, 2026", "context": 1}, headers=_auth()
+    ).json()
+    assert ctx["matches"] == 1 and len(ctx["lines"]) == 3
+    whole = client.get("/jobs/captures/1/text", params={"limit": 5}, headers=_auth()).json()
+    assert whole["matches"] is None and whole["truncated"] and [ln["n"] for ln in whole["lines"]] == [1, 2, 3, 4, 5]
+
+
+def test_capture_text_is_html_only(token, migrated_db, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "application/pdf", b"%PDF-1.7 ..."))
+    # Not a calendar page: the parse fails (422), the capture stays.
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 422
+    assert client.get("/jobs/captures/1/text", headers=_auth()).status_code == 415

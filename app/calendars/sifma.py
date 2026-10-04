@@ -26,9 +26,9 @@ until SIFMA posts it. Close times are Eastern (the calendar's timezone).
 
 import re
 from datetime import date, time
-from html.parser import HTMLParser
 
 from app.calendars.parsed import Day, ParsedCalendar, ParseError
+from app.calendars.text import lines as _lines
 
 URL = "https://www.sifma.org/resources/general/holiday-schedule/"
 
@@ -64,62 +64,6 @@ MAX_NAME_LEN = 60
 # SIFMA recommends 10-12 full closes a year (11 in 2026, with Good Friday an
 # early close). Fewer than this means the year is missing or partial.
 MIN_FULL_CLOSES = 9
-
-_BLOCK = {
-    "address", "article", "aside", "blockquote", "br", "button", "dd", "div", "dl", "dt",
-    "footer", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr", "li", "main", "nav",
-    "ol", "p", "section", "table", "td", "th", "tr", "ul",
-}
-_SKIP = {"script", "style", "noscript", "template", "svg"}
-
-
-class _Lines(HTMLParser):
-    """The page's visible text, one line per block element."""
-
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.lines: list[str] = []
-        self._buf: list[str] = []
-        self._skip = 0
-
-    def _flush(self):
-        text = " ".join("".join(self._buf).split())
-        if text:
-            self.lines.append(text)
-        self._buf = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag in _SKIP:
-            self._skip += 1
-        elif tag in _BLOCK:
-            self._flush()
-
-    def handle_startendtag(self, tag, attrs):
-        if tag in _BLOCK:
-            self._flush()
-
-    def handle_endtag(self, tag):
-        if tag in _SKIP:
-            self._skip = max(0, self._skip - 1)
-        elif tag in _BLOCK:
-            self._flush()
-
-    def handle_data(self, data):
-        if not self._skip:
-            self._buf.append(data)
-
-    def close(self):
-        super().close()
-        self._flush()
-
-
-def _lines(html: str) -> list[str]:
-    p = _Lines()
-    p.feed(html)
-    p.close()
-    # Undo curly quotes so names compare cleanly ("New Year’s Day").
-    return [ln.replace("’", "'").replace(" ", " ") for ln in p.lines]
-
 
 def _us_section(lines: list[str]) -> list[str]:
     for i, ln in enumerate(lines):

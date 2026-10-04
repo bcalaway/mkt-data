@@ -176,3 +176,41 @@ def test_capture_text_is_html_only(token, migrated_db, monkeypatch):
     # Not a calendar page: the parse fails (422), the capture stays.
     assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 422
     assert client.get("/jobs/captures/1/text", headers=_auth()).status_code == 415
+
+
+def test_checks_list_fetches_and_parse_outcomes(both_tokens, migrated_db, fed_html, monkeypatch):
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", fed_html))
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 200
+    broken = fed_html.replace(b"<td>July 4**</td>", b"<td>July 4</td>")
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", broken))
+    assert client.post("/jobs/calendars/FED/capture", headers=_auth()).status_code == 422
+    r = client.get("/jobs/checks", params={"source": "fed-k8"}, headers=_auth(READ))
+    assert r.status_code == 200
+    checks = r.json()["checks"]
+    assert [(c["outcome"], c["parse_outcome"]) for c in checks] == [("new", "error"), ("new", "ok")]
+    assert "Independence Day" in checks[0]["parse_detail"]
+    both = client.get("/jobs/checks", params={"calendar": "FED"}, headers=_auth()).json()["checks"]
+    assert {c["source"] for c in both} == {"FED-K8", "FED-RULES"}
+    assert client.get("/jobs/checks", params={"calendar": "FED", "source": "FED-K8"}, headers=_auth()).status_code == 400
+    assert client.get("/jobs/checks").status_code == 401
+
+
+def test_capture_text_embedded_view(both_tokens, migrated_db, sifma_page_capture3, sifma_archive_html, nyse_html, monkeypatch):
+    from app.calendars import sifma
+
+    pages = {sifma.URL: sifma_page_capture3, sifma.ARCHIVE_URL: sifma_archive_html,
+             sifma.HISTORY_URL: b"%PDF-1.4 not parsed here"}
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", pages[url]))
+    client.post("/jobs/calendars/SIFMA-US/capture", headers=_auth())
+    cap = client.get("/jobs/captures", params={"source": "SIFMA-US-HOLIDAYS"}, headers=_auth()).json()["captures"][0]
+    visible = client.get(f"/jobs/captures/{cap['id']}/text", params={"contains": "June 18, 2027"}, headers=_auth()).json()
+    embedded = client.get(
+        f"/jobs/captures/{cap['id']}/text", params={"contains": "June 18, 2027", "embedded": "true"}, headers=_auth(READ)
+    ).json()
+    assert visible["matches"] == 0 and visible["view"] == "visible"
+    assert embedded["matches"] == 2 and embedded["view"] == "embedded"  # U.S. and Japan sections
+    # A page without embedded data says so.
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/html", nyse_html))
+    client.post("/jobs/calendars/NYSE/capture", headers=_auth())
+    nyse = client.get("/jobs/captures", params={"source": "NYSE-HOURS"}, headers=_auth()).json()["captures"][0]
+    assert client.get(f"/jobs/captures/{nyse['id']}/text", params={"embedded": "true"}, headers=_auth()).status_code == 404

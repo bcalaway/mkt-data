@@ -9,6 +9,12 @@ name: CD
 on:
   push:
     branches: [main]
+    # Docs-only merges change nothing that runs, so they don't build an image
+    # or wait for a production approval (Bill, 2026-10-04). CI still runs on
+    # every PR: its check is required.
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
 
 permissions:
   id-token: write

@@ -51,7 +51,7 @@ def test_footnotes_inside_the_table_work_too(nyse_html):
     # Every footnote as a one-cell row at the end of the holidays table. On the
     # real page they're the first four disclaimer paragraphs after it.
     table_end = nyse_html.index(b"</tbody>")
-    notes = list(re.finditer(rb'<p data-type="disclaimer"[^>]*>(.*?)</p>', nyse_html[table_end:], re.S))[:4]
+    notes = list(re.finditer(rb'<p data-type="disclaimer"[^>]*>(.*?)</p>', nyse_html[table_end:], re.DOTALL))[:4]
     assert [m[1][:5].count(b"*") for m in notes] == [1, 2, 3, 4]
     rows = b"".join(b"<tr><td colspan=4>" + m[1] + b"</td></tr>" for m in notes)
     rest = nyse_html[table_end:]

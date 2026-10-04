@@ -127,9 +127,8 @@ def test_sifma_archive_backfills_past_years(migrated_db, sifma_fetch):
 def test_the_page_outranks_the_archive(migrated_db, sifma_fetch, sifma_html, sifma_archive_html):
     # The archive also lists Dec 31, 2025 (as a full close, say): the page's early close stands.
     clash = sifma_archive_html.replace(
-        b"<h3>Christmas Day</h3>\n        <p>Thursday, December 25, 2025</p>",
-        b"<h3>New Year\xe2\x80\x99s Eve</h3>\n        <p>Wednesday, December 31, 2025</p>\n      </div>"
-        b"\n      <div class=\"holiday-item\">\n        <h3>Christmas Day</h3>\n        <p>Thursday, December 25, 2025</p>",
+        b"<p>Early Close (2:00 p.m. Eastern Time): Wednesday, December 31, 2025</p>",
+        b"<p>Wednesday, December 31, 2025</p>",
     )
     assert clash != sifma_archive_html
     from app.calendars import sifma

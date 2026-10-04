@@ -13,7 +13,11 @@ Research done 2026-10-04, before building anything. Every source below was read 
 - **The HTML archive** is close to what `sifma.py` already reads. It also needs to handle:
   - "Noon" as well as "12:00 p.m.", and a missing colon;
   - "Early Close Only (…): <date> – <note>";
-  - a heading with no date (Presidents Day 2015).
+  - a heading with no date (Presidents Day 2015 and 2016, Veterans Day 2023) or "None" (Veterans Day 2017);
+  - "Early Market Close: (…):" (Dec 30, 2016);
+  - the holiday's date line plus an early close on that same date (Good Friday 2015).
+
+  Done in #12, from the real capture. SIFMA's page gives no date for Presidents Day 2015 or 2016, though both were full closes: the PDF should fill them. The page links the PDF as "US Holiday Archives 1996-2017".
 - **The PDF** needs a parser that reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
 - **Unscheduled recommendations are missing from both.** They need a cited exceptions list:
   - Hurricane Sandy: Oct 29, 2012 early close at noon, Oct 30 full close;
@@ -21,7 +25,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
   - Jimmy Carter: Jan 9, 2025, early close at 2 p.m.
 
   SIFMA's press releases and its Unscheduled Close Market Matrix are the sources. What SIFMA recommended on 9/11, and on the Reagan (2004) and Ford (2007) mourning days, isn't confirmed.
-- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. The sources disagree on 2015, which needs a check.
+- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is settled by the archive page itself: a noon early close (it lists the date and then the noon early close under Good Friday).
 - **Reliability:** 2005 onward is solid. 1996–2004 has less regular times, so review it by hand.
 
 ## FED: rules, confirmed against NY Fed circulars

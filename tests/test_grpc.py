@@ -4,7 +4,7 @@ import grpc
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 
 from app.grpc_gen import example_service_pb2, example_service_pb2_grpc
-from app.grpc_server import CALENDAR_SOURCES, EXAMPLE_SERVICE, start_grpc_server
+from app.grpc_server import CALENDAR_SOURCES, EXAMPLE_SERVICE, OBSERVATIONS, start_grpc_server
 
 
 async def _call(fn):
@@ -23,10 +23,11 @@ def test_health_reports_serving():
         overall = await stub.Check(health_pb2.HealthCheckRequest(service=""))
         example = await stub.Check(health_pb2.HealthCheckRequest(service=EXAMPLE_SERVICE))
         sources = await stub.Check(health_pb2.HealthCheckRequest(service=CALENDAR_SOURCES))
-        return overall.status, example.status, sources.status
+        obs = await stub.Check(health_pb2.HealthCheckRequest(service=OBSERVATIONS))
+        return overall.status, example.status, sources.status, obs.status
 
     serving = health_pb2.HealthCheckResponse.SERVING
-    assert asyncio.run(_call(check)) == (serving, serving, serving)
+    assert asyncio.run(_call(check)) == (serving,) * 4
 
 
 def test_ping():
@@ -59,4 +60,33 @@ def test_calendar_sources(migrated_db, fed_html):
     listed, rows, missing = asyncio.run(_call(read))
     assert listed.sources[0].name == "FED-K8" and listed.sources[0].latest_capture_id > 0
     assert rows.source.calendar == "FED" and len(rows.years) == 5 and len(rows.days) == 50
+    assert missing == grpc.StatusCode.NOT_FOUND
+
+
+def test_observations(migrated_db):
+    from app import db
+    from app.grpc_gen import observations_pb2, observations_pb2_grpc
+    from app.rates import sources as rates
+    from tests.conftest import FIXTURES
+
+    body = (FIXTURES / "ust_par_2026_10_capture32.xml").read_bytes()
+    with db.session() as s:
+        rates.run_capture(s, "UST-PAR", "2026-10", lambda url: (200, "text/xml", body))
+
+    async def read(channel):
+        stub = observations_pb2_grpc.ObservationsStub(channel)
+        listed = await stub.ListSources(observations_pb2.ListObservationSourcesRequest())
+        periods = await stub.ListPeriods(observations_pb2.ListPeriodsRequest(source="ust-par"))
+        values = await stub.GetPeriod(observations_pb2.GetPeriodRequest(source="UST-PAR", period="2026-10"))
+        try:
+            await stub.ListPeriods(observations_pb2.ListPeriodsRequest(source="NOPE"))
+            missing = None
+        except grpc.aio.AioRpcError as e:
+            missing = e.code()
+        return listed, periods, values, missing
+
+    listed, periods, values, missing = asyncio.run(_call(read))
+    assert {x.name for x in listed.sources} == {"UST-PAR", "H15-TCM"}
+    assert [(p.period, p.values) for p in periods.periods] == [("2026-10", 28)]
+    assert len(values.values) == 28 and values.values[0].unit == "percent"
     assert missing == grpc.StatusCode.NOT_FOUND

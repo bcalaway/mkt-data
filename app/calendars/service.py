@@ -101,6 +101,9 @@ CALENDARS: dict[str, CalendarSpec] = {
             *(
                 SourceSpec(
                     f"FED-NYFED-{year}", url, f"NY Fed holiday-schedule circular for {year}", nyfed.parse,
+                    # Like K.8, the NY Fed's pages change markup on every fetch while
+                    # the text stays the same (captures #15 and #23, 2026-10-04).
+                    dedupe_on_text=True,
                 )
                 for year, url in fed.NYFED_CIRCULARS.items()
             ),

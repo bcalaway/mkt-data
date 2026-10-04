@@ -480,3 +480,25 @@ def test_history_documents_outrank_the_rules_and_report_disagreements(migrated_d
         )
         assert src("FED", 2005) == "FED-NYFED-2005" and src("FED", 2002) == "FED-RULES"
         assert src("NYSE", 2005) == "NYSE-RULES"
+
+
+@pytest.mark.history_documents
+def test_nyfed_circular_markup_changes_are_not_new_captures(migrated_db, fed_html):
+    """The NY Fed's pages change markup on every fetch (captures #15 and #23, 2026-10-04)."""
+    from app.calendars import fed
+    from tests.test_nyfed_parser import CAPTURES
+
+    pages = {fed.URL: fed_html}
+    for year, url in fed.NYFED_CIRCULARS.items():
+        pages[url] = (FIXTURES / f"nyfed_circular_{year}_capture{CAPTURES[year][0]}.html").read_bytes()
+    with db.session() as s:
+        service.run_capture(s, "FED", lambda url: (200, "text/html", pages[url]))
+    url09 = fed.NYFED_CIRCULARS[2009]
+    pages[url09] = pages[url09].replace(b"<head>", b'<head><script>var nonce = "a1b2c3";</script>', 1)
+    with db.session() as s:
+        out = {x["source"]: x for x in service.run_capture(s, "FED", lambda url: (200, "text/html", pages[url]))["sources"]}
+    assert out["FED-NYFED-2009"]["new_capture"] is False
+    pages[url09] = pages[url09].replace(b"Circular No. 11980", b"Circular No. 11981")
+    with db.session() as s:
+        out = {x["source"]: x for x in service.run_capture(s, "FED", lambda url: (200, "text/html", pages[url]))["sources"]}
+    assert out["FED-NYFED-2009"]["new_capture"] is True  # a text change is still a new capture

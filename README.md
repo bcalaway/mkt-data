@@ -45,7 +45,15 @@ Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitop
 - `GET /jobs/captures/{id}` returns one capture's body byte for byte, as a download.
 - `GET /jobs/captures/{id}/text?contains=…&context=…&limit=…` returns an HTML capture's visible text, one numbered line per block element, optionally only the lines containing a phrase. It's what the SIFMA-style parsers see. Use it to turn a real capture into a test fixture or see exactly what a parser saw.
 
-mkt-data is internal only, so to save a capture to a file, run this on the hub (`ssh ec2-user@10.0.3.1`). The token is read inside the container and never appears on the command line:
+**To get a capture's exact bytes into the repo** (for a fixture), run the `capture-export.yml` workflow from `main` with its id:
+
+```
+gh workflow run capture-export.yml -f capture_id=5
+```
+
+The workflow has the hub copy the capture out (the platform's `mkt-data-capture-export` document) and commits it to an orphan branch `capture/<id>`. Fetch it with `git fetch origin capture/5` and take `captures/<SOURCE>-<id>.<ext>`. No hub session or token is involved; see "Raw captures for Claude" in nyc_pa_aws_gitops's `docs/app-platform.md`. Delete the branch once the fixture is merged.
+
+By hand, mkt-data is internal only, so to save a capture to a file, run this on the hub (`ssh ec2-user@10.0.3.1`). The token is read inside the container and never appears on the command line:
 
 ```
 docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures?limit=10",headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())'

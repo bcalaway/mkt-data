@@ -55,7 +55,7 @@ Each step is its own PR.
      - SIFMA's rules reproduce SIFMA's published full closes for 1996–2026, except the two one-off closes (Sandy, Bush) and the jobs-report Good Fridays that became early closes. A projected Good Friday is the date most likely to change.
      - Juneteenth on a Saturday (first in 2027) is projected to the Friday before, until SIFMA's 2027 tab is captured.
      - Step 6's "next year published" check must count published sources only, so a projection can't hide a missing year.
-   - Possible follow-ups: capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests). Also, K.8's page bytes changed between two fetches with an identical parse; check whether every run will store a new copy.
+   - Possible follow-ups: capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests). K.8's markup changes on every fetch while its text stays the same, so it compares visible text instead of bytes (`dedupe_on_text`, #23): a markup-only change is recorded as an unchanged check, not a new capture. It's on for K.8 only. SIFMA's and NYSE's pages have stayed byte-identical, and SIFMA's 2027 dates may sit in blocks the text view skips.
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.
 7. **Monitoring.**

@@ -13,7 +13,7 @@ The flow for every calendar (docs/phase-1.md, step 4):
    stops listing are left alone.
 
 A calendar can have several sources, highest precedence first (SIFMA-US:
-its current page, then its archive, then its historical PDF). Each is fetched
+its current page, then its archive, then its 1996-2019 PDF). Each is fetched
 and applied on its own; a source never overrides a date a higher one holds,
 and only closes off rows it wrote itself (`apply`). One source failing
 doesn't stop the others.
@@ -32,7 +32,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, nyse, sifma
+from app.calendars import fed, nyse, sifma, sifma_history
 from app.calendars.parsed import Day, ParsedCalendar, ParseError, diff
 from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, SourceCheck
 
@@ -93,7 +93,7 @@ CALENDARS: dict[str, CalendarSpec] = {
             ),
             SourceSpec(
                 "SIFMA-US-HISTORY", sifma.HISTORY_URL,
-                "SIFMA, historical U.S. holiday recommendations PDF (1996 onward)", None,
+                "SIFMA, historical U.S. holiday recommendations PDF (1996-2019)", sifma_history.parse,
             ),
         ),
     ),

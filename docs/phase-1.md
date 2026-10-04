@@ -32,7 +32,10 @@ Each step is its own PR.
      - the "US Holiday Archives 1996-2017" PDF link ends the years, so the footer is never read.
 
      The test fixture is now capture #4's exact visible text (all 389 lines, in simplified markup). Parsed: 2015–2025 covered, 184 days. **Gap on SIFMA's own page:** Presidents Day 2015 (Feb 16) and 2016 (Feb 15) have no date, so 2015 has 9 full closes, exactly the minimum; the PDF should fill both.
-   - Next for SIFMA-US: the 1996–2019 PDF, then the unscheduled closes (Sandy 2012, Bush 2018, Carter 2025) as a cited exceptions list. **PDF, part 1 (#15):** source `SIFMA-US-HISTORY`, third in SIFMA-US's precedence, with no parser yet: capture jobs fetch and keep the PDF raw and apply nothing. Part 2, once the hub has a capture: pull its bytes with the README one-liner, then build the cell-position table parser and its fixture against them, and check the result by hand.
+   - **SIFMA-US 1996–2019 PDF:** source `SIFMA-US-HISTORY`, third in precedence. It was captured raw first (#15, capture #5, 2026-10-04), then parsed by `app/calendars/sifma_history.py` (#17), which reads words by position with `pdfplumber`. Result: 1996–2019 covered, 473 days.
+     - It already holds Sandy (2012) and the Bush mourning day (2018). Two typos (Dec 30, 2016 printed with the wrong year or day) are corrected in `CORRECTIONS`.
+     - Against the archive (2015–2019), the archive wins on Good Friday 2015 (reported as `held_by_higher_source`). The PDF fills dates the archive leaves out: Presidents Day 2015 and 2016, Jul 2, 2015 and Dec 5, 2018. **Open question:** it also adds Apr 2, 2015 (a 2 p.m. early close that the archive's revised noon recommendation may have replaced).
+   - Next for SIFMA-US: the one unscheduled close neither document has, Carter (Jan 9, 2025), as a cited exception.
    - Then FED (`FED-RULES`, 1986+, checked against NY Fed circulars 2003+), then NYSE (`NYSE-RULES` + cited exceptions, 1990+).
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. **Schedule.** One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them.

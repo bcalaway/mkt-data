@@ -18,14 +18,11 @@ Research done 2026-10-04, before building anything. Every source below was read 
   - the holiday's date line plus an early close on that same date (Good Friday 2015).
 
   Done in #12, from the real capture. SIFMA's page gives no date for Presidents Day 2015 or 2016, though both were full closes: the PDF should fill them. The page links the PDF as "US Holiday Archives 1996-2017".
-- **The PDF** is captured raw first, as source `SIFMA-US-HISTORY` with no parser (#15). It needs a parser that reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
-- **Unscheduled recommendations are missing from both.** They need a cited exceptions list:
-  - Hurricane Sandy: Oct 29, 2012 early close at noon, Oct 30 full close;
-  - George H.W. Bush: Dec 5, 2018 full close;
-  - Jimmy Carter: Jan 9, 2025, early close at 2 p.m.
+- **The PDF** is source `SIFMA-US-HISTORY`: captured raw first (#15), then parsed from the real capture (#17). Its parser reads cell positions. Plain text loses which column a date sits in, so the extract couldn't tell full closes from early closes. It also writes times inline in mixed styles ("noon EST", "11:00 am", "1:00 pm") and often leaves out the year. Since it never changes, parse it once, check the result by hand, and keep the PDF as the raw capture.
+- **Unscheduled recommendations:** the PDF has Hurricane Sandy (Oct 29, 2012 early close at noon, Oct 30 full close) and George H.W. Bush (Dec 5, 2018 full close). Only Jimmy Carter (Jan 9, 2025, early close at 2 p.m.) is missing from both documents and needs a cited exception.
 
   SIFMA's press releases and its Unscheduled Close Market Matrix are the sources. What SIFMA recommended on 9/11, and on the Reagan (2004) and Ford (2007) mourning days, isn't confirmed.
-- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is settled by the archive page itself: a noon early close (it lists the date and then the noon early close under Good Friday).
+- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is a noon early close on the archive page (it lists the date and then the noon early close under Good Friday). The PDF still has the original 2015 recommendation: an early close on Thursday, Apr 2 and a full close on Friday, Apr 3. The archive outranks it on Apr 3, but whether the Apr 2 early close still stood isn't settled.
 - **Reliability:** 2005 onward is solid. 1996–2004 has less regular times, so review it by hand.
 
 ## FED: rules, confirmed against NY Fed circulars

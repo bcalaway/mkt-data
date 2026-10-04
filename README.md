@@ -36,6 +36,8 @@ gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app
 
 `CalendarSources` (`proto/calendar_sources.proto`) serves near-raw calendar rows to calendar-svc at `mkt-data:9090`: `ListSources` (every calendar source, its calendar, whether it's parsed, its latest capture and the newest capture its near-raw rows came from) and `GetSource` (one source's years and days, optionally with superseded days). Calendars are small, so a source is read whole.
 
+`Observations` (`proto/observations.proto`) serves near-raw observations to quote-svc, by month: `ListSources`, `ListPeriods` (each month with `latest_capture_id`, the newest capture its rows came from, so a reader re-reads only months where it moved) and `GetPeriod` (a month's current values, optionally with superseded ones; values are decimal strings, never floats).
+
 ## Jobs and DAGs
 
 Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. The read-only `GET` endpoints also accept `$READ_TOKEN`, which home-mcp uses for its `mkt_data_captures` and `mkt_data_capture_text` tools. The platform generates it at `/home-platform/mkt-data/read-token`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED`, `SIFMA-US` or `NYSE`.

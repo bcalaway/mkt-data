@@ -33,9 +33,11 @@ def _tables(cfg):
 
 def test_upgrade_then_downgrade(alembic_cfg):
     command.upgrade(alembic_cfg, "head")
-    assert "items" in _tables(alembic_cfg)
+    tables = _tables(alembic_cfg)
+    assert {"source", "capture", "source_check", "calendar", "calendar_year", "calendar_day"} <= tables
+    assert "items" not in tables
     command.downgrade(alembic_cfg, "base")
-    assert "items" not in _tables(alembic_cfg)
+    assert not {"capture", "calendar_day", "items"} & _tables(alembic_cfg)
 
 
 def test_models_match_migrations(alembic_cfg):

@@ -1,7 +1,7 @@
 """create items
 
-The example table from app/models.py. Replace both with the app's real
-schema (and delete this file) when building out the app.
+The template's example table. Applied to production on the first deploy
+(2026-10-03), so it stays in the history; 0002 drops it.
 
 Revision ID: 0001
 Revises:

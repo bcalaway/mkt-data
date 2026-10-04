@@ -34,4 +34,21 @@ Migrations: change `app/models.py`, run `alembic revision --autogenerate -m "...
 
 gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app/grpc_server.py`. The standard `grpc.health.v1` service is always on.
 
-Started from `templates/python` in `nyc_pa_aws_gitops`. The `Item` model, its `0001` migration and `ExampleService.Ping` are template examples and will be replaced by the calendar schema.
+## Jobs and DAGs
+
+Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`:
+
+- `POST /jobs/calendars/{FED}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
+- `POST /jobs/calendars/{FED}/reparse` re-applies the latest capture, for example after a parser fix.
+- `GET /jobs/calendars/{FED}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
+
+DAGs live in `dags/mkt-data/` and the deploy delivers them to Airflow. Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
+
+## Data model
+
+See `app/models.py`. In short:
+
+- **Raw:** `source` → `capture`, which is append-only and enforced by a trigger, plus `source_check`, which records every fetch attempt.
+- **Processed:** `calendar` → `calendar_year` (coverage) and `calendar_day` (closed or early-close weekdays, with `valid_from`/`valid_to` history).
+
+Started from `templates/python` in `nyc_pa_aws_gitops`. `ExampleService.Ping` is still the template's gRPC example.

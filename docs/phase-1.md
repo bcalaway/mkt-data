@@ -53,9 +53,14 @@ Each step is its own PR.
      - `business-day` answers from a projected year carry `"projected": true`.
      - FED's projection uses `fed.json`'s rules, which reproduce K.8 exactly. NYSE's uses `nyse.json`'s holidays.
      - SIFMA's rules reproduce SIFMA's published full closes for 1996–2026, except the two one-off closes (Sandy, Bush) and the jobs-report Good Fridays that became early closes. A projected Good Friday is the date most likely to change.
-     - Juneteenth on a Saturday (first in 2027) is projected to the Friday before, until SIFMA's 2027 tab is captured.
+     - Juneteenth on a Saturday (first in 2027) is projected to the Friday before. SIFMA's published 2027 confirms it (June 18), as of #27.
      - Step 6's "next year published" check must count published sources only, so a projection can't hide a missing year.
    - Possible follow-ups: capture the NY Fed circulars and NYSE's holiday history as raw sources (today they're cited and pinned in tests). K.8's markup changes on every fetch while its text stays the same, so it compares visible text instead of bytes (`dedupe_on_text`, #23): a markup-only change is recorded as an unchanged check, not a new capture. It's on for K.8 only. SIFMA's and NYSE's pages have stayed byte-identical, and SIFMA's 2027 dates may sit in blocks the text view skips.
+   - **SIFMA-US 2027 (#27):** SIFMA's page is a Next.js app. Only its first year tab is in the HTML's visible text; the others are in its embedded React data, inside scripts the text view skips. That's why 2027 read as unpublished.
+     - `app/calendars/rsc.py` rebuilds that data's tree and returns its text in document order, hidden tabs included. `sifma.parse` uses it when present and falls back to the visible text.
+     - Capture #3 then gives 2026–2027, 36 days. Its 2026 is identical to the visible-text parse.
+     - Capture #3 was the first one fetched with the new `capture-export` workflow; its exact bytes are the fixture `sifma_us_page_capture3.html`.
+     - This is also why SIFMA keeps byte-level dedupe (`dedupe_on_text` stays off): its data changes would be invisible to a text comparison.
    - ✅ Live-page fixtures are real captures: SIFMA-US from capture #3's visible text (#13), NYSE as capture #2's exact bytes (#16).
 6. ✅ **Schedule** (done 2026-10-04). One Airflow DAG per calendar: a regular refresh, plus a check that next year's dates exist once the publisher normally posts them. The weekly DAGs have run since step 4. The next-year check is a gauge plus an alert rather than a DAG task (#24): `mkt_data_calendar_next_year_overdue` counts publishers only, and next year is due always for FED and NYSE and from December 20 for SIFMA-US.
 7. ✅ **Monitoring** (done 2026-10-04, verified live: the `mkt-data` scrape target is up and all 11 sources read `parse_ok` 1; K.8's text dedupe held it at 3 captures. #24 here, with the scrape job and alert rules in nyc_pa_aws_gitops). `GET /metrics`; each capture and reparse records its parse outcome (migration 0003).

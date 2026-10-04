@@ -44,6 +44,7 @@ precedence. Its real wording (capture #4, 2026-10-04) has a few older forms:
 import re
 from datetime import date, time
 
+from app.calendars import rsc
 from app.calendars.parsed import Day, ParsedCalendar, ParseError
 from app.calendars.text import lines as _lines
 
@@ -92,6 +93,7 @@ EARLY_START = re.compile(r"Early\s+(?:Market\s+)?Close\b", re.IGNORECASE)
 # The holiday has no recommendation that year ("Veterans Day" / "None").
 NO_DATE = re.compile(r"None\.?", re.IGNORECASE)
 YEAR_TAB = re.compile(r"(?:19|20)\d\d")
+YEAR_TABS = re.compile(r"(?:(?:19|20)\d\d){1,6}")
 # "New Year's Day 2025/2026" -> "New Year's Day"
 NAME_YEARS = re.compile(r"\s+(?:19|20)\d\d\s*/\s*(?:19|20)\d\d$")
 US_START = re.compile(r"U\.?\s?S\.?\s+Holiday\s+Recommendations", re.IGNORECASE)
@@ -161,8 +163,18 @@ def _time(m: re.Match, where: str) -> time:
 
 
 def parse(content: bytes) -> ParsedCalendar:
-    """SIFMA's current schedule page: the U.S. section's published year tabs."""
-    return _parse(_us_section(_lines(content.decode("utf-8", errors="replace"))), archive=False)
+    """SIFMA's current schedule page: the U.S. section's published year tabs.
+
+    The page is a Next.js app: only the first year tab is in the HTML's
+    visible text, and the others (2027 as of 2026-10-04) are only in its
+    embedded React data. So read that data when the page has it (rsc.py),
+    and fall back to the visible text when it doesn't.
+    """
+    html = content.decode("utf-8", errors="replace")
+    embedded = rsc.lines(html)
+    if any(US_START.search(ln) for ln in embedded):
+        return _parse(_us_section(embedded), archive=False)
+    return _parse(_us_section(_lines(html)), archive=False)
 
 
 def parse_archive(content: bytes) -> ParsedCalendar:
@@ -191,12 +203,13 @@ def _archive_section(lines: list[str]) -> list[str]:
 
 def _parse(lines: list[str], archive: bool) -> ParsedCalendar:
     section = _merge_split_labels(lines)
-    tabs = sorted({int(ln) for ln in section if YEAR_TAB.fullmatch(ln)})
+    # Year tabs: a line of years, alone ("2026") or run together ("20262027").
+    tabs = sorted({int(y) for ln in section if YEAR_TABS.fullmatch(ln) for y in re.findall(r"\d{4}", ln)})
     days: dict[date, Day] = {}
     holiday: str | None = None
     under_holiday: set[date] = set()  # dates written under the current heading
     for ln in section:
-        if YEAR_TAB.fullmatch(ln):
+        if YEAR_TABS.fullmatch(ln):
             continue
         if NO_DATE.fullmatch(ln):
             if holiday is None:

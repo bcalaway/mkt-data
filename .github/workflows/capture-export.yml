@@ -1,0 +1,98 @@
+name: Capture export
+
+# Hands one raw capture to Claude, byte for byte, without a hub session or a
+# GitHub token (nyc_pa_aws_gitops docs/app-platform.md, "Raw captures for
+# Claude"; Bill, 2026-10-04):
+#
+#   1. run the hub's mkt-data-capture-export SSM document, which copies
+#      GET /jobs/captures/<id> to the deploy bucket (apps/mkt-data/exports/);
+#   2. download it, check its SHA-256;
+#   3. commit it to an orphan branch capture/<id> for Claude to fetch with git.
+#
+# Start it from main (Actions tab, or `gh workflow run capture-export.yml -f
+# capture_id=5`); the app's OIDC role trusts runs from main without an
+# approval, and may run only its own documents. Delete capture/* branches
+# once the fixture is in a PR; S3 exports expire after 7 days.
+
+on:
+  workflow_dispatch:
+    inputs:
+      capture_id:
+        description: "Capture id (home-mcp mkt_data_captures, or GET /jobs/captures)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency:
+  group: capture-export-${{ inputs.capture_id }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  DEPLOY_BUCKET: home-platform-ansible-deploy-147856894209
+
+jobs:
+  export:
+    name: Export capture ${{ inputs.capture_id }}
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main'
+    env:
+      ID: ${{ inputs.capture_id }}
+    steps:
+      - name: Check the capture id
+        run: '[[ "$ID" =~ ^[0-9]{1,9}$ ]] || { echo "::error::capture_id must be a number"; exit 1; }'
+
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::147856894209:role/mkt-data-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get the platform's hub scripts
+        uses: actions/checkout@v7
+        with:
+          repository: bcalaway/nyc_pa_aws_gitops
+          path: .platform
+          sparse-checkout: scripts/hub
+
+      - name: Export on the hub
+        run: bash .platform/scripts/hub/run-document.sh mkt-data-capture-export "captureId=$ID"
+
+      - name: Download and check
+        id: file
+        run: |
+          out="$RUNNER_TEMP/export" && mkdir -p "$out"
+          aws s3 cp "s3://${DEPLOY_BUCKET}/apps/mkt-data/exports/${ID}/body" "$out/body" --only-show-errors
+          aws s3 cp "s3://${DEPLOY_BUCKET}/apps/mkt-data/exports/${ID}/meta.json" "$out/meta.json" --only-show-errors
+          want=$(jq -r .sha256 "$out/meta.json")
+          got=$(sha256sum "$out/body" | cut -d' ' -f1)
+          [ "$want" = "$got" ] || { echo "::error::sha256 mismatch: expected $want, got $got"; exit 1; }
+          source=$(jq -r .source "$out/meta.json")
+          [[ "$source" =~ ^[A-Z0-9-]+$ ]] || { echo "::error::unexpected source name: $source"; exit 1; }
+          case "$(jq -r '.content_type // ""' "$out/meta.json")" in
+            *html*) ext=html ;; *pdf*) ext=pdf ;; *json*) ext=json ;; *) ext=bin ;;
+          esac
+          echo "name=${source}-${ID}.${ext}" >> "$GITHUB_OUTPUT"
+          echo "sha=$got" >> "$GITHUB_OUTPUT"
+
+      - name: Commit to capture/${{ inputs.capture_id }}
+        env:
+          NAME: ${{ steps.file.outputs.name }}
+          SHA: ${{ steps.file.outputs.sha }}
+        run: |
+          git checkout -q --orphan "capture/$ID"
+          git rm -rqf .
+          rm -rf .platform
+          mkdir captures
+          cp "$RUNNER_TEMP/export/body" "captures/$NAME"
+          cp "$RUNNER_TEMP/export/meta.json" captures/meta.json
+          git add captures
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Capture $ID: $NAME (sha256 $SHA)"
+          git push -q -f origin "capture/$ID"
+          echo "::notice title=result::capture/$ID has captures/$NAME (sha256 ${SHA:0:12})"

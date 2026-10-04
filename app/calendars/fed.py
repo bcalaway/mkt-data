@@ -24,6 +24,19 @@ from html.parser import HTMLParser
 from app.calendars.parsed import Day, ParsedCalendar, ParseError
 
 URL = "https://www.federalreserve.gov/aboutthefed/k8.htm"
+# The NY Fed's yearly holiday-schedule circulars, 2003-2009: the published
+# record behind FED-RULES for those years (docs/backfill.md). Each is its
+# own source, newest first, ranked above the rules: where one disagrees
+# with the rules, the circular wins and the difference is reported.
+NYFED_CIRCULARS = {
+    2009: "https://www.newyorkfed.org/banking/circulars/11980.html",
+    2008: "https://www.newyorkfed.org/banking/circulars/11879.html",
+    2007: "https://www.newyorkfed.org/banking/circulars/11797.html",
+    2006: "https://www.newyorkfed.org/banking/circulars/11720.html",
+    2005: "https://www.newyorkfed.org/banking/circulars/11615.html",
+    2004: "https://www.newyorkfed.org/banking/circulars/11532.html",
+    2003: "https://www.newyorkfed.org/banking/circulars/11465.html",
+}
 
 MONTHS = {
     m: i

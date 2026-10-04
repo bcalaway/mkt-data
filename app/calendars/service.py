@@ -98,6 +98,13 @@ CALENDARS: dict[str, CalendarSpec] = {
                 "FED-K8", fed.URL, "Federal Reserve Board, K.8 Holidays Observed (current year + 4)", fed.parse,
                 dedupe_on_text=True,
             ),
+            *(
+                SourceSpec(
+                    f"FED-NYFED-{year}", url, f"NY Fed holiday-schedule circular for {year}",
+                    None,  # captured raw first; parsed once the real captures are fixtures
+                )
+                for year, url in fed.NYFED_CIRCULARS.items()
+            ),
             SourceSpec(
                 "FED-RULES", f"{rules.REPO_PREFIX}fed.json",
                 "Federal holidays as the Reserve Banks observe them, 1986-2025 (rules, cited)", rules.parse,
@@ -142,6 +149,11 @@ CALENDARS: dict[str, CalendarSpec] = {
         timezone="America/New_York",
         sources=(
             SourceSpec("NYSE-HOURS", nyse.URL, "NYSE, Holidays & Trading Hours (current year + 2)", nyse.parse),
+            SourceSpec(
+                "NYSE-HISTORY", nyse.HISTORY_URL,
+                "NYSE, History of New York Stock Exchange Holidays (PDF, 1885 to Jan 2011)",
+                None,  # captured raw first; parsed once the real capture is a fixture
+            ),
             SourceSpec(
                 "NYSE-RULES", f"{rules.REPO_PREFIX}nyse.json",
                 "NYSE holidays, early closes and one-off closes, 1990-2025 (rules, cited)", rules.parse,

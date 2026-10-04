@@ -436,3 +436,23 @@ def test_other_sources_still_compare_bytes(migrated_db, nyse_html):
     assert noisy != nyse_html
     with db.session() as s:
         assert service.run_capture(s, "NYSE", _fetcher(noisy))["sources"][0]["new_capture"] is True
+
+
+@pytest.mark.history_documents
+def test_history_documents_are_captured_raw_above_the_rules(migrated_db, fed_html, nyse_html):
+    """The NY Fed circulars and NYSE's holiday history: kept raw, ranked above the rules."""
+    from app.calendars import fed, nyse
+
+    pages = {fed.URL: fed_html, nyse.URL: nyse_html}
+    fetch = lambda url: (200, "text/html", pages.get(url, f"document at {url}".encode()))
+    with db.session() as s:
+        fed_out = service.run_capture(s, "FED", fetch)["sources"]
+        nyse_out = service.run_capture(s, "NYSE", fetch)["sources"]
+    names = [x["source"] for x in fed_out]
+    assert names == ["FED-K8", *(f"FED-NYFED-{y}" for y in range(2009, 2002, -1)), "FED-RULES"]
+    assert [x["source"] for x in nyse_out] == ["NYSE-HOURS", "NYSE-HISTORY", "NYSE-RULES"]
+    for x in fed_out[1:8] + nyse_out[1:2]:
+        assert x["new_capture"] is True and x["parsed"] is False
+    with db.session() as s:
+        assert service.business_day(s, "FED", date(2005, 12, 26))["status"] == "closed"  # still from FED-RULES
+        assert service.business_day(s, "NYSE", date(2001, 9, 11))["status"] == "closed"  # still from NYSE-RULES

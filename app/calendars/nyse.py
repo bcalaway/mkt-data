@@ -41,6 +41,10 @@ from html.parser import HTMLParser
 from app.calendars.parsed import Day, ParsedCalendar, ParseError
 
 URL = "https://www.nyse.com/markets/hours-calendars"
+# NYSE's "History of New York Stock Exchange Holidays" (1885 to Jan 2011),
+# the published record behind NYSE-RULES' 1990-2010 exceptions. Only
+# third-party copies survive (docs/backfill.md); this is the most complete.
+HISTORY_URL = "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf"
 
 MONTHS = {
     m: i

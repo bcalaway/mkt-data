@@ -34,6 +34,8 @@ Migrations: change `app/models.py`, run `alembic revision --autogenerate -m "...
 
 gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app/grpc_server.py`. The standard `grpc.health.v1` service is always on.
 
+`CalendarSources` (`proto/calendar_sources.proto`) serves near-raw calendar rows to calendar-svc at `mkt-data:9090`: `ListSources` (every calendar source, its calendar, whether it's parsed, its latest capture and the newest capture its near-raw rows came from) and `GetSource` (one source's years and days, optionally with superseded days). Calendars are small, so a source is read whole.
+
 ## Jobs and DAGs
 
 Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. The read-only `GET` endpoints also accept `$READ_TOKEN`, which home-mcp uses for its `mkt_data_captures` and `mkt_data_capture_text` tools. The platform generates it at `/home-platform/mkt-data/read-token`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED`, `SIFMA-US` or `NYSE`.
@@ -61,6 +63,8 @@ By hand, mkt-data is internal only, so to save a capture to a file, run this on 
 docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures?limit=10",headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())'
 docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures/"+sys.argv[1],headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())' 2 > nyse-capture-2.html
 ```
+
+The calendar DAGs (and the near-raw rebuild) mark the Airflow Asset `mkt_data_calendar_sources` after each successful run; calendar-svc's load DAG is scheduled on it.
 
 DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 

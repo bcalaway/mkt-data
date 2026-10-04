@@ -54,6 +54,16 @@ docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("
 
 DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 
+## Metrics
+
+`GET /metrics` serves Prometheus gauges, computed from the database on each scrape (`app/metrics.py`). Prometheus scrapes it as `mkt-data:8000` on the `home-platform` network. It has no auth, like the platform's other scrape targets, and holds only counts, years and timestamps. Labels use the readable names (`calendar`, `source`, `kind` = published / rules / projected).
+
+- `mkt_data_source_last_success_timestamp_seconds`, `mkt_data_source_parse_ok`: drive the platform's stale-capture and parse-failed alerts.
+- `mkt_data_calendar_next_year_published` / `_overdue`: the "next year published" check. Only a publisher counts, not rules or a projection. Next year is due from each calendar's `next_year_due`: always for FED and NYSE, which list years ahead, and from December 20 for SIFMA-US.
+- `mkt_data_calendar_years` / `_first_year` / `_last_year` by kind, `mkt_data_calendar_days`, `mkt_data_source_captures` / `_capture_bytes`: for the dashboard.
+
+Every capture and every reparse records its parse outcome on its `source_check` row (`parse_outcome`, `parse_detail`; a reparse is a check with outcome `reparse`). So a parser fix plus a reparse clears a parse alert without waiting for the next weekly fetch.
+
 ## Data model
 
 See `app/models.py`. In short:

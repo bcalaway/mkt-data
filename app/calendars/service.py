@@ -77,6 +77,11 @@ class CalendarSpec:
     description: str
     timezone: str
     sources: tuple[SourceSpec, ...]
+    # (month, day) from which next year's dates should be published: the
+    # "next year published" check (step 6) and its alert. K.8 and NYSE list
+    # years ahead, so for them next year is always due. SIFMA publishes in
+    # mid-December (Dec 17 in 2025).
+    next_year_due: tuple[int, int] = (1, 1)
 
     @property
     def source_names(self) -> list[str]:
@@ -107,6 +112,7 @@ CALENDARS: dict[str, CalendarSpec] = {
         name="SIFMA-US",
         description="US bond market (SIFMA recommendations): full closes and early closes",
         timezone="America/New_York",
+        next_year_due=(12, 20),
         sources=(
             SourceSpec(
                 "SIFMA-US-HOLIDAYS", sifma.URL,
@@ -147,6 +153,13 @@ CALENDARS: dict[str, CalendarSpec] = {
         ),
     ),
 }
+
+
+def source_kind(src: SourceSpec) -> str:
+    """'published' (a publisher's page or file), 'rules' (a rules file) or 'projected'."""
+    if src.projected:
+        return "projected"
+    return "rules" if src.url.startswith(rules.REPO_PREFIX) else "published"
 
 
 SOURCES: dict[str, SourceSpec] = {src.name: src for cal in CALENDARS.values() for src in cal.sources}
@@ -201,8 +214,8 @@ def _read_repo(url: str) -> tuple[int, str, bytes]:
         raise SourceFetchError(f"{url}: {e}") from None
 
 
-def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool]:
-    """Fetch the source; store the content if it's new. Returns (latest capture, is_new)."""
+def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool, SourceCheck]:
+    """Fetch the source; store the content if it's new. Returns (latest capture, is_new, the check)."""
     src = _source(s, spec)
     try:
         if src.url.startswith(rules.REPO_PREFIX):
@@ -218,24 +231,27 @@ def capture(s: Session, spec: SourceSpec, fetcher=None) -> tuple[Capture, bool]:
         select(Capture).where(Capture.source_id == src.id).order_by(Capture.id.desc()).limit(1)
     )
     if last is not None and last.sha256 == sha:
-        s.add(SourceCheck(source_id=src.id, outcome="unchanged", capture_id=last.id))
+        check = SourceCheck(source_id=src.id, outcome="unchanged", capture_id=last.id)
+        s.add(check)
         s.flush()
-        return last, False
+        return last, False, check
     if last is not None and spec.dedupe_on_text and _visible_text(last.body) == _visible_text(body):
-        s.add(SourceCheck(
+        check = SourceCheck(
             source_id=src.id, outcome="unchanged", capture_id=last.id,
             detail=f"markup changed, visible text identical (sha256 {sha})",
-        ))
+        )
+        s.add(check)
         s.flush()
-        return last, False
+        return last, False, check
     cap = Capture(
         source_id=src.id, http_status=status, content_type=ctype, sha256=sha, size_bytes=len(body), body=body
     )
     s.add(cap)
     s.flush()
-    s.add(SourceCheck(source_id=src.id, outcome="new", capture_id=cap.id))
+    check = SourceCheck(source_id=src.id, outcome="new", capture_id=cap.id)
+    s.add(check)
     s.flush()
-    return cap, True
+    return cap, True, check
 
 
 def _visible_text(body: bytes) -> list[str]:
@@ -340,17 +356,30 @@ def _run(s: Session, name: str, step) -> dict:
     return {"calendar": name, "sources": results}
 
 
+def _parse_and_apply(s: Session, spec: CalendarSpec, rank: int, src: SourceSpec, cap: Capture,
+                     check: SourceCheck) -> dict:
+    """Parse the capture and apply it, recording the parse's outcome on the check."""
+    try:
+        parsed = src.parse(cap.body)
+    except ParseError as e:
+        check.parse_outcome, check.parse_detail = "error", str(e)[:2000]
+        s.commit()  # kept even though _run rolls back what follows
+        raise
+    out = apply(s, spec, rank, cap, parsed)
+    check.parse_outcome = "ok"
+    s.commit()
+    return out
+
+
 def run_capture(s: Session, name: str, fetcher=None) -> dict:
     def step(spec: CalendarSpec, rank: int, src: SourceSpec) -> dict:
-        cap, is_new = capture(s, src, fetcher)
+        cap, is_new, check = capture(s, src, fetcher)
         # Commit the raw capture (and its check) before parsing: a parse error
         # must never lose what was fetched.
         s.commit()
         if src.parse is None:
             return {"capture_id": cap.id, "new_capture": is_new, "parsed": False, "note": NOT_PARSED}
-        out = {"capture_id": cap.id, "new_capture": is_new} | apply(s, spec, rank, cap, src.parse(cap.body))
-        s.commit()
-        return out
+        return {"capture_id": cap.id, "new_capture": is_new} | _parse_and_apply(s, spec, rank, src, cap, check)
 
     return _run(s, name, step)
 
@@ -366,9 +395,10 @@ def run_reparse(s: Session, name: str) -> dict:
             return {"skipped": "nothing captured yet"}
         if src.parse is None:
             return {"capture_id": cap.id, "new_capture": False, "parsed": False, "note": NOT_PARSED}
-        out = {"capture_id": cap.id, "new_capture": False} | apply(s, spec, rank, cap, src.parse(cap.body))
-        s.commit()
-        return out
+        check = SourceCheck(source_id=cap.source_id, outcome="reparse", capture_id=cap.id)
+        s.add(check)
+        s.flush()
+        return {"capture_id": cap.id, "new_capture": False} | _parse_and_apply(s, spec, rank, src, cap, check)
 
     return _run(s, name, step)
 

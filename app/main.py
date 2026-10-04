@@ -7,8 +7,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
-from app.db import check_connection
+from app.db import DatabaseNotConfigured, check_connection
 from app.grpc_server import start_grpc_server
+from app.jobs import router as jobs_router
 
 # Routes reachable without an authenticated session -- everything else is
 # gated by RequireAuthMiddleware below.
@@ -35,7 +36,8 @@ class RequireAuthMiddleware(BaseHTTPMiddleware):
     # (no client id/secret in SSM yet), the app stays open rather than locking itself
     # out before auth is even wired up.
     async def dispatch(self, request: Request, call_next):
-        if not _auth_configured or request.url.path in PUBLIC_PATHS:
+        # /jobs/* has its own bearer-token check (app/jobs.py), for Airflow.
+        if not _auth_configured or request.url.path in PUBLIC_PATHS or request.url.path.startswith("/jobs/"):
             return await call_next(request)
         if not request.session.get("user"):
             if request.url.path.startswith("/api/"):
@@ -72,6 +74,14 @@ if _auth_configured:
         ),
         client_kwargs={"scope": "openid profile email"},
     )
+
+
+app.include_router(jobs_router)
+
+
+@app.exception_handler(DatabaseNotConfigured)
+async def _no_database(_request: Request, exc: DatabaseNotConfigured):
+    return JSONResponse({"detail": str(exc)}, status_code=503)
 
 
 @app.get("/health")

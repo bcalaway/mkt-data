@@ -10,16 +10,16 @@ Platform roadmap: Milestone 22 in `nyc_pa_aws_gitops/docs/roadmap.md`.
 
 Each step is its own PR.
 
-1. **Template in place** (this PR). The repo builds, passes CI and deploys to the hub as an internal-only container.
-2. **Airflow integration (platform side, `nyc_pa_aws_gitops`).** This settles ADR-0027's three open points:
+1. ✅ **Template in place** (#1, 2026-10-03). The repo builds, passes CI and deploys to the hub as an internal-only container.
+2. ✅ **Airflow integration (platform side, `nyc_pa_aws_gitops`)**: ADR-0031, PR #96 (2026-10-03). DAGs call mkt-data's token-protected `/jobs` API, and `dags/` ships with each deploy. This settles ADR-0027's three open points:
    - how an app's DAGs reach Airflow's `dags/mkt-data/`;
    - how mkt-data's secrets reach its tasks;
    - whether tasks run inside Airflow's workers or in mkt-data's own image (DockerOperator), and how the Docker socket is isolated if so.
-3. **Schema.** Alembic migrations replace the template's `Item` table:
+3. ✅ **Schema** (migration 0002, with the Fed calendar). Alembic migrations replace the template's `Item` table:
    - `source` and `capture` (raw: what was fetched, when, from where, a content hash and the payload, kept forever);
    - `calendar` (integer ID plus a short name such as `SIFMA-US`, `FED`, `NYSE`);
    - `calendar_day` (calendar, date, status `closed` / `early_close`, close time when early, and the capture it came from).
-4. **Sourcing, one PR per calendar.**
+4. **Sourcing, one PR per calendar.** FED is done (K.8 page, weekly DAG `mkt_data__fed_calendar`); SIFMA-US and NYSE come next.
    - Fetch the publisher's page or file, store it raw, then parse it into `calendar_day`.
    - Re-fetching unchanged content records the check but adds no new capture (dedupe by hash).
    - Changes to dates already published are kept as history, not overwritten.
@@ -41,5 +41,6 @@ These are settled in the step that needs them.
 
 - **Exact sources for each calendar.** For each one, check its official page's format and how many years back it goes before writing the parser.
 - **NYSE early closes:** half-day close times differ by venue and asset class. Store the equities close time, and add others when a dataset needs them.
-- **The Fed's holiday list vs FedWire / Fedwire Securities operating days:** they normally match; confirm, then model them as one calendar or two.
+- **The Fed's holiday list vs FedWire / Fedwire Securities operating days:** they normally match; confirm, then model them as one calendar or two. For now FED is the Reserve Banks' calendar: when a holiday falls on a Saturday, the Banks stay open the Friday before, and only the Board of Governors closes.
+- **FED backfill:** K.8 only lists the current year and the next four. Earlier years need the federal holiday rules (Juneteenth from 2021) or archived copies of the page.
 - **Backup capture path** (Lambda + S3, independent of the hub) is a platform roadmap item. Calendars change rarely, so phase 1 doesn't depend on it.

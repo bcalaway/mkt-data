@@ -22,6 +22,12 @@ set of closes for it (MIN_FULL_CLOSES). The New Year's entry that ends one
 year's tab ("New Year's Day 2026/2027") is stored, but doesn't on its own make
 2027 covered, so `business-day` keeps answering "not published" for 2027
 until SIFMA posts it. Close times are Eastern (the calendar's timezone).
+
+The U.S. Holiday Archive (ARCHIVE_URL, `parse_archive`) has the same entries
+for past years (2015-2025 as of 2026-10-04), one section per year, newest
+first, with a few older formats: "Early Close Only (…)", "(12:00 Noon Eastern
+Time)" with no colon, and a note after the date. It's calendar SIFMA-US's
+second source, below the current page in precedence.
 """
 
 import re
@@ -31,6 +37,7 @@ from app.calendars.parsed import Day, ParsedCalendar, ParseError
 from app.calendars.text import lines as _lines
 
 URL = "https://www.sifma.org/resources/general/holiday-schedule/"
+ARCHIVE_URL = "https://www.sifma.org/resources/guides-playbooks/us-holiday-archive"
 
 MONTHS = {
     m: i
@@ -49,12 +56,19 @@ _DATE = (
     r"([A-Za-z]+)\.?\s+(\d{1,2}),?\s+((?:19|20)\d\d)"
 )
 FULL = re.compile(_DATE, re.IGNORECASE)
+# "Early Close (2:00 p.m. Eastern Time): Wednesday, December 31, 2025", and the
+# archive's variants: "Early Close Only (…)", "(12:00 Noon Eastern Time)" with
+# no colon after it, and a trailing note ("… 2021 – Confirmed based on …").
 EARLY = re.compile(
-    r"Early\s+Close\s*\(\s*(\d{1,2})(?::(\d\d))?\s*([ap])\.?\s*m\.?\s*(?:Eastern(?:\s+Time)?|ET)?\s*\)\s*:?\s*"
-    + _DATE,
+    r"Early\s+Close(?:\s+Only)?\s*\(\s*"
+    r"(?:(?P<h>\d{1,2})(?::(?P<m>\d\d))?\s*(?:(?P<ap>[ap])\.?\s*m\.?|(?P<noon>noon))|(?P<bare_noon>noon))"
+    r"\s*(?:Eastern(?:\s+Time)?|E\.?T\.?)?\s*\)\s*:?\s*"
+    r"(?P<wd>Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+"
+    r"(?P<mon>[A-Za-z]+)\.?\s+(?P<dd>\d{1,2}),?\s+(?P<yyyy>(?:19|20)\d\d)"
+    r"(?:\s*[–—-]\s*\S.*)?",
     re.IGNORECASE,
 )
-EARLY_LABEL = re.compile(r"Early\s+Close\s*\(.*\)\s*:?", re.IGNORECASE)
+EARLY_LABEL = re.compile(r"Early\s+Close(?:\s+Only)?\s*\(.*\)\s*:?", re.IGNORECASE)
 YEAR_TAB = re.compile(r"(?:19|20)\d\d")
 # "New Year's Day 2025/2026" -> "New Year's Day"
 NAME_YEARS = re.compile(r"\s+(?:19|20)\d\d\s*/\s*(?:19|20)\d\d$")
@@ -64,6 +78,10 @@ MAX_NAME_LEN = 60
 # SIFMA recommends 10-12 full closes a year (11 in 2026, with Good Friday an
 # early close). Fewer than this means the year is missing or partial.
 MIN_FULL_CLOSES = 9
+# The archive held 2015-2025 when this was written (2026-10-04); far fewer
+# year headings means the page changed shape.
+MIN_ARCHIVE_YEARS = 5
+OTHER_ARCHIVE = re.compile(r"^(?:U\.?\s?K\.?|Japan)\b.*(?:Holiday|Archive)", re.IGNORECASE)
 
 def _us_section(lines: list[str]) -> list[str]:
     for i, ln in enumerate(lines):
@@ -105,16 +123,48 @@ def _date(weekday: str, month: str, day: str, year: str, where: str) -> date:
     return d
 
 
-def _time(hour: str, minute: str | None, ampm: str, where: str) -> time:
-    h, mi = int(hour), int(minute or 0)
+def _time(m: re.Match, where: str) -> time:
+    if m["bare_noon"]:
+        return time(12)
+    h, mi = int(m["h"]), int(m["m"] or 0)
+    if m["noon"]:
+        if (h, mi) != (12, 0):
+            raise ParseError(f"{where}: can't read close time {m['h']}:{m['m']} noon")
+        return time(12)
     if not 1 <= h <= 12 or mi > 59:
-        raise ParseError(f"{where}: can't read close time {hour}:{minute} {ampm}m")
-    h = h % 12 + (12 if ampm.lower() == "p" else 0)
-    return time(h, mi)
+        raise ParseError(f"{where}: can't read close time {m['h']}:{m['m']} {m['ap']}m")
+    return time(h % 12 + (12 if m["ap"].lower() == "p" else 0), mi)
 
 
 def parse(content: bytes) -> ParsedCalendar:
-    section = _merge_split_labels(_us_section(_lines(content.decode("utf-8", errors="replace"))))
+    """SIFMA's current schedule page: the U.S. section's published year tabs."""
+    return _parse(_us_section(_lines(content.decode("utf-8", errors="replace"))), archive=False)
+
+
+def parse_archive(content: bytes) -> ParsedCalendar:
+    """SIFMA's U.S. Holiday Archive: a section per past year, newest first.
+
+    Same entries as the schedule page. Every year heading must come with a
+    full set of closes: a year with fewer means a line the parser didn't
+    understand, so it fails rather than leave a quiet gap.
+    """
+    return _parse(_archive_section(_lines(content.decode("utf-8", errors="replace"))), archive=True)
+
+
+def _archive_section(lines: list[str]) -> list[str]:
+    for i, ln in enumerate(lines):
+        if YEAR_TAB.fullmatch(ln):
+            out = []
+            for nxt in lines[i:]:
+                if (SECTION.search(nxt) or OTHER_ARCHIVE.search(nxt)) and len(nxt) <= MAX_NAME_LEN:
+                    break  # another market's section
+                out.append(nxt)
+            return out
+    raise ParseError("no year headings in the archive")
+
+
+def _parse(lines: list[str], archive: bool) -> ParsedCalendar:
+    section = _merge_split_labels(lines)
     tabs = sorted({int(ln) for ln in section if YEAR_TAB.fullmatch(ln)})
     days: dict[date, Day] = {}
     holiday: str | None = None
@@ -124,8 +174,8 @@ def parse(content: bytes) -> ParsedCalendar:
         if m := EARLY.fullmatch(ln):
             if holiday is None:
                 raise ParseError(f"early close before any holiday heading: {ln!r}")
-            when = _date(*m.group(4, 5, 6, 7), where=holiday)
-            close = _time(*m.group(1, 2, 3), where=holiday)
+            when = _date(m["wd"], m["mon"], m["dd"], m["yyyy"], where=holiday)
+            close = _time(m, where=holiday)
             day = Day(when, "early_close", f"{holiday} (early close)", close)
         elif m := FULL.fullmatch(ln):
             if holiday is None:
@@ -148,6 +198,12 @@ def parse(content: bytes) -> ParsedCalendar:
     for d in days.values():
         if d.status == "closed":
             full[d.day.year] += 1
+    if archive:
+        short = {y: full[y] for y in tabs if full[y] < MIN_FULL_CLOSES}
+        if short:
+            raise ParseError(f"archive years with too few full closes (expected {MIN_FULL_CLOSES}+): {short}")
+        if len(tabs) < MIN_ARCHIVE_YEARS:
+            raise ParseError(f"only {len(tabs)} year headings in the archive: {tabs}")
     years = tuple(sorted(y for y, n in full.items() if n >= MIN_FULL_CLOSES))
     if not years:
         raise ParseError(

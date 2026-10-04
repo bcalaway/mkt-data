@@ -22,6 +22,20 @@ def sifma_html() -> bytes:
 
 
 @pytest.fixture
+def sifma_archive_html() -> bytes:
+    return (FIXTURES / "sifma_us_archive.html").read_bytes()
+
+
+@pytest.fixture
+def sifma_fetch(sifma_html, sifma_archive_html):
+    """A fetcher for calendar SIFMA-US's two sources: its page and its archive."""
+    from app.calendars import sifma
+
+    pages = {sifma.URL: sifma_html, sifma.ARCHIVE_URL: sifma_archive_html}
+    return lambda url: (200, "text/html; charset=utf-8", pages[url])
+
+
+@pytest.fixture
 def nyse_html() -> bytes:
     return (FIXTURES / "nyse_hours_2026.html").read_bytes()
 

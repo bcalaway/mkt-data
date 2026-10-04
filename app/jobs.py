@@ -111,7 +111,7 @@ def list_captures(
         raise HTTPException(400, "give source or calendar, not both")
     names = [source.upper()] if source else None
     if calendar:
-        names = [service.CALENDARS[_calendar(calendar)].source_name]
+        names = service.CALENDARS[_calendar(calendar)].source_names
     q = (
         select(Capture.id, Source.name, Capture.fetched_at, Capture.http_status,
                Capture.content_type, Capture.sha256, Capture.size_bytes)

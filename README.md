@@ -61,4 +61,6 @@ See `app/models.py`. In short:
 - **Raw:** `source` → `capture`, which is append-only and enforced by a trigger, plus `source_check`, which records every fetch attempt.
 - **Processed:** `calendar` → `calendar_year` (coverage) and `calendar_day` (closed or early-close weekdays, with `valid_from`/`valid_to` history).
 
+A calendar can have several sources, highest precedence first (`CALENDARS` in `app/calendars/service.py`): SIFMA-US reads its current schedule page and then its archive. A capture job fetches and applies each source in turn. A source never overrides a date a higher one holds (it reports the disagreement as `held_by_higher_source`), and only closes off rows it wrote itself. The job's summary has one entry per source under `sources`.
+
 Started from `templates/python` in `nyc_pa_aws_gitops`. `ExampleService.Ping` is still the template's gRPC example.

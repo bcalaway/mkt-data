@@ -110,6 +110,8 @@ def test_archive_early_close_formats(sifma_archive_html):
     assert (days[date(2021, 4, 2)].status, days[date(2021, 4, 2)].close_time) == ("early_close", time(12))
     # "Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015" (no colon)
     assert days[date(2015, 4, 3)].close_time == time(12)
+    # "Early Market Close: (2:00 p.m. Eastern Time): Friday, December 30, 2016"
+    assert days[date(2016, 12, 30)] == Day(date(2016, 12, 30), "early_close", "New Year's Day (early close)", time(14))
     # New Year's Day 2022 fell on a Saturday: only the Dec 31, 2021 early close.
     assert days[date(2021, 12, 31)].close_time == time(14) and date(2022, 1, 1) not in days
 
@@ -138,3 +140,74 @@ def test_noon_must_be_twelve(sifma_archive_html):
 def test_archive_needs_year_headings():
     with pytest.raises(ParseError, match="no year headings"):
         sifma.parse_archive(b"<html><h1>US Holiday Archive</h1><p>Monday, May 25, 2015</p></html>")
+
+
+# --- Real-page quirks (capture #4, 2026-10-04; the fixture is its text)
+
+
+def test_archive_real_capture_totals(sifma_archive_html):
+    p = sifma.parse_archive(sifma_archive_html)
+    assert len(p.days) == 184
+    full = {y: 0 for y in p.years}
+    for d in p.days:
+        if d.status == "closed" and d.day.year in full:
+            full[d.day.year] += 1
+    assert full == {
+        2015: 9, 2016: 10, 2017: 10, 2018: 11, 2019: 11, 2020: 11,
+        2021: 10, 2022: 11, 2023: 10, 2024: 12, 2025: 12,
+    }
+
+
+def test_good_friday_2015_date_line_and_noon_early_close(sifma_archive_html):
+    # The real page lists "Friday, April 3, 2015" under Good Friday, then
+    # "Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015": an early close.
+    assert b"<p>Friday, April 3, 2015</p>" in sifma_archive_html
+    gf = {d.day: d for d in sifma.parse_archive(sifma_archive_html).days}[date(2015, 4, 3)]
+    assert gf == Day(date(2015, 4, 3), "early_close", "Good Friday (early close)", time(12))
+
+
+def test_early_close_first_then_date_line_is_the_same(sifma_archive_html):
+    swapped = sifma_archive_html.replace(
+        b"<p>Friday, April 3, 2015</p>\n        <p>Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015</p>",
+        b"<p>Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015</p>\n        <p>Friday, April 3, 2015</p>",
+    )
+    assert swapped != sifma_archive_html
+    gf = {d.day: d for d in sifma.parse_archive(swapped).days}[date(2015, 4, 3)]
+    assert (gf.status, gf.close_time) == ("early_close", time(12))
+
+
+def test_same_date_two_ways_under_different_holidays_still_fails(sifma_archive_html):
+    # Memorial Day 2015's eve listed as a full close under another heading.
+    broken = sifma_archive_html.replace(
+        b"<p>Friday, July 3, 2015</p>", b"<p>Friday, July 3, 2015</p>\n        <p>Friday, May 22, 2015</p>"
+    )
+    with pytest.raises(ParseError, match="2015-05-22 listed twice"):
+        sifma.parse_archive(broken)
+
+
+def test_undated_and_none_headings_store_nothing(sifma_archive_html):
+    days = {d.day for d in sifma.parse_archive(sifma_archive_html).days}
+    assert b"<h3>Veterans Day</h3>\n        <p>None</p>" in sifma_archive_html
+    assert date(2017, 11, 10) not in days  # Veterans Day 2017 fell on a Saturday
+    # Presidents Day 2015 and 2016 have headings but no date on SIFMA's page.
+    assert date(2015, 2, 16) not in days and date(2016, 2, 15) not in days
+
+
+def test_none_before_any_heading_fails():
+    with pytest.raises(ParseError, match="before any holiday heading"):
+        sifma.parse_archive(b"<html><h2>2015</h2><p>None</p></html>")
+
+
+def test_long_unreadable_early_close_is_not_a_note(sifma_archive_html):
+    # Over MAX_NAME_LEN, but starts like an early close: must parse or fail, never be skipped.
+    broken = sifma_archive_html.replace(
+        b"Early Market Close: (2:00 p.m. Eastern Time)", b"Early Market Close at around two in the afternoon, Eastern Time:"
+    )
+    with pytest.raises(ParseError, match="can't read"):
+        sifma.parse_archive(broken)
+
+
+def test_pdf_link_ends_the_years(sifma_archive_html):
+    # Without the stop, the footer would read as holiday headings; a date after it is ignored.
+    extra = sifma_archive_html.replace(b"<p>Subscribe</p>", b"<p>Monday, March 2, 2026</p>")
+    assert date(2026, 3, 2) not in {d.day for d in sifma.parse_archive(extra).days}

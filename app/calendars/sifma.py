@@ -25,9 +25,20 @@ until SIFMA posts it. Close times are Eastern (the calendar's timezone).
 
 The U.S. Holiday Archive (ARCHIVE_URL, `parse_archive`) has the same entries
 for past years (2015-2025 as of 2026-10-04), one section per year, newest
-first, with a few older formats: "Early Close Only (…)", "(12:00 Noon Eastern
-Time)" with no colon, and a note after the date. It's calendar SIFMA-US's
-second source, below the current page in precedence.
+first. It's calendar SIFMA-US's second source, below the current page in
+precedence. Its real wording (capture #4, 2026-10-04) has a few older forms:
+
+- "Early Close Only (…): <date> – <note>" (Good Friday 2021 and 2023).
+- "Early Close (12:00 Noon Eastern Time) Friday, April 3, 2015", with no colon,
+  right under that holiday's own date line "Friday, April 3, 2015". Under one
+  holiday, an early close on the holiday's own date means the day closes
+  early rather than fully (SIFMA's noon close for the 2015 jobs report), so
+  the early close replaces the date line. The same date listed two ways under
+  different holidays is still an error.
+- "Early Market Close: (2:00 p.m. Eastern Time): Friday, December 30, 2016".
+- Headings with no date (Presidents Day 2015 and 2016, Veterans Day 2023) or
+  with "None" (Veterans Day 2017, a Saturday): no recommendation is stored.
+- The 1996-2017 PDF link ("US Holiday Archives 1996-2017") ends the years.
 """
 
 import re
@@ -60,7 +71,7 @@ FULL = re.compile(_DATE, re.IGNORECASE)
 # archive's variants: "Early Close Only (…)", "(12:00 Noon Eastern Time)" with
 # no colon after it, and a trailing note ("… 2021 – Confirmed based on …").
 EARLY = re.compile(
-    r"Early\s+Close(?:\s+Only)?\s*\(\s*"
+    r"Early\s+(?:Market\s+)?Close(?:\s+Only)?\s*:?\s*\(\s*"
     r"(?:(?P<h>\d{1,2})(?::(?P<m>\d\d))?\s*(?:(?P<ap>[ap])\.?\s*m\.?|(?P<noon>noon))|(?P<bare_noon>noon))"
     r"\s*(?:Eastern(?:\s+Time)?|E\.?T\.?)?\s*\)\s*:?\s*"
     r"(?P<wd>Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+"
@@ -68,7 +79,12 @@ EARLY = re.compile(
     r"(?:\s*[–—-]\s*\S.*)?",
     re.IGNORECASE,
 )
-EARLY_LABEL = re.compile(r"Early\s+Close(?:\s+Only)?\s*\(.*\)\s*:?", re.IGNORECASE)
+EARLY_LABEL = re.compile(r"Early\s+(?:Market\s+)?Close(?:\s+Only)?\s*:?\s*\(.*\)\s*:?", re.IGNORECASE)
+# Any line that starts like an early close must parse as one, however long:
+# a long unread one would otherwise pass as a note and leave a quiet gap.
+EARLY_START = re.compile(r"Early\s+(?:Market\s+)?Close\b", re.IGNORECASE)
+# The holiday has no recommendation that year ("Veterans Day" / "None").
+NO_DATE = re.compile(r"None\.?", re.IGNORECASE)
 YEAR_TAB = re.compile(r"(?:19|20)\d\d")
 # "New Year's Day 2025/2026" -> "New Year's Day"
 NAME_YEARS = re.compile(r"\s+(?:19|20)\d\d\s*/\s*(?:19|20)\d\d$")
@@ -82,6 +98,8 @@ MIN_FULL_CLOSES = 9
 # year headings means the page changed shape.
 MIN_ARCHIVE_YEARS = 5
 OTHER_ARCHIVE = re.compile(r"^(?:U\.?\s?K\.?|Japan)\b.*(?:Holiday|Archive)", re.IGNORECASE)
+# "US Holiday Archives 1996-2017", the PDF link after the last year.
+PDF_LINK = re.compile(r"Holiday\s+Archives?\s+(?:19|20)\d\d\s*[-–]\s*(?:19|20)\d\d", re.IGNORECASE)
 
 def _us_section(lines: list[str]) -> list[str]:
     for i, ln in enumerate(lines):
@@ -156,8 +174,10 @@ def _archive_section(lines: list[str]) -> list[str]:
         if YEAR_TAB.fullmatch(ln):
             out = []
             for nxt in lines[i:]:
-                if (SECTION.search(nxt) or OTHER_ARCHIVE.search(nxt)) and len(nxt) <= MAX_NAME_LEN:
-                    break  # another market's section
+                if (SECTION.search(nxt) or OTHER_ARCHIVE.search(nxt) or PDF_LINK.search(nxt)) and len(
+                    nxt
+                ) <= MAX_NAME_LEN:
+                    break  # another market's section, or the PDF link after the last year
                 out.append(nxt)
             return out
     raise ParseError("no year headings in the archive")
@@ -168,8 +188,13 @@ def _parse(lines: list[str], archive: bool) -> ParsedCalendar:
     tabs = sorted({int(ln) for ln in section if YEAR_TAB.fullmatch(ln)})
     days: dict[date, Day] = {}
     holiday: str | None = None
+    under_holiday: set[date] = set()  # dates written under the current heading
     for ln in section:
         if YEAR_TAB.fullmatch(ln):
+            continue
+        if NO_DATE.fullmatch(ln):
+            if holiday is None:
+                raise ParseError(f"{ln!r} before any holiday heading")
             continue
         if m := EARLY.fullmatch(ln):
             if holiday is None:
@@ -181,16 +206,23 @@ def _parse(lines: list[str], archive: bool) -> ParsedCalendar:
             if holiday is None:
                 raise ParseError(f"date before any holiday heading: {ln!r}")
             day = Day(_date(*m.groups(), where=holiday), "closed", holiday)
-        elif EARLY_LABEL.match(ln) or (FULL.search(ln) and len(ln) <= MAX_NAME_LEN):
+        elif EARLY_START.match(ln) or EARLY_LABEL.match(ln) or (FULL.search(ln) and len(ln) <= MAX_NAME_LEN):
             raise ParseError(f"can't read {ln!r} (under {holiday!r})")
         else:
             if len(ln) <= MAX_NAME_LEN:
                 holiday = NAME_YEARS.sub("", ln).strip()
+                under_holiday = set()
             continue  # longer lines are notes or disclaimers
         old = days.get(day.day)
         if old is not None and old != day:
-            raise ParseError(f"{day.day} listed twice, differently: {old} vs {day}")
+            if day.day in under_holiday and {old.status, day.status} == {"closed", "early_close"}:
+                # The holiday's date line plus an early close on that same
+                # date (Good Friday 2015): it closes early, not fully.
+                day = old if old.status == "early_close" else day
+            else:
+                raise ParseError(f"{day.day} listed twice, differently: {old} vs {day}")
         days[day.day] = day
+        under_holiday.add(day.day)
 
     if not days:
         raise ParseError("no holiday dates in the U.S. section")

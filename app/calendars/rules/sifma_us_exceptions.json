@@ -1,0 +1,14 @@
+{
+  "calendar": "SIFMA-US",
+  "about": "SIFMA's unscheduled recommendations that neither its archive page nor its 1996-2019 PDF lists. Covers no years: it only adds these dates.",
+  "exceptions": [
+    {
+      "date": "2025-01-09",
+      "status": "early_close",
+      "close_time": "14:00",
+      "holiday": "National Day of Mourning (President Carter) (early close)",
+      "citation": "https://www.sifma.org/news/press-releases/sifma-recommends-early-market-close-on-january-9-2025-for-the-national-day-of-mourning-in-honor-of-former-president-carter",
+      "note": "Recommended December 30, 2024: a 2:00 p.m. Eastern early close for all fixed-income cash markets."
+    }
+  ]
+}

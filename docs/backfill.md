@@ -22,7 +22,7 @@ Research done 2026-10-04, before building anything. Every source below was read 
 - **Unscheduled recommendations:** the PDF has Hurricane Sandy (Oct 29, 2012 early close at noon, Oct 30 full close) and George H.W. Bush (Dec 5, 2018 full close). Only Jimmy Carter (Jan 9, 2025, early close at 2 p.m.) is missing from both documents and needs a cited exception.
 
   SIFMA's press releases and its Unscheduled Close Market Matrix are the sources. What SIFMA recommended on 9/11, and on the Reagan (2004) and Ford (2007) mourning days, isn't confirmed.
-- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is a noon early close on the archive page (it lists the date and then the noon early close under Good Friday). The PDF still has the original 2015 recommendation: an early close on Thursday, Apr 2 and a full close on Friday, Apr 3. The archive outranks it on Apr 3, but whether the Apr 2 early close still stood isn't settled.
+- **Good Friday:** usually a full close. It's a noon early close in jobs-report years (2010, 2012, 2015, 2021, 2023, 2026), and was 11 a.m. in 2007. 2015 is a noon early close on the archive page (it lists the date and then the noon early close under Good Friday). The PDF still has the original 2015 recommendation: an early close on Thursday, Apr 2 and a full close on Friday, Apr 3. The archive outranks it on Apr 3. The Apr 2 early close is kept from the PDF (Bill, 2026-10-04).
 - **Reliability:** 2005 onward is solid. 1996–2004 has less regular times, so review it by hand.
 
 ## FED: rules, confirmed against NY Fed circulars

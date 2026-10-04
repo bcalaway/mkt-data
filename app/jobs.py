@@ -24,7 +24,7 @@ from app import db
 from app.calendars import rsc, service, text
 from app.calendars.parsed import ParseError
 from app.config import settings
-from app.models import Capture, Source, SourceCheck, SourceDay, SourceYear
+from app.models import Capture, Observation, Source, SourceCheck, SourceDay, SourceYear
 from app.rates import sources as rates
 
 router = APIRouter(prefix="/jobs")
@@ -101,7 +101,8 @@ def rebuild_near_raw(name: str) -> dict:
 
 @router.post("/rates/{source}/capture", dependencies=[Depends(require_token)])
 def capture_rates(source: str, period: str | None = None) -> dict:
-    """Fetch one month (default: the current one, in New York) of a CMT source; keep it raw if new.
+    """Fetch one month (default: the current one, in New York) of a CMT source; keep it raw if new,
+    and record its observations.
 
     `source` is UST-PAR or H15-TCM (app/rates/sources.py), `period` YYYY-MM.
     """
@@ -115,6 +116,18 @@ def capture_rates(source: str, period: str | None = None) -> dict:
         raise HTTPException(400, str(e)) from None
     except service.SourceFetchError as e:
         raise HTTPException(502, f"fetch failed: {e}") from None
+    except ParseError as e:
+        raise HTTPException(422, f"parse failed (raw capture kept): {e}") from None
+
+
+@router.post("/rates/{source}/rebuild", dependencies=[Depends(require_token)])
+def rebuild_rates(source: str) -> dict:
+    """Rebuild a CMT source's observations by replaying every stored capture. No fetch."""
+    key = source.upper()
+    if key not in rates.SOURCES:
+        raise HTTPException(404, f"unknown rate source {source!r}; known: {sorted(rates.SOURCES)}")
+    with db.session() as s:
+        return rates.run_rebuild(s, key)
 
 
 # Raw captures, read-only: for turning a real capture into a test fixture,
@@ -213,7 +226,8 @@ def _applied(s, ids: list[int]) -> set[int]:
         return set()
     years = s.scalars(select(SourceYear.capture_id).where(SourceYear.capture_id.in_(ids)))
     days = s.scalars(select(SourceDay.capture_id).where(SourceDay.capture_id.in_(ids)))
-    return set(years) | set(days)
+    obs = s.scalars(select(Observation.capture_id).where(Observation.capture_id.in_(ids)).distinct())
+    return set(years) | set(days) | set(obs)
 
 
 def _load(s, capture_id: int) -> tuple[Capture, str]:

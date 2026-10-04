@@ -218,6 +218,11 @@ def capture(
             status, ctype, body = _read_repo(url)
         else:
             status, ctype, body = (fetcher or fetch)(url)
+        if not body:
+            # A 200 with nothing in it (H.15 once, 2026-10-04) is a failed
+            # fetch, not content: storing it would hide the real page until
+            # the next run. Raised so the job fails and Airflow retries.
+            raise SourceFetchError(f"{url}: empty response")
     except SourceFetchError as e:
         s.add(SourceCheck(source_id=src.id, outcome="error", detail=str(e)[:2000], period=period))
         s.commit()

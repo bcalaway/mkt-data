@@ -14,9 +14,10 @@ changed value for a day already held is a revision, kept as history.
   tenors but only 11 of them (no 1.5-, 2- or 4-month). History before 1990,
   and a cross-check. Holidays are rows of "ND".
 
-Step B1 keeps them raw only (no parser yet), so the parsers are written
-against real bytes, as phase 1 did with each new document. Both publish on
-U.S. Government Securities Business Days: calendar SIFMA-US (calendar-svc).
+Each capture is parsed (app/rates/parsers.py) into near-raw observations
+(app/rates/near_raw.py): values as printed, per source series key. Both
+publish on U.S. Government Securities Business Days: calendar SIFMA-US
+(calendar-svc).
 """
 
 from dataclasses import dataclass
@@ -26,7 +27,9 @@ from zoneinfo import ZoneInfo
 from sqlalchemy.orm import Session
 
 from app.calendars import service
+from app.calendars.parsed import ParseError
 from app.calendars.service import SourceSpec
+from app.rates import near_raw, parsers
 
 EASTERN = ZoneInfo("America/New_York")
 
@@ -60,11 +63,14 @@ class PeriodSource:
 
 SOURCES: dict[str, PeriodSource] = {
     "UST-PAR": PeriodSource(
-        SourceSpec("UST-PAR", UST_PAR_URL, "US Treasury, Daily Par Yield Curve Rates (XML, by month)", None),
+        SourceSpec("UST-PAR", UST_PAR_URL, "US Treasury, Daily Par Yield Curve Rates (XML, by month)", parsers.parse_ust_par),
         calendar="SIFMA-US", first_period="1990-01",
     ),
     "H15-TCM": PeriodSource(
-        SourceSpec("H15-TCM", H15_TCM_URL, "Federal Reserve H.15, Treasury constant maturities, nominal (CSV, by month)", None),
+        SourceSpec(
+            "H15-TCM", H15_TCM_URL, "Federal Reserve H.15, Treasury constant maturities, nominal (CSV, by month)",
+            parsers.parse_h15_tcm,
+        ),
         calendar="SIFMA-US", first_period="1962-01",
     ),
 }
@@ -93,13 +99,33 @@ def check_period(name: str, period: str) -> str:
 
 
 def run_capture(s: Session, name: str, period: str, fetcher=None) -> dict:
-    """Fetch one month of one source and keep it raw if it's new for that month. Commits."""
+    """Fetch one month of one source, keep it raw if new, and record its observations. Commits.
+
+    The raw capture is committed before parsing, so a parse error never loses
+    what was fetched; the error is recorded on the check and raised (422).
+    """
     src = SOURCES[name]
     period = check_period(name, period)
-    cap, is_new, _check = service.capture(s, src.spec, fetcher, url=src.url(period), period=period)
+    cap, is_new, check = service.capture(s, src.spec, fetcher, url=src.url(period), period=period)
     s.commit()
     out = {"source": name, "period": period, "capture_id": cap.id, "new_capture": is_new,
            "size_bytes": cap.size_bytes}
     if src.spec.parse is None:
-        out |= {"parsed": False, "note": service.NOT_PARSED}
-    return out
+        return out | {"parsed": False, "note": service.NOT_PARSED}
+    try:
+        obs = src.spec.parse(cap.body)
+        result = near_raw.apply_period(s, cap, obs)
+    except ParseError as e:  # raised before any row changes (apply_period checks first)
+        check.parse_outcome, check.parse_detail = "error", str(e)[:2000]
+        s.commit()
+        raise
+    check.parse_outcome = "ok"
+    s.commit()
+    return out | result
+
+
+def run_rebuild(s: Session, name: str) -> dict:
+    """Rebuild one source's observations from every stored capture (near_raw.rebuild)."""
+    src = SOURCES[name]
+    service._source(s, src.spec)
+    return near_raw.rebuild(s, name, src.spec.parse)

@@ -38,7 +38,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 
-import httpx
+import httpx2
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -197,10 +197,10 @@ def _calendar(s: Session, spec: CalendarSpec) -> Calendar:
 
 def fetch(url: str) -> tuple[int, str | None, bytes]:
     try:
-        r = httpx.get(
+        r = httpx2.get(
             url, timeout=FETCH_TIMEOUT_SECONDS, follow_redirects=True, headers={"User-Agent": USER_AGENT}
         )
-    except httpx.HTTPError as e:
+    except httpx2.HTTPError as e:
         raise SourceFetchError(f"{url}: {e}") from None
     if r.status_code != 200:
         raise SourceFetchError(f"{url}: HTTP {r.status_code}")

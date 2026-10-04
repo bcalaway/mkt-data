@@ -106,3 +106,34 @@ def test_label_values_are_escaped():
     out = metrics._Out()
     out.metric("m", "gauge", "h", [({"a": 'x"y\\z'}, 1.5)])
     assert re.search(r'^m\{a="x\\"y\\\\z"\} 1\.5$', out.text(), re.MULTILINE)
+
+
+def test_upcoming_closes_and_early_closes(migrated_db, nyse_html, today):
+    with db.session() as s:
+        service.run_capture(s, "NYSE", _fetcher(nyse_html))
+    m = _scrape()
+    up = {k: v for k, v in m.items() if k.startswith('mkt_data_calendar_upcoming_day{calendar="NYSE"')}
+    thanksgiving = ('mkt_data_calendar_upcoming_day{calendar="NYSE",date="2026-11-26",weekday="Thu",'
+                    'holiday="Thanksgiving Day",status="closed",close_time="",projected="no"}')
+    assert up[thanksgiving] == 53
+    early = [k for k in up if 'date="2026-11-27"' in k]
+    assert len(early) == 1 and 'status="early_close"' in early[0] and 'close_time="13:00"' in early[0]
+    days = sorted(up.values())
+    assert days[0] >= 0 and days[-1] <= metrics.UPCOMING_DAYS  # nothing past or beyond the window
+    assert m['mkt_data_calendar_gap_years{calendar="NYSE"}'] == 0
+
+
+def test_a_coverage_gap_is_reported_by_year(migrated_db, monkeypatch, today):
+    import json
+
+    from tests.test_calendar_service import _json_source
+
+    page = {"years": [2020, 2023], "days": [["2020-01-01", "closed", "New Year's Day", None]]}
+    spec = service.CalendarSpec("X", "test", "America/New_York", (_json_source("X-PUB"),))
+    monkeypatch.setattr(service, "CALENDARS", {"X": spec})
+    with db.session() as s:
+        service.run_capture(s, "X", lambda url: (200, "application/json", json.dumps(page).encode()))
+    m = _scrape()
+    assert m['mkt_data_calendar_gap_years{calendar="X"}'] == 2
+    assert m['mkt_data_calendar_gap_year{calendar="X",year="2021"}'] == 1
+    assert m['mkt_data_calendar_gap_year{calendar="X",year="2022"}'] == 1

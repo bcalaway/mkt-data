@@ -11,11 +11,13 @@ The platform's Grafana alert rules (nyc_pa_aws_gitops) use:
 - mkt_data_source_parse_ok: the latest parse of a source failed;
 - mkt_data_calendar_next_year_overdue: next year isn't published by a
   publisher yet, past its usual date (projections don't count).
-The rest is for the market-data dashboard (step 8).
+The rest is for the market-data dashboard (step 8, the platform's Grafana
+"Market data" dashboard), including the coverage gaps and the upcoming closes
+(one series per date, labelled with the holiday; the value is days until it).
 """
 
 from collections import defaultdict
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from fastapi import APIRouter, Response
 from sqlalchemy import func, select
@@ -28,6 +30,10 @@ from app.models import Calendar, CalendarDay, CalendarYear, Capture, Source, Sou
 router = APIRouter()
 
 FETCHED = ("new", "unchanged")
+# How far ahead mkt_data_calendar_upcoming_day lists closes: about two
+# quarters, a dozen or so series per calendar (one per date, so the series
+# set only changes as days roll in and out).
+UPCOMING_DAYS = 180
 
 
 class _Out:
@@ -130,7 +136,18 @@ def _collect(s, out: _Out, today: date) -> None:
     ):
         days[(cid, status)] = n
 
+    upcoming_rows = defaultdict(list)  # calendar id -> current rows in the next UPCOMING_DAYS days
+    for r in s.scalars(
+        select(CalendarDay).where(
+            CalendarDay.valid_to.is_(None),
+            CalendarDay.day >= today,
+            CalendarDay.day <= today + timedelta(days=UPCOMING_DAYS),
+        ).order_by(CalendarDay.day)
+    ):
+        upcoming_rows[r.calendar_id].append(r)
+
     count, first, last, rows, published, overdue = [], [], [], [], [], []
+    gap_count, gap_years, upcoming = [], [], []
     for cal in specs.values():
         cid = cal_ids.get(cal.name)
         if cid is None:
@@ -142,11 +159,32 @@ def _collect(s, out: _Out, today: date) -> None:
             last.append((labels, max(ys)))
         for status in ("closed", "early_close"):
             rows.append(({"calendar": cal.name, "status": status}, days[(cid, status)]))
+        covered = {y for ys in years[cid].values() for y in ys}
+        if covered:
+            missing = sorted(set(range(min(covered), max(covered) + 1)) - covered)
+            gap_count.append(({"calendar": cal.name}, len(missing)))
+            gap_years += [({"calendar": cal.name, "year": str(y)}, 1) for y in missing]
+        projected_years = set(years[cid]["projected"])
+        for d in upcoming_rows.get(cid, []):
+            upcoming.append(({
+                "calendar": cal.name,
+                "date": d.day.isoformat(),
+                "weekday": f"{d.day:%a}",
+                "holiday": d.holiday,
+                "status": d.status,
+                "close_time": d.close_time.strftime("%H:%M") if d.close_time else "",
+                "projected": "yes" if d.day.year in projected_years else "no",
+            }, (d.day - today).days))
         nxt = today.year + 1
         is_published = nxt in years[cid]["published"]
         due = date(today.year, *cal.next_year_due)
         published.append(({"calendar": cal.name, "year": str(nxt)}, int(is_published)))
         overdue.append(({"calendar": cal.name, "year": str(nxt)}, int(not is_published and today >= due)))
+    out.metric("mkt_data_calendar_gap_years", "gauge",
+               "Years between the first and last covered year that no source covers.", gap_count)
+    out.metric("mkt_data_calendar_gap_year", "gauge", "1 for each uncovered year inside a calendar's range.", gap_years)
+    out.metric("mkt_data_calendar_upcoming_day", "gauge",
+               f"Days from today until each close or early close in the next {UPCOMING_DAYS} days.", upcoming)
     out.metric("mkt_data_calendar_years", "gauge", "Years covered, by kind of source (published, rules, projected).", count)
     out.metric("mkt_data_calendar_first_year", "gauge", "First covered year, by kind of source.", first)
     out.metric("mkt_data_calendar_last_year", "gauge", "Last covered year, by kind of source.", last)

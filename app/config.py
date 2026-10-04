@@ -35,6 +35,10 @@ class Settings:
     # business-day); the Airflow token works there too.
     read_token: str | None = os.environ.get("READ_TOKEN")
 
+    # calendar-svc's gRPC server (phase 2, Part A): the comparison job (step
+    # A4) reads its golden calendars to check them against calendar_day.
+    calendar_svc_grpc: str = os.environ.get("CALENDAR_SVC_GRPC", "calendar-svc:9090")
+
     # gRPC server (ADR-0020): internal-only, port 9090 by convention.
     grpc_port: int = int(os.environ.get("GRPC_PORT", "9090"))
 

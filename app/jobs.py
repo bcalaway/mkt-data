@@ -22,7 +22,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import select
 
 from app import db
-from app.calendars import rsc, service, text
+from app.calendars import compare, rsc, service, text
 from app.calendars.parsed import ParseError
 from app.config import settings
 from app.models import CalendarDay, CalendarYear, Capture, Source, SourceCheck
@@ -97,6 +97,23 @@ def rebuild_near_raw(name: str) -> dict:
     key = _calendar(name)
     with db.session() as s:
         return service.run_near_raw_rebuild(s, key)
+
+
+@router.post("/calendars/compare-with-calendar-svc", dependencies=[Depends(require_token)])
+def compare_with_calendar_svc() -> dict:
+    """Phase 2, step A4: is calendar-svc's golden calendar the same as calendar_day?
+
+    Always 200 with the comparison (`equal`, then each calendar's differences);
+    502 only if calendar-svc can't be reached. The DAG fails its task when not equal.
+    """
+    svc = compare.CalendarSvc(settings.calendar_svc_grpc)
+    try:
+        with db.session() as s:
+            return compare.run(s, svc.read)
+    except Exception as e:  # grpc.RpcError and friends, without importing grpc here
+        if type(e).__module__.startswith("grpc"):
+            raise HTTPException(502, f"calendar-svc unreachable: {e}") from None
+        raise
 
 
 @router.get("/calendars/{name}/business-day", dependencies=[Depends(require_read_token)])

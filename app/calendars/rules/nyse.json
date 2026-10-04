@@ -282,6 +282,6 @@
   ],
   "notes": {
     "Late openings and short halts": "Not stored: the calendar holds closed days and early closes only.",
-    "Unverified": "The history document's Aug 9, 1996 'floor closed at 3:00 pm, hurricane watch' isn't included: it came through the summarizer only and isn't confirmed elsewhere."
+    "Not 1996": "The history's 'floor closed at 3:00 pm, hurricane watch' entry is Aug 9, 1976 (a Monday, Hurricane Belle), not 1996 as a summarizer once read it; the 2008 revision of the same document (ltadvisors.net/Info/research/closings.pdf) prints 1976. Nothing is missing for 1996 (checked 2026-10-04)."
   }
 }

@@ -26,6 +26,9 @@ mako|sqlalchemy/mako|rel_VER_|.|1.3.10
 markupsafe|pallets/markupsafe|VER|src|3.0.2
 fastapi|fastapi/fastapi|VER|.|$(pin fastapi)
 httpx|encode/httpx|VER|.|$(pin httpx)
+httpx2|pydantic/httpx2|vVER|src/httpx2|$(pin httpx2)
+httpcore2|pydantic/httpx2|vVER|src/httpcore2|$(pin httpx2)
+truststore|sethmlarson/truststore|vVER|src|0.10.4
 httpcore|encode/httpcore|VER|.|1.0.9
 authlib|authlib/authlib|vVER|.|$(pin authlib)
 joserfc|authlib/joserfc|VER|src|1.7.5

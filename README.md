@@ -36,11 +36,11 @@ gRPC: edit `proto/*.proto`, run `./gen_proto.sh`, implement the servicer in `app
 
 ## Jobs and DAGs
 
-Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`:
+Airflow runs the schedules; the work happens here (ADR-0031 in `nyc_pa_aws_gitops`). `app/jobs.py` is the job API under `/jobs/`, and every endpoint needs `Authorization: Bearer $AIRFLOW_TOKEN`. `{name}` is a calendar in `CALENDARS` (`app/calendars/service.py`): `FED` or `SIFMA-US`.
 
-- `POST /jobs/calendars/{FED}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
-- `POST /jobs/calendars/{FED}/reparse` re-applies the latest capture, for example after a parser fix.
-- `GET /jobs/calendars/{FED}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
+- `POST /jobs/calendars/{name}/capture` fetches the source, keeps it raw if it changed, and applies the parse with history.
+- `POST /jobs/calendars/{name}/reparse` re-applies the latest capture, for example after a parser fix.
+- `GET /jobs/calendars/{name}/business-day?on=YYYY-MM-DD` answers whether that date is a business day. It's meant for DAGs' short-circuit first task.
 
 DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 

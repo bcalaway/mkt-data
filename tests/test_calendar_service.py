@@ -87,3 +87,30 @@ def test_business_day(migrated_db, fed_html):
         assert service.business_day(s, "FED", date(2026, 10, 3))["status"] == "weekend"
         with pytest.raises(service.NotCovered):
             service.business_day(s, "FED", date(2031, 3, 4))
+
+
+def test_sifma_capture_and_early_close(migrated_db, sifma_html):
+    with db.session() as s:
+        out = service.run_capture(s, "SIFMA-US", _fetcher(sifma_html))
+    assert out["years"] == [2026] and out["added"] == out["closed_days"] == 19
+    with db.session() as s:
+        gf = service.business_day(s, "SIFMA-US", date(2026, 4, 3))
+        assert gf == {
+            "calendar": "SIFMA-US", "date": "2026-04-03", "business_day": True,
+            "status": "early_close", "holiday": "Good Friday (early close)", "close_time": "12:00",
+        }
+        assert service.business_day(s, "SIFMA-US", date(2026, 11, 26))["business_day"] is False
+        assert service.business_day(s, "SIFMA-US", date(2026, 11, 30))["status"] == "open"
+        with pytest.raises(service.NotCovered):  # Jan 1, 2027 is stored, but 2027 isn't published
+            service.business_day(s, "SIFMA-US", date(2027, 3, 1))
+
+
+def test_calendars_are_independent(migrated_db, fed_html, sifma_html):
+    with db.session() as s:
+        service.run_capture(s, "FED", _fetcher(fed_html))
+        service.run_capture(s, "SIFMA-US", _fetcher(sifma_html))
+    with db.session() as s:
+        # Good Friday: the Fed is open; SIFMA recommends a noon close.
+        assert service.business_day(s, "FED", date(2026, 4, 3))["status"] == "open"
+        assert service.business_day(s, "SIFMA-US", date(2026, 4, 3))["status"] == "early_close"
+        assert _count(s, Capture) == 2

@@ -14,8 +14,9 @@ from pathlib import Path
 
 from airflow.sdk import dag, task
 
-# The platform's helper lives at the DAG root (dags/home_platform_jobs.py).
-# Airflow normally has that folder on sys.path; this makes sure of it.
+# The platform's helper lives at Airflow's DAG root (home_platform_jobs.py);
+# this repo's dags/ is delivered to dags/mkt-data/ there, so the root is
+# one level up. Airflow normally has it on sys.path; this makes sure of it.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from home_platform_jobs import call_app_job
 

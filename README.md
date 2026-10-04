@@ -2,7 +2,7 @@
 
 The data pipeline of Bill's market data platform: it sources market data, keeps every raw capture, turns it into processed tables keyed on internal IDs, and reports on its own health. It runs on the home platform's AWS hub (`bcalaway/nyc_pa_aws_gitops`) as a registry app (`apps/registry.yml`: own Postgres database, no Authentik client, no previews), and Airflow is the platform's shared scheduler.
 
-Phase 1, holiday calendars end to end, is complete: see [docs/phase-1.md](docs/phase-1.md). Phase 2 is Treasury CMT yields end to end: near-raw observations here, plus the security master, quote store and first custom UI: see [docs/phase-2.md](docs/phase-2.md).
+Phase 1, holiday calendars end to end, is complete: see [docs/phase-1.md](docs/phase-1.md). Phase 2 moves golden copies into services: calendars first (calendar-svc), then Treasury CMT yields with near-raw observations here plus the security master, quote store and first custom UI: see [docs/phase-2.md](docs/phase-2.md).
 
 ## How it runs
 

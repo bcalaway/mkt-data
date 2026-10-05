@@ -18,6 +18,7 @@ Trigger it from the Airflow UI with the defaults (both sources, full
 history to last month), or narrow it with the params.
 """
 
+import re
 import sys
 import time
 from datetime import UTC, datetime, timedelta
@@ -51,8 +52,22 @@ def last_month(now: datetime) -> str:
     return f"{prev.year:04d}-{prev.month:02d}"
 
 
+def month_param(value, name: str) -> str:
+    """A YYYY-MM month from a param: "" or None for unset; also takes YYYY-M, YYYY-MM-DD and YYYY/MM."""
+    v = str(value or "").strip().replace("/", "-")
+    if not v:
+        return ""
+    m = re.fullmatch(r"(\d{4})-(\d{1,2})(-\d{1,2})?", v)
+    if not m or not 1 <= int(m.group(2)) <= 12:
+        raise ValueError(f"{name} {value!r} isn't a month like 1990-01")
+    return f"{int(m.group(1)):04d}-{int(m.group(2)):02d}"
+
+
 def plan_batches(source: str, start: str, end: str, now: datetime) -> list[dict]:
-    """One batch per source and year, oldest first."""
+    """One batch per source and year, oldest first. Raises ValueError when there's nothing to do."""
+    if source not in (*FIRST, "both"):
+        raise ValueError(f"source {source!r} isn't one of both, {', '.join(FIRST)}")
+    start, end = month_param(start, "start"), month_param(end, "end")
     sources = list(FIRST) if source == "both" else [source]
     end = end or last_month(now)
     batches = []
@@ -62,6 +77,8 @@ def plan_batches(source: str, start: str, end: str, now: datetime) -> list[dict]
         for p in months(lo, end):
             by_year.setdefault(p[:4], []).append(p)
         batches += [{"source": src, "year": y, "periods": ps} for y, ps in sorted(by_year.items())]
+    if not batches:
+        raise ValueError(f"nothing to capture: start {start or '(first month)'} is after end {end}")
     return batches
 
 
@@ -85,7 +102,11 @@ def treasury_cmt_backfill():
     @task
     def plan() -> list[dict]:
         p = get_current_context()["params"]
-        return plan_batches(p["source"], p["start"], p["end"], datetime.now(UTC))
+        print(f"params: source={p.get('source')!r} start={p.get('start')!r} end={p.get('end')!r}")
+        batches = plan_batches(p.get("source") or "both", p.get("start"), p.get("end"), datetime.now(UTC))
+        print(f"plan: {len(batches)} source-years, {sum(len(b['periods']) for b in batches)} months, "
+              f"{batches[0]['source']} {batches[0]['periods'][0]} to {batches[-1]['source']} {batches[-1]['periods'][-1]}")
+        return batches
 
     @task(max_active_tis_per_dagrun=1)
     def capture_year(batch: dict) -> dict:

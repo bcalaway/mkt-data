@@ -1,14 +1,19 @@
-"""mkt-data: capture Treasury CMT yields raw (docs/phase-2.md, Part B step 1).
+"""mkt-data: capture Treasury CMT yields (docs/phase-2.md, Part B steps 1 and 2).
 
 Weekdays in the evening (New York), after Treasury posts the day's par yield
 curve (usually by 6 p.m.) and the Fed's H.15 posts the previous day's (4:15
 p.m.): mkt-data fetches the current month of each source and keeps it raw if
 it changed (one capture per source and month). In the first days of a month
 it also re-fetches the previous month, so the last days of the old month and
-any late revision land. Kept raw only until step B2 adds the parsers. The work
-runs in the mkt-data container; this DAG only calls its job API (ADR-0031 in
-nyc_pa_aws_gitops). A failed run retries, and Grafana's "Airflow task failed"
-alert fires if retries run out.
+any late revision land. Each capture is parsed into near-raw observations.
+
+Each successful task marks the Airflow Asset `mkt_data_cmt_observations`;
+quote-svc's load DAG is scheduled on it (phase 2, step B5), so a new day's
+curve reaches the golden quotes within minutes. quote-svc re-reads only
+months whose newest capture changed, so a capture that changed nothing costs
+it one listing. The work runs in the mkt-data container; this DAG only calls
+its job API (ADR-0031 in nyc_pa_aws_gitops). A failed run retries, and
+Grafana's "Airflow task failed" alert fires if retries run out.
 """
 
 import sys
@@ -16,7 +21,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from airflow.sdk import dag, task
+from airflow.sdk import Asset, dag, task
 
 # The platform's helper lives at Airflow's DAG root (home_platform_jobs.py);
 # this repo's dags/ is delivered to dags/mkt-data/ there, so the root is
@@ -25,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from home_platform_jobs import call_app_job
 
 SOURCES = ("UST-PAR", "H15-TCM")
+# quote-svc's load DAG (quote_svc__load) is scheduled on this.
+CMT_OBSERVATIONS = Asset("mkt_data_cmt_observations")
 
 
 def _periods(now: datetime) -> list[str]:
@@ -48,7 +55,7 @@ def _periods(now: datetime) -> list[str]:
     doc_md=__doc__,
 )
 def treasury_cmt_capture():
-    @task
+    @task(outlets=[CMT_OBSERVATIONS])
     def capture(source: str) -> list[dict]:
         now = datetime.now(ZoneInfo("America/New_York"))
         return [call_app_job("mkt-data", f"rates/{source}/capture?period={p}", timeout=180) for p in _periods(now)]

@@ -62,6 +62,7 @@ def test_a_capture_records_its_months_observations(migrated_db):
     with db.session() as s:
         out = rates.run_capture(s, "UST-PAR", "2026-09", _fetcher(UST_SEP))
     assert out["new_capture"] is True and out["values"] == 21 * 14 and out["days"] == 21 and out["added"] == 21 * 14
+    assert out["last_date"] == "2026-09-30"
     with db.session() as s:
         ten = _current(s, "BC_10YEAR", date(2026, 9, 1))
         assert len(ten) == 1 and ten[0].value == Decimal("4.79") and ten[0].unit == "percent"

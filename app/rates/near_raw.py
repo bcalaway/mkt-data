@@ -51,7 +51,9 @@ def apply_period(s: Session, cap: Capture, obs: list[Obs]) -> dict:
                 value=o.value, unit=o.unit, capture_id=cap.id, valid_from=at,
             ))
     s.flush()
-    return {"values": len(new), "days": len({k[1] for k in new}), "added": added, "changed": changed,
+    last = max((k[1] for k in new), default=None)
+    return {"values": len(new), "days": len({k[1] for k in new}), "last_date": last.isoformat() if last else None,
+            "added": added, "changed": changed,
             "removed": len(to_close) - changed}
 
 

@@ -113,8 +113,9 @@ def plan_batches(source: str, start: str, end: str, now: datetime) -> list[dict]
     default_args={"retries": 1, "retry_delay": timedelta(minutes=5)},
     params={
         "source": Param("both", enum=["both", "UST-PAR", "H15-TCM"]),
-        "start": Param("", type="string", description="YYYY-MM; empty for each source's first month"),
-        "end": Param("", type="string", description="YYYY-MM; empty for last month"),
+        # Optional: Airflow's form won't submit an empty plain-string param.
+        "start": Param(None, type=["null", "string"], description="YYYY-MM; empty for each source's first month"),
+        "end": Param(None, type=["null", "string"], description="YYYY-MM; empty for last month"),
     },
     tags=["mkt-data", "rates", "treasury", "backfill"],
     doc_md=__doc__,

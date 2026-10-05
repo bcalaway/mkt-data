@@ -66,3 +66,25 @@ def test_full_history_plan(backfill):
 def test_a_narrowed_plan_never_starts_before_the_source(backfill):
     batches = backfill.plan_batches("UST-PAR", "1985-01", "1990-03", NOW)
     assert [b["periods"] for b in batches] == [["1990-01", "1990-02", "1990-03"]]
+
+
+@pytest.mark.parametrize("given,month", [
+    ("1990-01", "1990-01"), ("1990-1", "1990-01"), (" 1990-12 ", "1990-12"), ("1990-12-31", "1990-12"),
+    ("1990/03", "1990-03"), ("", ""), (None, ""),
+])
+def test_month_params(backfill, given, month):
+    assert backfill.month_param(given, "start") == month
+
+
+@pytest.mark.parametrize("bad", ["Jan 1990", "1990-13", "90-01"])
+def test_bad_month_params(backfill, bad):
+    with pytest.raises(ValueError, match="isn't a month"):
+        backfill.month_param(bad, "start")
+
+
+def test_an_empty_plan_is_an_error_not_a_quiet_success(backfill):
+    with pytest.raises(ValueError, match="nothing to capture"):
+        backfill.plan_batches("UST-PAR", "1990-12", "1990-01", NOW)
+    with pytest.raises(ValueError, match="source"):
+        backfill.plan_batches("UST", "", "", NOW)
+    assert len(backfill.plan_batches("UST-PAR", "1990-1", "1990-12-31", NOW)[0]["periods"]) == 12

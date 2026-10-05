@@ -70,7 +70,7 @@ Notes:
 - **Capture unit:** one capture per source per month (`capture.period`, `2026-10`), for both sources. During a month, each day's fetch of the current month either matches the last capture (unchanged) or is a new version that adds the day. A changed value for a day already held is a **revision**: a new observation version in near-raw, and history in the quote store.
 - **Terms:** Treasury and Board data are U.S. Government works. Step 1 records each source's terms page next to its URL.
 - **Lookback risk is nil** for both: each serves its full history, which is why backup capture can wait.
-- **Publication calendar:** Treasury publishes on U.S. Government Securities Business Days, which is calendar SIFMA-US. To verify in step B6 from the data itself: every SIFMA-US business day from 1996 has a curve, no full close has one, and what happens on SIFMA's early-close days (expected: published). Any exception becomes a cited exception in a publication calendar, like phase 1's rules files.
+- **Publication calendar:** Treasury publishes on U.S. Government Securities Business Days, which is calendar SIFMA-US. Checked in step B6 against 1996–2026: every SIFMA-US business day has a curve, every early close has one, and every full close has none, except 1996-04-05 (below).
 
 ## Near-raw observations (mkt-data)
 
@@ -174,7 +174,15 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
    - **Metrics:** load health, quotes by source, golden values and first and last dates per instrument, source disagreements and unmapped keys.
    - **Trigger:** `quote_svc__load` runs on the Asset `mkt_data_cmt_observations`, which `mkt_data__treasury_cmt_capture` now marks, plus nightly at 07:13 UTC.
    - **On the hub:** a capture fired the load within a second. UST-PAR 322 quotes (September 294, October 28), H15-TCM 242 (231, 11), no unmapped keys, zero disagreements, and 322 golden yields for all 14 instruments, 2026-09-01 to 2026-10-02, all from UST-PAR.
-6. **Backfill.** UST-PAR from 1990 (one capture per month, ~440 captures); H15-TCM from each series' start; then a full quote-svc load. Record each series' real first date, gaps and tenor changes; check the publication calendar against SIFMA-US; reconcile the overlap from 1990 (every disagreement reported, none expected).
+6. ✅ **Backfill** (mkt-data #57–#61, quote-svc #3–#6, secmaster-svc #3; done 2026-10-05).
+   - **Tools:** DAG `mkt_data__treasury_cmt_backfill` (manual; `source`, `start`, `end`, a year at a time, fetch retries for the Fed's empty answers) and `mkt_data__treasury_cmt_rebuild` (replays every capture through the parsers). quote-svc loads a month per transaction and computes coverage against calendar-svc's calendars (`quote_svc_coverage_*`).
+   - **Captured:** UST-PAR 441 months, 1990-01 to 2026-09, every one parsed (October 2010 needed the parser to skip Columbus Day's empty entry); H15-TCM 777 months, 1962-01 to 2026-09. On the hub: 97,126 UST-PAR and 147,058 H15-TCM quotes; the full load peaked at about 110 MB of quote-svc's 256 MB.
+   - **The two sources agree exactly:** on every date both have since 1990, every tenor's value is identical (`quote_svc_source_disagreements` is empty). UST-PAR is golden from 1990, H15-TCM before.
+   - **First dates:** UST-PAR starts 1990-01-02, and the new bills' first dates match secmaster-svc's notes (1M 2001-07-31, 2M 2018-10-16, 4M 2022-10-19, 1.5M 2025-02-18). H.15 starts earlier, now `h15-first` notes: 1Y, 3Y, 5Y, 10Y and 20Y 1962-01-02; 7Y 1969-07-01; 2Y 1976-06-01; 30Y 1977-02-15; 3M and 6M 1981-09-01.
+   - **Gaps:** the 20-year has nothing from 1987-01-02 to 1993-09-30 in either source, and Treasury's 30-year nothing from 2002-02-19 to 2006-02-08, both as the notes say. H.15 does have 30-year values in that window, but they aren't Treasury-published market values, so golden leaves the gap (Bill, 2026-10-05; quote-svc's `GOLDEN_EXCLUDE`); they stay as H15-TCM quotes. Treasury's 3-month is also blank on 2008-12-10, 12-18 and 12-24, as is H.15's.
+   - **Publication calendar:** the backfill found three bond-market closes SIFMA-US had as open (2001-09-11 and 12, 2004-06-11, Reagan's day of mourning), now cited exceptions in `sifma_us_exceptions.json` (#61). The one full close with a curve is Good Friday 1996-04-05: SIFMA's 1996–2019 PDF lists it as a recommended full close, but the jobs report came out and Treasury published, so SIFMA-US is right as SIFMA's recommendation and this is recorded here as the one day Treasury published on a SIFMA close.
+   - **Before 1996** coverage uses the Fed's calendar (1986–1995) and plain weekdays before that, so the bond market's own closes show as missing days: from 1990, Good Fridays (1990–1995), 1992-07-03, 1993-12-24 and Nixon's funeral (1994-04-27), 9 days in all per tenor; before 1986, every weekday holiday. A bond calendar before 1996 would need its own source; left as a known limit.
+   - **Also:** `mkt_data__treasury_cmt_backfill`'s `start` and `end` can be left blank in Airflow's form (#60).
 7. **Schedule.** `mkt_data__ust_par`: weekdays from 6:30 p.m. Eastern, first task the SIFMA-US business-day check (asked of calendar-svc), then capture the current month (and the previous one for the first few days of a month), retrying until about 10 p.m.; marks the Asset when it loads new observations. `mkt_data__h15_tcm`: weekdays after 4:15 p.m. Eastern, same pattern. `quote_svc__load`: on the Asset, plus nightly. New DAGs start paused.
 8. **Monitoring.** The gauges and alert rules above (alert rules in nyc_pa_aws_gitops, like phase 1), and the Grafana rows.
 9. **mkt-api and mkt-ui.** The gateway and the three screens above.
@@ -201,7 +209,7 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 Settled in the steps:
 
 - H.15's exact package URL and series list, and each series' first date (steps B1 and B6).
-- Whether Treasury publishes on every SIFMA early-close day, and any day where Treasury and SIFMA-US disagree (step B6).
+- Whether Treasury publishes on every SIFMA early-close day (yes), and any day where Treasury and SIFMA-US disagree (three closes added to SIFMA-US; 1996-04-05; step B6).
 - How often Treasury revises a published day, which sets whether revisions stay info or become warn (after a month of daily captures).
 
 ## Later (not this phase)

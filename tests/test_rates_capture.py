@@ -199,3 +199,5 @@ def test_metrics_label_the_cmt_sources(migrated_db):
     text = client.get("/metrics").text
     assert 'mkt_data_source_captures{calendar="SIFMA-US",source="UST-PAR",kind="published"} 1' in text
     assert 'mkt_data_source_parse_ok{calendar="SIFMA-US",source="UST-PAR",kind="published"} 1' in text
+    # 2026-09-30 00:00 UTC: each key's latest date in the source's newest month.
+    assert 'mkt_data_observation_last_date_timestamp_seconds{calendar="SIFMA-US",source="UST-PAR",key="BC_10YEAR"} 1790726400' in text

@@ -21,7 +21,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.calendars import service
-from app.models import Capture, Source, SourceCheck
+from app.models import Capture, Observation, Source, SourceCheck
 from app.rates import sources as rates
 
 router = APIRouter()
@@ -69,6 +69,10 @@ def metrics() -> Response:
     return Response(out.text(), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
+def _day(d) -> float:
+    return datetime(d.year, d.month, d.day, tzinfo=UTC).timestamp()
+
+
 def _collect(s, out: _Out) -> None:
     specs = service.CALENDARS
     source_ids = {n: i for n, i in s.execute(select(Source.name, Source.id))}
@@ -111,3 +115,23 @@ def _collect(s, out: _Out) -> None:
     out.metric("mkt_data_source_parse_ok", "gauge", "1 if the source's latest parse worked, 0 if it failed.", parse_ok)
     out.metric("mkt_data_source_captures", "gauge", "Raw captures stored for the source.", captures)
     out.metric("mkt_data_source_capture_bytes", "gauge", "Raw bytes stored for the source.", size)
+
+    # Per CMT source and key: the latest date with a current value, read from the source's newest month only
+    # (an index range, not the whole history). A key the newest month lacks drops out.
+    last_dates = []
+    for name, src in sorted(rates.SOURCES.items()):
+        sid = source_ids.get(name)
+        if sid is None:
+            continue
+        newest = s.scalar(select(func.max(Observation.period)).where(Observation.source_id == sid))
+        if newest is None:
+            continue
+        for key, as_of in s.execute(
+            select(Observation.source_key, func.max(Observation.as_of))
+            .where(Observation.source_id == sid, Observation.period == newest, Observation.valid_to.is_(None))
+            .group_by(Observation.source_key).order_by(Observation.source_key)
+        ):
+            last_dates.append(({"calendar": src.calendar, "source": name, "key": key}, _day(as_of)))
+    out.metric("mkt_data_observation_last_date_timestamp_seconds", "gauge",
+               "Each CMT source key's latest date with a value (midnight UTC), from the source's newest month.",
+               last_dates)

@@ -88,3 +88,35 @@ def test_an_empty_plan_is_an_error_not_a_quiet_success(backfill):
     with pytest.raises(ValueError, match="source"):
         backfill.plan_batches("UST", "", "", NOW)
     assert len(backfill.plan_batches("UST-PAR", "1990-1", "1990-12-31", NOW)[0]["periods"]) == 12
+
+
+def test_a_failed_fetch_is_retried_and_a_parse_failure_is_not(backfill):
+    calls, pauses = [], []
+
+    def flaky(app, job, timeout):
+        calls.append(job)
+        if len(calls) < 3:
+            raise backfill.AppJobError("mkt-data POST ...: HTTP 502: fetch failed: empty response")
+        return {"new_capture": True}
+
+    assert backfill.capture_with_retries("H15-TCM", "1980-03", call=flaky, sleep=pauses.append) == {"new_capture": True}
+    assert len(calls) == 3 and pauses == [10, 30]
+
+    def broken(app, job, timeout):
+        calls.append(job)
+        raise backfill.AppJobError("HTTP 422: parse failed")
+
+    calls.clear()
+    with pytest.raises(backfill.AppJobError, match="422"):
+        backfill.capture_with_retries("UST-PAR", "2010-10", call=broken, sleep=pauses.append)
+    assert len(calls) == 1
+
+    def down(app, job, timeout):
+        calls.append(job)
+        raise backfill.AppJobError("HTTP 502: fetch failed")
+
+    calls.clear()
+    pauses.clear()
+    with pytest.raises(backfill.AppJobError):
+        backfill.capture_with_retries("H15-TCM", "1980-04", call=down, sleep=pauses.append)
+    assert len(calls) == 4 and pauses == [10, 30, 60]

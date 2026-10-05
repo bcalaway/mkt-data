@@ -9,7 +9,9 @@ order, with a pause between requests to be polite to treasury.gov and
 federalreserve.gov: about 1,200 months take roughly an hour.
 
 Safe to re-run: a month already captured with the same content is
-"unchanged" and adds nothing. A month that fails (fetch or parse) is listed
+"unchanged" and adds nothing (it's parsed again, so a parser fix reaches it).
+A fetch that fails is retried after 10, 30 and 60 seconds (the Fed's
+download service often answers an empty body). A month that still fails is listed
 and the backfill carries on; the last task fails if any did, so they're
 visible, and re-running retries just those cheaply. It marks the Asset
 `mkt_data_cmt_observations` at the end, so quote-svc loads everything.
@@ -35,6 +37,25 @@ from home_platform_jobs import AppJobError, call_app_job
 FIRST = {"UST-PAR": "1990-01", "H15-TCM": "1962-01"}
 PAUSE_SECONDS = 2
 CMT_OBSERVATIONS = Asset("mkt_data_cmt_observations")
+
+
+# A fetch that fails (HTTP 502 from the job: the Fed's download service
+# answers about half of quick requests with an empty body) is tried again
+# after these pauses. Parse failures (422) aren't retried: the same bytes
+# would fail again.
+RETRY_PAUSES = (10, 30, 60)
+
+
+def capture_with_retries(source: str, period: str, call=None, sleep=time.sleep) -> dict:
+    call = call or call_app_job
+    for pause in (*RETRY_PAUSES, None):
+        try:
+            return call("mkt-data", f"rates/{source}/capture?period={period}", timeout=180)
+        except AppJobError as e:
+            if pause is None or "HTTP 502" not in str(e):
+                raise
+            sleep(pause)
+    raise AssertionError("unreachable")
 
 
 def months(start: str, end: str) -> list[str]:
@@ -113,7 +134,7 @@ def treasury_cmt_backfill():
         out = {"source": batch["source"], "year": batch["year"], "new": 0, "unchanged": 0, "values": 0, "failed": []}
         for period in batch["periods"]:
             try:
-                r = call_app_job("mkt-data", f"rates/{batch['source']}/capture?period={period}", timeout=180)
+                r = capture_with_retries(batch["source"], period)
                 out["new" if r.get("new_capture") else "unchanged"] += 1
                 out["values"] += r.get("values", 0)
             except AppJobError as e:

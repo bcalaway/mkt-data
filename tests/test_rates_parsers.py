@@ -94,3 +94,28 @@ def test_a_new_treasury_tenor_needs_no_parser_change():
         1,
     )
     assert _by(parse_ust_par(feed))[("BC_5MONTH", date(2026, 10, 1))] == Decimal("4.30")
+
+
+def _blank_day(feed: bytes, day: bytes) -> bytes:
+    """Treasury's feed with every tenor of one day's entry null, as it lists a closed day."""
+    import re
+
+    start = feed.index(day)
+    start = feed.rindex(b"<entry>", 0, start)
+    end = feed.index(b"</entry>", start)
+    entry = re.sub(rb'<d:(BC_\w+) m:type="Edm.Double">[^<]*</d:\1>', rb'<d:\1 m:type="Edm.Double" m:null="true" />',
+                   feed[start:end])
+    return feed[:start] + entry + feed[end:]
+
+
+def test_a_day_listed_with_no_values_is_skipped():
+    """Treasury lists 2010-10-11 (Columbus Day) with every tenor empty; that's a day with nothing published."""
+    feed = _blank_day(UST_OCT.read_bytes(), b"2026-10-02")
+    obs = parse_ust_par(feed)
+    assert {o.as_of for o in obs} == {date(2026, 10, 1)} and len(obs) == 14
+
+
+def test_a_month_whose_entries_all_have_no_values_is_an_error():
+    feed = _blank_day(_blank_day(UST_OCT.read_bytes(), b"2026-10-01"), b"2026-10-02")
+    with pytest.raises(ParseError, match="no entry has any tenor values"):
+        parse_ust_par(feed)

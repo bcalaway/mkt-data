@@ -76,7 +76,6 @@ def parse_ust_par(content: bytes) -> list[Obs]:
         if day in seen:
             raise ParseError(f"{day} appears twice")
         seen.add(day)
-        tenors = 0
         for el in props:
             key = el.tag.removeprefix(_D)
             if not _TENOR.match(key):
@@ -84,9 +83,10 @@ def parse_ust_par(content: bytes) -> list[Obs]:
             if el.get(f"{_M}null") == "true" or not (el.text or "").strip():
                 continue  # no value for that tenor that day
             out.append(Obs(key, day, _decimal(el.text, f"{day} {key}")))
-            tenors += 1
-        if tenors == 0:
-            raise ParseError(f"{day} has no tenor values")
+        # A date listed with every tenor empty (2010-10-11, Columbus Day, in the
+        # backfill) is a day with nothing published: no values, not an error.
+    if seen and not out:
+        raise ParseError("no entry has any tenor values")
     return out
 
 

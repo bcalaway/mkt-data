@@ -18,7 +18,9 @@ Each run:
    days, so late days and revisions land), then check that the expected day
    is in: today for UST-PAR; for H15-TCM the SIFMA-US business day before
    today. If it isn't yet, the task fails and retries every 30 minutes until
-   about 10 p.m.; after that Grafana's "Airflow task failed" alert fires.
+   about 10 p.m.; after that Grafana's "Airflow task failed" alert fires. A
+   failed fetch (the Fed's download service often answers an empty body) is
+   tried again after 10, 30 and 60 seconds first, within the task.
 3. **Mark** the Asset `mkt_data_cmt_observations` only if the capture added,
    changed or removed an observation, so quote-svc's load (scheduled on it)
    runs when there's something new.
@@ -28,6 +30,7 @@ The work runs in the mkt-data container; these DAGs only call job APIs
 """
 
 import sys
+import time
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -49,6 +52,10 @@ NEW_YORK = ZoneInfo("America/New_York")
 # quote-svc's load DAG (quote_svc__load) is scheduled on this.
 CMT_OBSERVATIONS = Asset("mkt_data_cmt_observations")
 RETRY_DELAY = timedelta(minutes=30)
+# A fetch that fails (HTTP 502 from the job: the Fed's download service answers
+# about half of quick requests with an empty body) is tried again after these
+# pauses within the task, rather than waiting 30 minutes for the task's retry.
+FETCH_PAUSES = (10, 30, 60)
 LOOKBACK_DAYS = 10  # far enough back to pass any run of closes
 
 
@@ -89,6 +96,20 @@ def previous_business_day(calendar: str, today: date, call=None) -> date:
     return day
 
 
+def capture_month(source: str, period: str, call=None, sleep=time.sleep) -> dict:
+    """One capture job call, retried on HTTP 502 (a failed fetch); other errors raise at once."""
+    call = call or call_app_job
+    for pause in (*FETCH_PAUSES, None):
+        try:
+            return call("mkt-data", f"rates/{source}/capture?period={period}", timeout=180)
+        except AppJobError as e:
+            if pause is None or "HTTP 502" not in str(e):
+                raise
+            print(f"{source} {period}: fetch failed, trying again in {pause} s: {str(e)[:200]}")
+            sleep(pause)
+    raise AssertionError("unreachable")
+
+
 def landed(results: list[dict], expected: date) -> bool:
     """Whether any captured month now has a value for the expected day (or later)."""
     return any((r.get("last_date") or "") >= expected.isoformat() for r in results)
@@ -110,8 +131,7 @@ def _tasks(source: str, release_calendar: str, retries: int, expected_day) -> No
     def capture() -> list[dict]:
         today = datetime.now(NEW_YORK).date()
         want = expected_day(today)
-        results = [call_app_job("mkt-data", f"rates/{source}/capture?period={p}", timeout=180)
-                   for p in periods(today)]
+        results = [capture_month(source, p) for p in periods(today)]
         for r in results:
             print({k: r.get(k) for k in ("period", "new_capture", "values", "last_date", "added", "changed", "removed")})
         if not landed(results, want):

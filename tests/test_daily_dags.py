@@ -100,3 +100,34 @@ def test_landed_and_changed(daily):
     assert not daily.changed(first_of_month)
     assert daily.changed([{"added": 0, "changed": 1, "removed": 0}])
     assert daily.landed([{"last_date": "2026-10-02", "added": 14}], date(2026, 10, 2))
+
+
+def test_a_failed_fetch_is_retried_within_the_task(daily):
+    answers = [JobError("HTTP 502: empty response"), JobError("HTTP 502: empty response"), {"last_date": "2026-10-02"}]
+    calls, slept = [], []
+
+    def call(app, job, timeout):
+        calls.append(job)
+        a = answers.pop(0)
+        if isinstance(a, Exception):
+            raise a
+        return a
+
+    assert daily.capture_month("H15-TCM", "2026-10", call, slept.append) == {"last_date": "2026-10-02"}
+    assert calls == ["rates/H15-TCM/capture?period=2026-10"] * 3 and slept == [10, 30]
+
+
+def test_other_errors_and_a_last_failure_raise(daily):
+    def parse_error(app, job, timeout):
+        raise JobError("HTTP 422: parse failed")
+
+    with pytest.raises(JobError, match="422"):
+        daily.capture_month("UST-PAR", "2026-10", parse_error, lambda s: None)
+
+    def always_502(app, job, timeout):
+        raise JobError("HTTP 502: empty response")
+
+    slept = []
+    with pytest.raises(JobError, match="502"):
+        daily.capture_month("H15-TCM", "2026-10", always_502, slept.append)
+    assert slept == [10, 30, 60]

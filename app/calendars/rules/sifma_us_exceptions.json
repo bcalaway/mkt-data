@@ -1,7 +1,28 @@
 {
   "calendar": "SIFMA-US",
-  "about": "SIFMA's unscheduled recommendations that neither its archive page nor its 1996-2019 PDF lists. Covers no years: it only adds these dates.",
+  "about": "Unscheduled recommendations by SIFMA (or, before 2006, its predecessor the Bond Market Association) that neither SIFMA's archive page nor its 1996-2019 PDF lists. Covers no years: it only adds these dates.",
   "exceptions": [
+    {
+      "date": "2001-09-11",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://www.washingtonpost.com/wp-srv/nation/articles/financial091101.html",
+      "note": "\"The bond market is also expected to be closed Wednesday, following a recommendation by the Bond Market Association to do so.\" Trading stopped after the attacks that morning; Treasury published no par yield curve for September 11 or 12 (mkt-data phase 2, B6)."
+    },
+    {
+      "date": "2001-09-12",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://www.washingtonpost.com/wp-srv/nation/articles/financial091101.html",
+      "note": "Closed on the Bond Market Association's recommendation (above); \"Trading of Treasury securities resumes Thursday\" (CNN, https://money.cnn.com/2001/09/12/markets/reopen/), so September 13."
+    },
+    {
+      "date": "2004-06-11",
+      "status": "closed",
+      "holiday": "National Day of Mourning (President Reagan)",
+      "citation": "https://money.cnn.com/2004/06/11/markets/reagan_closings/index.htm",
+      "note": "\"The bond market will also be closed.\" Treasury published no par yield curve that day (mkt-data phase 2, B6)."
+    },
     {
       "date": "2025-01-09",
       "status": "early_close",

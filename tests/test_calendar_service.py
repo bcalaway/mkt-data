@@ -215,13 +215,16 @@ def test_the_pdf_dates(migrated_db, sifma_fetch):
         assert d(date(1996, 7, 5)).status == "early_close"
 
 
-def test_sifma_exceptions_add_carter_without_covering_a_year(migrated_db, sifma_fetch):
+def test_sifma_exceptions_add_their_dates_without_covering_a_year(migrated_db, sifma_fetch):
     with db.session() as s:
         out = service.run_capture(s, "SIFMA-US", sifma_fetch)["sources"][3]
-    assert out["source"] == "SIFMA-US-EXCEPTIONS" and out["added"] == 1 and out["years"] == []
+    # Carter 2025, and 9/11 2001 (two days) and Reagan 2004, which no SIFMA document lists.
+    assert out["source"] == "SIFMA-US-EXCEPTIONS" and out["added"] == 4 and out["years"] == []
     with db.session() as s:
         carter = _day(s, "SIFMA-US-EXCEPTIONS", date(2025, 1, 9))
         assert (carter.status, carter.close_time) == ("early_close", time(14, 0))
+        assert _day(s, "SIFMA-US-EXCEPTIONS", date(2001, 9, 12)).status == "closed"
+        assert _day(s, "SIFMA-US-EXCEPTIONS", date(2004, 6, 11)).holiday == "National Day of Mourning (President Reagan)"
         cap = s.get(Capture, out["capture_id"])
         assert cap.content_type == "application/json" and b"2025-01-09" in cap.body
 

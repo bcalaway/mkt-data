@@ -66,6 +66,9 @@ def test_sifma_exceptions():
     p = rules.parse(rules.read("repo:sifma_us_exceptions.json"))
     assert p.years == ()  # adds dates, covers no year
     assert p.days == (
+        Day(date(2001, 9, 11), "closed", "September 11 attacks", None),
+        Day(date(2001, 9, 12), "closed", "September 11 attacks", None),
+        Day(date(2004, 6, 11), "closed", "National Day of Mourning (President Reagan)", None),
         Day(date(2025, 1, 9), "early_close", "National Day of Mourning (President Carter) (early close)", time(14)),
     )
 

@@ -67,7 +67,7 @@ docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("
 docker exec mkt-data python -c 'import os,sys,urllib.request as u; r=u.Request("http://localhost:8000/jobs/captures/"+sys.argv[1],headers={"Authorization":"Bearer "+os.environ["AIRFLOW_TOKEN"]}); sys.stdout.buffer.write(u.urlopen(r).read())' 2 > nyse-capture-2.html
 ```
 
-The calendar DAGs (and the near-raw rebuild) mark the Airflow Asset `mkt_data_calendar_sources` after each successful run; calendar-svc's load DAG is scheduled on it.
+The calendar DAGs (and the near-raw rebuild) mark the Airflow Asset `mkt_data_calendar_sources` after each successful run; calendar-svc's load DAG is scheduled on it. Likewise `mkt_data__treasury_cmt_capture` marks `mkt_data_cmt_observations` after each successful capture task, and quote-svc's load DAG is scheduled on that.
 
 DAGs live in `dags/` (flat; the deploy puts them in Airflow's `dags/mkt-data/`). Their ids start with `mkt_data__`, and they import only Airflow, the platform's `home_platform_jobs` helper and the standard library (`tests/test_dags.py` checks both). New DAGs start paused, so unpause each one in the Airflow UI once it parses.
 

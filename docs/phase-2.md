@@ -209,7 +209,9 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 9. **mkt-api and mkt-ui.** The gateway and the three screens above.
    - ✅ **First screens** (mkt-api #2, mkt-ui #4, deployed 2026-10-05): the gateway (instruments, search, series, curves with comparisons, spreads; short names only, Decimal strings) and the curve, series and instrument screens, with a client typed from mkt-api's OpenAPI schema.
    - **All of history, OHLC bars and a zoom lab** (mkt-api #3, mkt-ui #7): bars by interval, a Lines / OHLC toggle, and a temporary lab comparing two ways to zoom (Bill, 2026-10-06).
-   - **Next:** the design in "Charts that grow" above.
+   - ✅ **Bars in quote-svc** (quote-svc #9, mkt-api #6, deployed 2026-10-06): `GetBars` computes open, high, low and close per week, month, quarter or year in the database query; mkt-api's `/api/series?interval=` uses it.
+   - ✅ **The lab folded into Over time** (mkt-ui #9 to #12, mkt-api #4 and #5, deployed 2026-10-06): both charts open on the last year and zoom from all of history to days; a **Loading** setting keeps both approaches for a while (ask at each zoom, or load every day once), with each request's time split into mkt-api's, quote-svc's and the network's (`Server-Timing`). Every chart's toolbar is its span jumps (1M to 10Y) and **All**; the wheel, a pinch or a drag zooms between (no + and −). Defaults: the curve against 1W, 1M, 3M and 1Y earlier; Over time 2Y, 10Y and 30Y. Adding or removing a line keeps the window on screen and swaps the lines in place, without a blank.
+   - **Next:** the series request with blocks in mkt-api, then the chart layer and block cache in mkt-ui ("Charts that grow" above).
 10. **home-mcp tools.** `mkt_data_yield("UST-10Y-CMT", date)` and `mkt_data_curve(date)`, answering with short names and saying which source a value came from, so "what was the 10-year yesterday?" works by voice; plus the existing checks tools for the new sources.
 
 ## Decisions (Bill, 2026-10-04)

@@ -20,6 +20,7 @@
 | `TD-SECURITIES` | TreasuryDirect's securities web API: every announced and auctioned marketable security (CUSIP, type, term, dates, coupon, auction results, reopening flag, TIPS and FRN details) | `https://www.treasurydirect.gov/TA_WS/securities/search?format=json&startDate=…&endDate=…&dateFieldName=auctionDate` (also `/announced`, `/auctioned`, and `/{cusip}/{issueDate}`) | Expected from about 1979 (checked in step 1) | Primary for terms and auctions |
 | `TD-PRICES` | FedInvest's *Prices for Treasury Securities*: a daily file of every marketable CUSIP's buy, sell and end-of-day price | `https://www.treasurydirect.gov/GA-FI/FedInvest/selectSecurityPriceDate` (a form post by date; CSV) | Depth unknown (checked in step 1) | Primary for prices |
 | `BLS-CPI` | CPI-U, not seasonally adjusted (`CUUR0000SA0`), monthly, for TIPS reference CPIs and index ratios | BLS public data API v2 (no key for small requests) | 1913 on | TIPS indexation; checked against TreasuryDirect's published reference CPIs |
+| `FD-MSPD-STRIPS` | Fiscal Data's *Monthly Statement of the Public Debt*, the table of securities held in stripped form: each strippable security with its principal (corpus) STRIPS CUSIP and amounts stripped and reconstituted | `https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/debt/mspd/…` (table confirmed in step 1) | Checked in step 1 | STRIPS identity and amounts; interest STRIPS CUSIPs (one per payment date, shared across securities) from Treasury's STRIPS CUSIP list if MSPD doesn't carry them |
 | `FD-AUCTIONS` | Fiscal Data's *Treasury Securities Auctions Data*, the same auction records through a documented, paged JSON API | `https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/auctions_query` | Checked in step 1 | Cross-check, and fallback if TreasuryDirect's API misbehaves |
 
 Notes:
@@ -37,19 +38,19 @@ Notes:
 
 ## Security master (`secmaster-svc`)
 
-- **`instrument`** gains types `ust_bill`, `ust_note`, `ust_bond`, `ust_tips` and `ust_frn`, all priced and charted this phase (Bill, 2026-10-06).
+- **`instrument`** gains types `ust_bill`, `ust_note`, `ust_bond`, `ust_tips` and `ust_frn`, all priced and charted this phase, and `ust_strip_principal` and `ust_strip_interest` (Bill, 2026-10-06).
+- **STRIPS** (Bill, 2026-10-06): a principal STRIPS is linked to its one source security and matures with it; an interest STRIPS has one CUSIP per payment date, shared by every security paying on that date, and is linked to all of them. Terms are just the maturity (payment) date and the link; amounts stripped and reconstituted come monthly from MSPD. Short names `UST-SP-2035-08-15` (principal) and `UST-SI-2035-08-15` (interest). Prices only if FedInvest or another free source carries them (checked in step 1); otherwise STRIPS have identity and terms but no quotes this phase.
 - **`instrument_terms`** (effective-dated): every term in "Terms for pricing" below. `valid_from`/`valid_to` for when a term holds, `recorded_at` for when we learned it, and each term marked **published** (from a source, with its record) or **derived** (computed here, with the rule).
-- **`cash_flow`:** the full schedule for each security, generated from its terms: every coupon's accrual start and end, unadjusted pay date, pay date adjusted to the next SIFMA-US business day (from calendar-svc), and amount per 100 where it's known in advance (nominal coupons, principal). TIPS and FRN amounts depend on CPI and bill auctions, so their rows carry the rule and get amounts as those fix. Regenerated when terms or the calendar change, with history.
 - **`auction`:** one row per auction (original issue or reopening): announcement, auction and issue dates, offering amount, high yield / discount rate, price, bid-to-cover and the other published results, linked to the security record it came from.
-- **Identifiers** (as many as we can, Bill 2026-10-06): CUSIP from TreasuryDirect's announcement and auction records, which carry it from announcement day; ISIN, `US` + CUSIP + a check digit, computed (an ISIN for a U.S. security is defined that way, so there's nothing better to pull) and checked against any source that prints one; FIGI (and composite FIGI and Bloomberg-style ticker) from OpenFIGI's mapping API by CUSIP; for TIPS, Treasury's CPI series name; for FRNs, the index (13-week bill high rate). Each with its scheme, source and validity.
-- **Short names (Bill, 2026-10-06),** readable and stable: notes and bonds `UST-4.25-2035-08-15`, bills `UST-B-2026-12-24`, TIPS `UST-TII-1.875-2035-07-15`, FRNs `UST-FRN-2028-07-31`. A reopening keeps the name (same CUSIP).
+- **Identifiers** (as many as we can, Bill 2026-10-06): CUSIP from TreasuryDirect's announcement and auction records, which carry it from announcement day; ISIN, `US` + CUSIP + a check digit, computed (an ISIN for a U.S. security is defined that way, so there's nothing better to pull) and checked against any source that prints one; FIGI (and composite FIGI and Bloomberg-style ticker) from OpenFIGI's mapping API by CUSIP, with an API key in SSM (Bill, 2026-10-06; he registers it with Claude's guidance when step 3 gets there); for TIPS, Treasury's CPI series name; for FRNs, the index (13-week bill high rate). Each with its scheme, source and validity.
+- **Short names (Bill, 2026-10-06),** readable and stable: notes and bonds `UST-4.25-2035-08-15`, bills `UST-B-2026-12-24`, TIPS `UST-TII-1.875-2035-07-15`, FRNs `UST-FRN-2028-07-31`, STRIPS as above. A reopening keeps the name (same CUSIP).
 - **On-the-run (Bill, 2026-10-06):** rolling aliases such as `UST-10Y-OTR`, `UST-5Y-TII-OTR`, `UST-2Y-FRN-OTR` pointing at the most recently auctioned security of each original term, as identifiers with validity, so "the 10-year" on a past date resolves to that day's security. The switch is on the new issue's issue date (to confirm: auction date is the other common convention).
 - **Load job** (`POST /jobs/load`), on the Asset `mkt_data_treasury_securities` plus nightly: reads new records, types and validates them, upserts instruments, terms and auctions, reports anything it can't type (counted like quote-svc's unmapped keys).
 - The CMT seed file stays as it is; seeded and feed-built instruments live side by side.
 
 ## Terms for pricing
 
-Everything needed to price each security and generate its cash flows (Bill, 2026-10-06). **P** = published by TreasuryDirect (field names confirmed in step 1), **D** = derived here from published terms, with the rule recorded.
+Everything needed to price each security (Bill, 2026-10-06). The terms are stored; the cash-flow schedule itself is generated later by the analytics library, not here (Bill, 2026-10-06). **P** = published by TreasuryDirect (field names confirmed in step 1), **D** = derived here from published terms, with the rule recorded.
 
 **All securities**
 
@@ -115,7 +116,7 @@ Everything needed to price each security and generate its cash flows (Bill, 2026
 - **Freshness:** prices due for every outstanding security on each SIFMA-US business day; a security missing a price while outstanding is counted (matured and not-yet-issued ones are not due).
 - **Size:** about 450 securities × ~250 days a year ≈ 110,000 prices a year per field, so tens of millions of rows only if FedInvest's history goes back decades. To be sized in step 1; Postgres partitioning by year if it does.
 - TIPS prices are real (unadjusted for inflation, as FedInvest prints them; to confirm in step 1); FRN prices clean.
-- **Not here:** yields from prices, accrued interest computed per day, analytics (a later phase, on top of these terms and cash flows).
+- **Not here:** yields from prices, accrued interest computed per day, analytics (a later phase, on top of these terms).
 
 ## Custom UI and voice
 
@@ -134,7 +135,7 @@ Everything needed to price each security and generate its cash flows (Bill, 2026
 
 1. **Raw capture first** (mkt-data). Sources `TD-SECURITIES`, `TD-PRICES` and `FD-AUCTIONS`, fetched and kept raw with no parser yet. A daily DAG captures from today on. Read the first captures on the hub: formats, field names, history depth of each, FedInvest's time of day and whether past dates can still be fetched. Fixtures via `capture-export.yml`. Settle the open source questions above.
 2. **Near-raw:** `record` table and parser for securities; `observation` parser for prices; gRPC `Records`; rebuild jobs.
-3. **secmaster-svc:** types, effective-dated terms (published and derived), auctions, identifiers (CUSIP, ISIN, FIGI), short names, on-the-run aliases, load job on the Asset. Then the cash-flow schedule and the TIPS index ratios (needs `BLS-CPI` through near-raw), each checked against TreasuryDirect's published figures.
+3. **secmaster-svc:** types, effective-dated terms (published and derived), auctions, identifiers (CUSIP, ISIN, FIGI), short names, on-the-run aliases, load job on the Asset. Then the TIPS index ratios (needs `BLS-CPI` through near-raw), checked against TreasuryDirect's published figures; and STRIPS (below).
 4. **quote-svc:** prices by CUSIP, golden `price`, freshness against outstanding securities.
 5. **Backfill** as far back as each source allows, a year at a time; cross-check TreasuryDirect's auctions against Fiscal Data's.
 6. **Schedule** on SIFMA-US, with retries until the day's file is in.
@@ -149,15 +150,16 @@ Everything needed to price each security and generate its cash flows (Bill, 2026
 - **On-the-run aliases** with history.
 - **Identifiers:** as many as we can (CUSIP, ISIN, FIGI and the rest).
 - **Terms:** everything needed to price each security, at least issue, announcement, accrual start, first and penultimate coupon, maturity and coupon.
+- **No cash-flow schedule** in this phase: the analytics library will generate it from the stored terms.
+- **STRIPS** in scope, principal and interest.
+- **OpenFIGI key:** yes, registered at step 3.
 
 ## Open questions
 
-- **STRIPS:** separately traded principal and coupon strips have their own CUSIPs (hundreds outstanding, mapped to their source securities). Include them as instruments, or leave them for later?
-- **OpenFIGI key:** without one, mapping tens of thousands of historical CUSIPs takes a few hours once (then a handful a week); with a free key in SSM it takes minutes. Register a key, or run without?
-- **On-the-run switch day:** the new issue takes over on its issue date (proposed) or its auction date?
+- **On-the-run switch day:** market convention is the auction date (the new issue becomes the benchmark once the auction sets its coupon, though it settles on the issue date). Proposed: switch on the auction date, keep both dates on the alias, and offer an "issued" variant for anything that needs a settled security with a price.
 
 ## Later (not this phase)
 
 - Yields, accrued interest and risk from prices; the curve fitter.
-- Amount outstanding by holder and stripping, from the Monthly Statement of the Public Debt.
+- Amount outstanding by holder, from the Monthly Statement of the Public Debt.
 - Carried over from phase 2: fixings (SOFR, EFFR), real yields, backup capture, the near-live macro dashboard, the shared chart layer, calendar closes as chart events.

@@ -23,6 +23,7 @@ from app import db
 from app.calendars import service
 from app.models import Capture, Observation, Source, SourceCheck
 from app.rates import sources as rates
+from app.securities import sources as securities
 
 router = APIRouter()
 
@@ -81,6 +82,9 @@ def _collect(s, out: _Out) -> None:
     # The CMT sources (phase 2, Part B), labelled with their publication calendar.
     cal_of |= {name: src.calendar for name, src in rates.SOURCES.items()}
     kind_of |= {name: "published" for name in rates.SOURCES}
+    # The Treasury securities sources (phase 3), likewise.
+    cal_of |= {name: src.calendar for name, src in securities.SOURCES.items()}
+    kind_of |= {name: "published" for name in securities.SOURCES}
 
     # Per source: last successful fetch, latest parse outcome, captures and bytes.
     last_ok = dict(s.execute(

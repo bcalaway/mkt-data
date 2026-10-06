@@ -44,7 +44,7 @@ Notes:
 - **`auction`:** one row per auction (original issue or reopening): announcement, auction and issue dates, offering amount, high yield / discount rate, price, bid-to-cover and the other published results, linked to the security record it came from.
 - **Identifiers** (as many as we can, Bill 2026-10-06): CUSIP from TreasuryDirect's announcement and auction records, which carry it from announcement day; ISIN, `US` + CUSIP + a check digit, computed (an ISIN for a U.S. security is defined that way, so there's nothing better to pull) and checked against any source that prints one; FIGI (and composite FIGI and Bloomberg-style ticker) from OpenFIGI's mapping API by CUSIP, with an API key in SSM (Bill, 2026-10-06; he registers it with Claude's guidance when step 3 gets there); for TIPS, Treasury's CPI series name; for FRNs, the index (13-week bill high rate). Each with its scheme, source and validity.
 - **Short names (Bill, 2026-10-06),** readable and stable: notes and bonds `UST-4.25-2035-08-15`, bills `UST-B-2026-12-24`, TIPS `UST-TII-1.875-2035-07-15`, FRNs `UST-FRN-2028-07-31`, STRIPS as above. A reopening keeps the name (same CUSIP).
-- **On-the-run (Bill, 2026-10-06):** rolling aliases such as `UST-10Y-OTR`, `UST-5Y-TII-OTR`, `UST-2Y-FRN-OTR` pointing at the most recently auctioned security of each original term, as identifiers with validity, so "the 10-year" on a past date resolves to that day's security. The switch is on the new issue's issue date (to confirm: auction date is the other common convention).
+- **On-the-run (Bill, 2026-10-06):** rolling aliases such as `UST-10Y-OTR`, `UST-5Y-TII-OTR`, `UST-2Y-FRN-OTR` pointing at the most recently auctioned security of each original term, as identifiers with validity, so "the 10-year" on a past date resolves to that day's security. The alias switches on the new issue's auction date; an issued variant (`UST-10Y-OTR-ISSUED`) switches on its issue date, for uses that need a settled security with a price.
 - **Load job** (`POST /jobs/load`), on the Asset `mkt_data_treasury_securities` plus nightly: reads new records, types and validates them, upserts instruments, terms and auctions, reports anything it can't type (counted like quote-svc's unmapped keys).
 - The CMT seed file stays as it is; seeded and feed-built instruments live side by side.
 
@@ -133,7 +133,9 @@ Everything needed to price each security (Bill, 2026-10-06). The terms are store
 
 ## Steps
 
-1. **Raw capture first** (mkt-data). Sources `TD-SECURITIES`, `TD-PRICES` and `FD-AUCTIONS`, fetched and kept raw with no parser yet. A daily DAG captures from today on. Read the first captures on the hub: formats, field names, history depth of each, FedInvest's time of day and whether past dates can still be fetched. Fixtures via `capture-export.yml`. Settle the open source questions above.
+1. 🚧 **Raw capture first** (mkt-data; built, waiting on merge and deploy). Sources `TD-SECURITIES`, `TD-PRICES` and `FD-AUCTIONS`, fetched and kept raw with no parser yet. A daily DAG captures from today on. Read the first captures on the hub: formats, field names, history depth of each, FedInvest's time of day and whether past dates can still be fetched. Fixtures via `capture-export.yml`. Settle the open source questions above.
+   - **Built:** `app/securities/sources.py` with the five sources, all kept raw (`parse` is None): TD-SECURITIES and FD-AUCTIONS by month of auction (up to a month ahead, for announcements), TD-PRICES by day (FedInvest's CSV form, posted), FD-MSPD-STRIPS by month, BLS-CPI by year (deduped on content, ignoring BLS's `responseTime`, via a new `SourceSpec.dedupe_view`). Job `POST /jobs/securities/{source}/capture?period=`. DAG `mkt_data__treasury_securities_capture` (weekdays 7:15 p.m. New York, one task per source; TD-PRICES only on SIFMA-US business days, today and the previous one) and manual `mkt_data__treasury_securities_probe` (one source, the periods typed in its form) for finding each source's first period. The capture text view (home-mcp's `mkt_data_capture_text`) now reads JSON (pretty-printed) and CSV/XML, not only HTML. Stale-capture and parse metrics label the new sources (BLS-CPI under FED, the rest SIFMA-US).
+   - **Guesses to check on the first captures:** TreasuryDirect's date format (MM/DD/YYYY, from its API docs mirrored on slgs.gov), FedInvest's CSV form field names, and Fiscal Data's STRIPS table name (`mspd_table_5`). A wrong guess shows as a fetch error or an HTML page in the capture.
 2. **Near-raw:** `record` table and parser for securities; `observation` parser for prices; gRPC `Records`; rebuild jobs.
 3. **secmaster-svc:** types, effective-dated terms (published and derived), auctions, identifiers (CUSIP, ISIN, FIGI), short names, on-the-run aliases, load job on the Asset. Then the TIPS index ratios (needs `BLS-CPI` through near-raw), checked against TreasuryDirect's published figures; and STRIPS (below).
 4. **quote-svc:** prices by CUSIP, golden `price`, freshness against outstanding securities.
@@ -153,10 +155,10 @@ Everything needed to price each security (Bill, 2026-10-06). The terms are store
 - **No cash-flow schedule** in this phase: the analytics library will generate it from the stored terms.
 - **STRIPS** in scope, principal and interest.
 - **OpenFIGI key:** yes, registered at step 3.
+- **On-the-run switch day:** the auction date, the market convention (the new issue becomes the benchmark once the auction sets its coupon), with both auction and issue dates kept on the alias and an "issued" variant (switching on the issue date) for anything that needs a settled security with a price.
 
 ## Open questions
 
-- **On-the-run switch day:** market convention is the auction date (the new issue becomes the benchmark once the auction sets its coupon, though it settles on the issue date). Proposed: switch on the auction date, keep both dates on the alias, and offer an "issued" variant for anything that needs a settled security with a price.
 
 ## Later (not this phase)
 

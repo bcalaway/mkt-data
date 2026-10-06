@@ -117,6 +117,19 @@ Yields are rendered in our own UI, not Grafana (Bill, 2026-10-04). Phase 2 start
   - **Security master:** search by short name or identifier, an instrument's identifiers, notes and sources.
 - **Ingress and auth:** `mkt.billandjessie.com` (Bill, 2026-10-04) with a Traefik route and Route 53 record; Authentik OIDC (Pattern A). Reached like the platform's other apps.
 
+### Charts that grow (Bill, 2026-10-06)
+
+Charts will get much richer: many series per chart (the whole curve, spreads, butterflies, z-scores, rolling statistics), events on the chart (Fed meetings, the 2021 method change, gaps, closes), several panes, many more instruments, perhaps intraday data. The design keeps every chart's cost tied to the screen, not to history:
+
+- **Level of detail on the server.** A chart asks for bars at the interval that suits what's on screen: monthly for all of history (about 780 bars since 1962), weekly within about 15 years, daily within about 3. A request costs about a screen's width of bars per series, however long the history or however many series. Loading every day into the browser (tried in the zoom lab) doesn't scale past a few series and not at all to intraday, so it isn't the design.
+- **Instant zoom from blocks and a cache.** Requests ask for fixed blocks (a year of weekly bars, a month of daily bars). A finished block never changes, so the browser (and HTTP caching) keeps it, and the block beside what's on screen is fetched before it's needed. Most zooms show at once; a first visit to a new stretch costs one small request.
+- **Bars where the data is.** quote-svc computes bars (open, high, low, close, the close's date and source) in its database query, so a monthly view never ships daily values across the network.
+- **One series request in mkt-api.** A chart asks for a list of series (an instrument's yield, `UST-10Y-CMT - UST-2Y-CMT`, a butterfly, later a rolling statistic) at an interval and a block. New chart content means new series kinds, not new endpoints. All arithmetic stays server-side in Decimal; the UI never computes a value it shows.
+- **Events from the data.** secmaster-svc's notes, coverage gaps and calendar-svc's closes come with the series, as markers.
+- **One chart layer in mkt-ui.** Screens describe a chart (panes, series, events); one layer turns that into the chart library's calls, so the library stays swappable. One time axis per chart, and one interval per chart at a time (the axis is evenly spaced by bar, so mixing intervals would bend time).
+
+Order: bars in quote-svc; the series request with blocks in mkt-api; the chart layer and caching in mkt-ui (replacing the zoom lab and `/api/series/daily`, which were for trying both approaches); then events.
+
 ## Grafana (operational)
 
 Rows added to **Market data** (`uid: market-data`):
@@ -194,6 +207,9 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
    - **Grafana:** the Market data dashboard's Treasury CMT row (curve due, missing, disagreements, revisions, last load, unmapped keys; a per-instrument table; latest date per source key; longest golden gaps), and the new databases in storage.
    - **Also:** an Uptime Kuma monitor for `mkt.billandjessie.com` (in `scripts/setup-uptime-kuma.py`, to run), home-mcp's `last_deploys` covers the four new apps, airflow-triggerer's memory 512m → 768m (it peaked at 445 MB in the backfill), and quote-svc's CD can be started by hand (quote-svc #8, after a GitHub runner outage held #7's deploy for two hours).
 9. **mkt-api and mkt-ui.** The gateway and the three screens above.
+   - ✅ **First screens** (mkt-api #2, mkt-ui #4, deployed 2026-10-05): the gateway (instruments, search, series, curves with comparisons, spreads; short names only, Decimal strings) and the curve, series and instrument screens, with a client typed from mkt-api's OpenAPI schema.
+   - **All of history, OHLC bars and a zoom lab** (mkt-api #3, mkt-ui #7): bars by interval, a Lines / OHLC toggle, and a temporary lab comparing two ways to zoom (Bill, 2026-10-06).
+   - **Next:** the design in "Charts that grow" above.
 10. **home-mcp tools.** `mkt_data_yield("UST-10Y-CMT", date)` and `mkt_data_curve(date)`, answering with short names and saying which source a value came from, so "what was the 10-year yesterday?" works by voice; plus the existing checks tools for the new sources.
 
 ## Decisions (Bill, 2026-10-04)

@@ -56,6 +56,11 @@ class SourceSpec:
     # changes on every request (K.8). Not for pages whose data might sit in
     # blocks the text view skips (scripts, templates).
     dedupe_on_text: bool = False
+    # Like dedupe_on_text, for other formats: a fetch whose view equals the
+    # last capture's view is a check, not a new capture. For JSON answers that
+    # stamp the request time (BLS's responseTime). The bytes kept are the
+    # first fetch's, unchanged.
+    dedupe_view: Callable[[bytes], object] | None = None
 
 
 @dataclass(frozen=True)
@@ -237,6 +242,14 @@ def capture(
         s.add(check)
         s.flush()
         return last, False, check
+    if last is not None and spec.dedupe_view is not None and _same_view(spec.dedupe_view, last.body, body):
+        check = SourceCheck(
+            source_id=src.id, outcome="unchanged", capture_id=last.id, period=period,
+            detail=f"bytes changed, content identical (sha256 {sha})",
+        )
+        s.add(check)
+        s.flush()
+        return last, False, check
     if last is not None and spec.dedupe_on_text and _visible_text(last.body) == _visible_text(body):
         check = SourceCheck(
             source_id=src.id, outcome="unchanged", capture_id=last.id, period=period,
@@ -255,6 +268,13 @@ def capture(
     s.add(check)
     s.flush()
     return cap, True, check
+
+
+def _same_view(view, old: bytes, new: bytes) -> bool:
+    try:
+        return view(old) == view(new)
+    except ValueError:  # either side unreadable in that view: keep the new bytes
+        return False
 
 
 def _visible_text(body: bytes) -> list[str]:

@@ -16,6 +16,7 @@ to reparse. The business-day answer moved to calendar-svc (phase 2, A5).
 """
 
 import hmac
+import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import select
@@ -26,6 +27,7 @@ from app.calendars.parsed import ParseError
 from app.config import settings
 from app.models import Capture, Observation, Source, SourceCheck, SourceDay, SourceYear
 from app.rates import sources as rates
+from app.securities import sources as securities
 
 router = APIRouter(prefix="/jobs")
 
@@ -130,6 +132,27 @@ def rebuild_rates(source: str) -> dict:
         return rates.run_rebuild(s, key)
 
 
+@router.post("/securities/{source}/capture", dependencies=[Depends(require_token)])
+def capture_securities(source: str, period: str | None = None) -> dict:
+    """Fetch one period of a Treasury securities source and keep it raw if new (phase 3, step 1; no parser yet).
+
+    `source` is TD-SECURITIES, TD-PRICES, FD-AUCTIONS, FD-MSPD-STRIPS or BLS-CPI
+    (app/securities/sources.py). `period` is the source's kind (a month
+    YYYY-MM, a day YYYY-MM-DD or a year YYYY); default: the current one, in New York.
+    """
+    key = source.upper()
+    if key not in securities.SOURCES:
+        raise HTTPException(404, f"unknown securities source {source!r}; known: {sorted(securities.SOURCES)}")
+    src = securities.SOURCES[key]
+    try:
+        with db.session() as s:
+            return securities.run_capture(s, key, period or securities.current_period(src.kind))
+    except securities.BadPeriod as e:
+        raise HTTPException(400, str(e)) from None
+    except service.SourceFetchError as e:
+        raise HTTPException(502, f"fetch failed: {e}") from None
+
+
 # Raw captures, read-only: for turning a real capture into a test fixture,
 # or checking what a parser saw. home-mcp's mkt_data_captures and
 # mkt_data_capture_text tools read these with the read-only token.
@@ -211,7 +234,10 @@ def list_checks(
 
 
 def _has_parser(source: str) -> bool:
-    spec = service.SOURCES.get(source) or (rates.SOURCES[source].spec if source in rates.SOURCES else None)
+    spec = service.SOURCES.get(source)
+    for registry in (rates.SOURCES, securities.SOURCES):
+        if spec is None and source in registry:
+            spec = registry[source].spec
     return spec is not None and spec.parse is not None
 
 
@@ -266,7 +292,8 @@ def capture_text(
     limit: int = Query(40, ge=1, le=400),
     embedded: bool = False,
 ) -> dict:
-    """An HTML capture's visible text, one line per block element, numbered.
+    """A capture's text, numbered: an HTML page's visible text (one line per block element), JSON
+    pretty-printed one value per line, and anything else textual (CSV, XML) line by line.
 
     `contains` keeps matching lines (case-insensitive) plus `context` lines
     either side. For reading what a parser sees without downloading the page.
@@ -276,12 +303,7 @@ def capture_text(
     with db.session() as s:
         cap, source = _load(s, capture_id)
         body, ctype, fetched = cap.body, cap.content_type or "", cap.fetched_at
-    if "html" not in ctype.lower() and not body.lstrip()[:15].lower().startswith((b"<!doctype", b"<html")):
-        raise HTTPException(415, f"capture {capture_id} is {ctype or 'not HTML'}; only HTML has a text view")
-    html = body.decode("utf-8", errors="replace")
-    all_lines = rsc.lines(html) if embedded else text.lines(html)
-    if embedded and not all_lines:
-        raise HTTPException(404, f"capture {capture_id} has no embedded React data; use the default view")
+    view, all_lines = _text_lines(capture_id, body, ctype, embedded)
     if contains:
         hits = [i for i, ln in enumerate(all_lines) if contains.lower() in ln.lower()]
         keep = sorted({j for i in hits for j in range(max(0, i - context), min(len(all_lines), i + context + 1))})
@@ -289,7 +311,28 @@ def capture_text(
         hits, keep = [], list(range(len(all_lines)))
     return {
         "capture_id": capture_id, "source": source, "fetched_at": fetched.isoformat(),
-        "view": "embedded" if embedded else "visible", "lines_total": len(all_lines), "matches": len(hits) if contains else None,
+        "view": view, "lines_total": len(all_lines), "matches": len(hits) if contains else None,
         "truncated": len(keep) > limit,
         "lines": [{"n": i + 1, "text": all_lines[i]} for i in keep[:limit]],
     }
+
+
+def _text_lines(capture_id: int, body: bytes, ctype: str, embedded: bool) -> tuple[str, list[str]]:
+    is_html = "html" in ctype.lower() or body.lstrip()[:15].lower().startswith((b"<!doctype", b"<html"))
+    if is_html:
+        html = body.decode("utf-8", errors="replace")
+        lines = rsc.lines(html) if embedded else text.lines(html)
+        if embedded and not lines:
+            raise HTTPException(404, f"capture {capture_id} has no embedded React data; use the default view")
+        return ("embedded" if embedded else "visible"), lines
+    if embedded:
+        raise HTTPException(415, f"capture {capture_id} is {ctype or 'not HTML'}; only HTML has embedded data")
+    binary_type = any(t in ctype.lower() for t in ("pdf", "octet-stream", "zip", "image/", "excel", "spreadsheet"))
+    if binary_type or body.startswith(b"%PDF") or b"\x00" in body[:4096]:
+        raise HTTPException(415, f"capture {capture_id} is {ctype or 'binary'}; no text view")
+    raw = body.decode("utf-8", errors="replace")
+    try:
+        doc = json.loads(raw)
+    except json.JSONDecodeError:
+        return "text", raw.splitlines()
+    return "json", json.dumps(doc, indent=1, ensure_ascii=False).splitlines()

@@ -104,29 +104,59 @@ def test_prices_post_the_form(migrated_db, monkeypatch):
     assert forms == ["2026-10-02"] and r["new_capture"] and r["period"] == "2026-10-02"
 
 
-def test_fedinvest_form_fields(monkeypatch):
-    sent = {}
+FORM_PAGE = b'<form method="post"><input type="date" name="priceDate"/><input type="hidden" name="_csrf" value="tok-123"/></form>'
 
-    class Resp:
-        status_code, headers, content = 200, {"content-type": "text/csv"}, PRICES_CSV
 
-    def post(url, data, **kw):
-        sent.update(url=url, data=data, ua=kw["headers"]["User-Agent"])
-        return Resp()
+class _Client:
+    """Stands in for httpx2.Client: records the GET and POST, answers from `pages`."""
 
-    monkeypatch.setattr(sec.httpx2, "post", post)
-    assert sec.post_fedinvest("2026-03-09")(sec.TD_PRICES_URL) == (200, "text/csv", PRICES_CSV)
-    assert sent["data"] == {"priceDateDay": "09", "priceDateMonth": "03", "priceDateYear": "2026",
-                            "fileType": "csv", "csv": "CSV FORMAT"}
-    assert sent["ua"] == service.USER_AGENT
+    def __init__(self, pages, log):
+        self.pages, self.log = pages, log
+
+    def __call__(self, **kw):
+        self.log.append(("client", kw["headers"]["User-Agent"]))
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def _resp(self, key):
+        status, body = self.pages[key]
+        return type("R", (), {"status_code": status, "content": body, "headers": {"content-type": "text/html"}})()
+
+    def get(self, url):
+        self.log.append(("get", url))
+        return self._resp("get")
+
+    def post(self, url, data, headers):
+        self.log.append(("post", url, data, headers["Referer"]))
+        return self._resp("post")
+
+
+def test_fedinvest_reads_the_form_then_posts(monkeypatch):
+    log = []
+    monkeypatch.setattr(sec.httpx2, "Client", _Client({"get": (200, FORM_PAGE), "post": (200, b"<table>prices</table>")}, log))
+    assert sec.post_fedinvest("2026-03-09")(sec.TD_PRICES_URL) == (200, "text/html", b"<table>prices</table>")
+    assert log[0] == ("client", service.USER_AGENT)
+    assert log[1] == ("get", sec.TD_PRICES_URL)
+    assert log[2] == ("post", sec.TD_PRICES_URL,
+                      {"priceDate": "2026-03-09", "submit": "Show Prices", "_csrf": "tok-123"}, sec.TD_PRICES_URL)
+
+
+def test_fedinvest_token_either_attribute_order():
+    m = sec.CSRF.search(b'<input value="abc" type="hidden" name="_csrf">')
+    assert (m.group(1) or m.group(2)) == b"abc"
 
 
 def test_fedinvest_errors_are_fetch_errors(monkeypatch):
-    class Resp:
-        status_code, headers, content = 503, {}, b""
-
-    monkeypatch.setattr(sec.httpx2, "post", lambda url, data, **kw: Resp())
-    with pytest.raises(service.SourceFetchError, match="HTTP 503"):
+    monkeypatch.setattr(sec.httpx2, "Client", _Client({"get": (200, FORM_PAGE), "post": (403, b"")}, []))
+    with pytest.raises(service.SourceFetchError, match="HTTP 403"):
+        sec.post_fedinvest("2026-03-09")(sec.TD_PRICES_URL)
+    monkeypatch.setattr(sec.httpx2, "Client", _Client({"get": (200, b"<form></form>"), "post": (200, b"")}, []))
+    with pytest.raises(service.SourceFetchError, match="no CSRF token"):
         sec.post_fedinvest("2026-03-09")(sec.TD_PRICES_URL)
 
 

@@ -1,6 +1,6 @@
 # Phase 2: the golden-copy layering, calendars first, then Treasury CMT yields
 
-**Status: in progress (2026-10-04).** Part A done: calendars run on the new layering (calendar-svc owns the golden copy). Part B (Treasury CMT yields) next. Bill's decisions are recorded under "Decisions" below. Phase 1 (holiday calendars) is complete: see [phase-1.md](phase-1.md).
+**Status: complete (2026-10-06).** Part A: calendars run on the new layering (calendar-svc owns the golden copy). Part B: Treasury CMT yields are captured daily, golden in quote-svc, monitored, shown at `mkt.billandjessie.com` and answered by voice. What's left for later is under "Later" at the end. Bill's decisions are recorded under "Decisions" below. Phase 1 (holiday calendars) is complete: see [phase-1.md](phase-1.md).
 
 **Goal:** set up the layering every dataset uses from now on (ingestion and near-raw in mkt-data, golden copies in services) and take two data families through it:
 
@@ -206,16 +206,16 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
    - **Alerts** (nyc_pa_aws_gitops `rules.yaml`, groups `quote-svc` and `secmaster-svc`): Treasury curve missing, Treasury and H.15 disagree, quote load stale or failed, unmapped source keys, security master seed failed. Revisions stay on the dashboard (info).
    - **Grafana:** the Market data dashboard's Treasury CMT row (curve due, missing, disagreements, revisions, last load, unmapped keys; a per-instrument table; latest date per source key; longest golden gaps), and the new databases in storage.
    - **Also:** an Uptime Kuma monitor for `mkt.billandjessie.com` (in `scripts/setup-uptime-kuma.py`, to run), home-mcp's `last_deploys` covers the four new apps, airflow-triggerer's memory 512m → 768m (it peaked at 445 MB in the backfill), and quote-svc's CD can be started by hand (quote-svc #8, after a GitHub runner outage held #7's deploy for two hours).
-9. **mkt-api and mkt-ui.** The gateway and the three screens above.
+9. ✅ **mkt-api and mkt-ui.** The gateway and the three screens above.
    - ✅ **First screens** (mkt-api #2, mkt-ui #4, deployed 2026-10-05): the gateway (instruments, search, series, curves with comparisons, spreads; short names only, Decimal strings) and the curve, series and instrument screens, with a client typed from mkt-api's OpenAPI schema.
-   - **All of history, OHLC bars and a zoom lab** (mkt-api #3, mkt-ui #7): bars by interval, a Lines / OHLC toggle, and a temporary lab comparing two ways to zoom (Bill, 2026-10-06).
+   - ✅ **All of history, OHLC bars and a zoom lab** (mkt-api #3, mkt-ui #7): bars by interval, a Lines / OHLC toggle, and a temporary lab comparing two ways to zoom (Bill, 2026-10-06).
    - ✅ **Bars in quote-svc** (quote-svc #9, mkt-api #6, deployed 2026-10-06): `GetBars` computes open, high, low and close per week, month, quarter or year in the database query; mkt-api's `/api/series?interval=` uses it.
    - ✅ **The lab folded into Over time** (mkt-ui #9 to #12, mkt-api #4 and #5, deployed 2026-10-06): both charts open on the last year and zoom from all of history to days; a **Loading** setting keeps both approaches for a while (ask at each zoom, or load every day once), with each request's time split into mkt-api's, quote-svc's and the network's (`Server-Timing`). Every chart's toolbar is its span jumps (1M to 10Y) and **All**; the wheel, a pinch or a drag zooms between (no + and −). Defaults: the curve against 1W, 1M, 3M and 1Y earlier; Over time 2Y, 10Y and 30Y. Adding or removing a line keeps the window on screen and swaps the lines in place, without a blank.
    - ✅ **The series request with blocks** (mkt-api #7, mkt-ui #13, deployed 2026-10-06): `GET /api/bars?series=&interval=&block=`, where a series is an instrument, `spread(LONG,SHORT)` or `fly(WING,BODY,WING)` and a block is a year of days or a decade of weeks or months, so any screenful is a handful of requests. Over time's *Cached blocks* loading fetches each block once per page and only for the series it doesn't have (adding a tenor fetches just that tenor), fetches the blocks either side ahead, and finished blocks are cached by the browser for a day.
    - ✅ **Events** (mkt-api #8, mkt-ui #14, deployed 2026-10-06): `GET /api/events?series=` gives the security master's notes on a chart's instruments (first published, H.15 starts, gaps, the 2021 method change, the 20-year's reissue) with short titles; Over time marks them on their lines, names them in the tooltip and lists them under each chart. Lines now break at gaps (the 30-year's 2002–2006) instead of drawing straight across. Calendar closes aren't events yet: they'd need calendar-svc as a third upstream for mkt-api, and at about ten a year they'd mostly be clutter.
    - ✅ **Cleanup** (mkt-ui #15 and #16, mkt-api #9, deployed 2026-10-06): *Load every day once* and the Loading setting are gone, and with them `/api/series`, `/api/spread` and their daily forms; mkt-api's routes are instruments, search, curve, bars and events.
    - **Later:** the chart layer (screens describing panes, series and events) waits for a second kind of time chart, so it's shaped by two real uses rather than one.
-10. **home-mcp tools** (nyc_pa_aws_gitops #141, deployed 2026-10-06). `mkt_data_yield(tenor, on)`: the golden yield on a date (default today; a weekend or holiday gives the last value before it), its publisher, and the change in bp from the business day before; tenors as said ("10Y", "2-year", "3 month", "6W"). `mkt_data_curve(on, compare)`: every tenor on a date, with changes in bp against 1D/1W/1M/3M/1Y earlier. Both read mkt-api (`/api/bars`, `/api/curve`) on the home-platform network, so no token (Bill, 2026-10-06). **To finish:** refresh the claude.ai connector so the new tools show, and try both by voice.
+10. ✅ **home-mcp tools** (nyc_pa_aws_gitops #141, deployed and tested by voice 2026-10-06). `mkt_data_yield(tenor, on)`: the golden yield on a date (default today; a weekend or holiday gives the last value before it), its publisher, and the change in bp from the business day before; tenors as said ("10Y", "2-year", "3 month", "6W"). `mkt_data_curve(on, compare)`: every tenor on a date, with changes in bp against 1D/1W/1M/3M/1Y earlier. Both read mkt-api (`/api/bars`, `/api/curve`) on the home-platform network, so no token (Bill, 2026-10-06). First voice answers: the 10Y on 2026-10-05, and the curve against a month earlier, each in about 100 ms.
 
 ## Decisions (Bill, 2026-10-04)
 
@@ -231,17 +231,18 @@ Each step is its own PR (or a pair, when it touches nyc_pa_aws_gitops too). Part
 - **CMT instruments come from a seed file** in secmaster-svc.
 - **Each service serves its own metrics and alerts** on its own layer.
 
-## Still open
+## Settled in the steps
 
-1. **Chart library for mkt-ui** (from the design): TradingView Lightweight Charts (fast canvas time series), ECharts (general, good for curves) or Plotly. Recommendation: Lightweight Charts for series, ECharts for the curve, both behind the UI's own chart components so either can be swapped.
-
-Settled in the steps:
+- The chart library: Lightweight Charts for time series, ECharts for the curve, each behind mkt-ui's own components (Bill, 2026-10-06; step B9).
 
 - H.15's exact package URL and series list, and each series' first date (steps B1 and B6).
 - Whether Treasury publishes on every SIFMA early-close day (yes), and any day where Treasury and SIFMA-US disagree (three closes added to SIFMA-US; 1996-04-05; step B6).
 - How often Treasury revises a published day, which sets whether revisions stay info or become warn (after a month of daily captures).
 
 ## Later (not this phase)
+
+- **The shared chart layer** in mkt-ui (screens describe panes, series and events; one layer drives the chart library), once a second kind of time chart needs it (step B9).
+- **Calendar closes as chart events,** if wanted: they'd need calendar-svc as a third upstream for mkt-api.
 
 - **Treasury securities:** bills, notes and bonds by CUSIP from TreasuryDirect's securities data (terms, auctions, reopenings), with effective-dated terms and OpenFIGI cross-references; Treasury's end-of-day security prices. The curve fitter needs these.
 - **Fixings:** SOFR and EFFR from the NY Fed, as `fixing` instruments on the same quote store.

@@ -1,6 +1,6 @@
 # Claude Code Instructions — mkt-data
 
-The market data platform's data pipeline. The overview and conventions are in `README.md`; the current plan is in `docs/phase-2.md` (phase 1, complete, is `docs/phase-1.md`). Platform mechanics (CI/CD, secrets, database onboarding, Airflow) live in `bcalaway/nyc_pa_aws_gitops`: start with its `docs/app-platform.md`, and keep this repo consistent with it rather than re-explaining it here.
+The market data platform's data pipeline. The overview and conventions are in `README.md`; the current plan is in `docs/phase-3.md` (phases 1 and 2, complete, are `docs/phase-1.md` and `docs/phase-2.md`). Platform mechanics (CI/CD, secrets, database onboarding, Airflow) live in `bcalaway/nyc_pa_aws_gitops`: start with its `docs/app-platform.md`, and keep this repo consistent with it rather than re-explaining it here.
 
 ## Git
 
@@ -14,7 +14,7 @@ The market data platform's data pipeline. The overview and conventions are in `R
 - Internal integer IDs, with short readable names in every view, log line and dashboard.
 - No secrets in code, in the repo, or on command lines. App secrets go in SSM under `/home-platform/mkt-data/` (add a row to the platform's `docs/ssm-parameters.md`).
 - Keep `deploy/docker-compose.yml`'s `mem_limit`; the hub deploy rejects services without one.
-- Update the current phase's doc (`docs/phase-2.md`) when a step lands. It's the one place for that phase's status: the platform roadmap's milestone links to it and changes only when the milestone itself opens, closes or changes shape.
+- Update the current phase's doc (`docs/phase-3.md`) when a step lands. It's the one place for that phase's status: the platform roadmap's milestone links to it and changes only when the milestone itself opens, closes or changes shape.
 
 ## Testing where PyPI is blocked
 

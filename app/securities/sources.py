@@ -15,9 +15,12 @@ capture (`capture.period`); the period's kind depends on the source:
   (`CorpusCusip`). Primary for terms and auctions. A month is refetched while
   it can still change (announcements come up to a week or so ahead, results
   on auction day).
-- TD-PRICES (day): FedInvest's prices for Treasury securities, the CSV of
-  every marketable CUSIP's buy, sell and end-of-day price for one date. A
-  form post, not a GET.
+- TD-PRICES (day): FedInvest's prices for Treasury securities, every
+  marketable CUSIP's buy, sell and end-of-day price for one date. The page's
+  form posts the date with a session-bound CSRF token, so a fetch reads the
+  form first (for the session cookie and token), then posts; the results
+  page is what's kept (checked 2026-10-06 in the browser: a bare post gets
+  403).
 - FD-AUCTIONS (month of auction date): Fiscal Data's Treasury securities
   auctions data, the same auction records through a documented, paged API.
   Cross-check and fallback.
@@ -32,6 +35,7 @@ BLS on Federal business days (FED). Those calendars label the metrics.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Literal
@@ -50,9 +54,10 @@ TD_SECURITIES_URL = (
     "https://www.treasurydirect.gov/TA_WS/securities/search"
     "?format=json&dateFieldName=auctionDate&startDate={first_us}&endDate={last_us}"
 )
-# The CSV form on FedInvest's "Prices for Treasury Securities" page. The fields
-# are filled per date by post_fedinvest(); the URL alone isn't the request.
-TD_PRICES_URL = "https://www.treasurydirect.gov/GA-FI/FedInvest/securityPriceDetail"
+# FedInvest's "Historical Prices" form: GET it for a session and CSRF token, then
+# POST priceDate (YYYY-MM-DD) to the same URL. See post_fedinvest().
+TD_PRICES_URL = "https://www.treasurydirect.gov/GA-FI/FedInvest/selectSecurityPriceDate"
+CSRF = re.compile(rb'name="_csrf"[^>]*?value="([^"]+)"|value="([^"]+)"[^>]*?name="_csrf"')
 FISCAL_DATA = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service"
 FD_AUCTIONS_URL = (
     FISCAL_DATA + "/v1/accounting/od/auctions_query"
@@ -115,7 +120,9 @@ SOURCES: dict[str, SecuritiesSource] = {
         kind="month", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "TD-PRICES": SecuritiesSource(
-        _spec("TD-PRICES", TD_PRICES_URL, "FedInvest, prices for Treasury securities (CSV, by price date)"),
+        # The results page carries a fresh CSRF token each time, so dedupe on its visible text.
+        _spec("TD-PRICES", TD_PRICES_URL, "FedInvest, prices for Treasury securities (HTML, by price date)",
+              dedupe_on_text=True),
         kind="day", calendar="SIFMA-US", first_period="2000-01-03", form=True,
     ),
     "FD-AUCTIONS": SecuritiesSource(
@@ -178,19 +185,22 @@ def check_period(name: str, period: str, now: datetime | None = None) -> str:
 
 
 def post_fedinvest(period: str):
-    """A fetcher that posts FedInvest's CSV form for one price date."""
-    d = date.fromisoformat(period)
-    form = {
-        "priceDateDay": f"{d.day:02d}", "priceDateMonth": f"{d.month:02d}", "priceDateYear": f"{d.year:04d}",
-        "fileType": "csv", "csv": "CSV FORMAT",
-    }
+    """A fetcher for one FedInvest price date: read the form (session cookie and CSRF token), then post it."""
+    date.fromisoformat(period)  # checked already; a bad one shouldn't reach the network
 
     def fetch(url: str) -> tuple[int, str | None, bytes]:
+        headers = {"User-Agent": service.USER_AGENT}
         try:
-            r = httpx2.post(
-                url, data=form, timeout=service.FETCH_TIMEOUT_SECONDS, follow_redirects=True,
-                headers={"User-Agent": service.USER_AGENT},
-            )
+            with httpx2.Client(timeout=service.FETCH_TIMEOUT_SECONDS, follow_redirects=True, headers=headers) as c:
+                form = c.get(url)
+                if form.status_code != 200:
+                    raise SourceFetchError(f"{url} (form): HTTP {form.status_code}")
+                m = CSRF.search(form.content)
+                if m is None:
+                    raise SourceFetchError(f"{url} (form): no CSRF token on the page")
+                token = (m.group(1) or m.group(2)).decode()
+                r = c.post(url, data={"priceDate": period, "submit": "Show Prices", "_csrf": token},
+                           headers={"Referer": url})
         except httpx2.HTTPError as e:
             raise SourceFetchError(f"{url} ({period}): {e}") from None
         if r.status_code != 200:

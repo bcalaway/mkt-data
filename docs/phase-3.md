@@ -124,6 +124,26 @@ Everything needed to price each security (Bill, 2026-10-06). The terms are store
 - **mkt-ui:** a **Securities** screen (outstanding issues by maturity, filterable by type, with the on-the-runs marked) and a **Security** page (terms, auction history, price over time).
 - **home-mcp:** `mkt_data_security` ("what's the 10-year on-the-run?", "when does the 4¼ of 2035 mature?") and the auction calendar ("what's auctioning this week?").
 
+## Platform screens: Sources and Calendars (Bill, 2026-10-06)
+
+Two screens in mkt-ui about the platform itself rather than one data family. They need two more upstreams for mkt-api: mkt-data (sources and captures) and calendar-svc (calendars), both over gRPC on the home-platform network like secmaster-svc and quote-svc. Grafana keeps the alerting and the operational graphs; these screens are for reading what the platform holds and where it came from.
+
+**Sources** (one row per source, every family: calendars, CMTs, securities, and whatever comes next)
+
+- **What it is:** name, publisher, description, link to the publisher's page, terms page, format, how it's fetched (period kind: whole, day, month, year).
+- **What's pulled from it:** the datasets, series or fields taken (e.g. UST-PAR: 14 par-curve tenors; TD-SECURITIES: terms and auction results per CUSIP), which layer reads it (calendar-svc, secmaster-svc, quote-svc) and what it feeds (calendars, instruments, quotes), and its role (primary, cross-check, history before a date). Kept as a short `pulls` description in each source's spec in mkt-data, so the screen and the code can't drift apart.
+- **Status:** last fetch and its outcome, last new capture, latest parse (ok, failed, or kept raw: no parser yet), schedule (the DAG and its next run), whether it's stale against that schedule, any alert firing for it.
+- **Coverage and size:** first and last period, periods held, gaps, raw captures and bytes, near-raw rows.
+- **Drill-down:** a source's recent checks and captures; a capture's text (the same view as home-mcp's `mkt_data_capture_text`), never rendered as the publisher's page.
+
+**Calendars** (calendar-svc's golden calendars: FED, SIFMA-US, NYSE, and CME later)
+
+- **List:** each calendar, its time zone, its sources in precedence order, coverage by kind (published / rules / projected) and the furthest year covered, the next close and early close.
+- **Year view:** a year as twelve month grids, closes and early closes marked with holiday name, close time and the source that decided each day; projected years marked as such.
+- **Upcoming:** the next closes and early closes across all calendars, side by side (where FED, SIFMA-US and NYSE differ).
+- **Day lookup:** is a date a business day on each calendar, and why not.
+- **Disagreements and history:** days where sources disagree (held by a higher source), the cited exceptions (e.g. SIFMA-US 2001-09-11), and how a day's status changed over time.
+
 ## Monitoring and alerts
 
 - **mkt-data:** phase 1's capture stale and parse failed cover both new sources.
@@ -142,12 +162,14 @@ Everything needed to price each security (Bill, 2026-10-06). The terms are store
 5. **Backfill** as far back as each source allows, a year at a time; cross-check TreasuryDirect's auctions against Fiscal Data's.
 6. **Schedule** on SIFMA-US, with retries until the day's file is in.
 7. **Monitoring** as above.
-8. **mkt-api and mkt-ui:** Securities and Security screens.
-9. **home-mcp tools.**
+8. **Platform screens** (mkt-data, calendar-svc, mkt-api, mkt-ui): mkt-data and calendar-svc gRPC reads as needed (sources with their `pulls`, checks and coverage; calendars, years, upcoming closes, disagreements), mkt-api's two new upstreams, then the Sources and Calendars screens. Independent of the securities data, so they can be built any time; the Sources screen is most useful early, while the new sources are being watched.
+9. **mkt-api and mkt-ui:** Securities and Security screens.
+10. **home-mcp tools.**
 
 ## Decisions (Bill, 2026-10-06)
 
 - **Scope:** Treasury securities by CUSIP, with TIPS and FRNs priced and charted too.
+- **Platform screens:** a Sources screen (status and what's pulled from each source) and Calendar screens in mkt-ui.
 - **Short names** as proposed: `UST-4.25-2035-08-15`, `UST-B-2026-12-24`, `UST-TII-…`, `UST-FRN-…`.
 - **On-the-run aliases** with history.
 - **Identifiers:** as many as we can (CUSIP, ISIN, FIGI and the rest).

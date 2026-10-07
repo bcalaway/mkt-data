@@ -17,6 +17,8 @@ failing source doesn't hold up the others:
   comes out a few business days into the next).
 - BLS-CPI: the current year, plus the previous one in January.
 
+After TD-PRICES, a mark task sets the Asset `mkt_data_treasury_prices` when
+any of its days gained, changed or lost a price, so quote-svc's load runs.
 After TD-SECURITIES, a mark task sets the Asset `mkt_data_treasury_securities`
 when any of its months gained, changed or lost an auction, so secmaster-svc's
 load (scheduled on it) runs when there's something new.
@@ -56,6 +58,8 @@ NEW_YORK = ZoneInfo("America/New_York")
 # secmaster-svc's load (secmaster_svc__load) is scheduled on this: marked when
 # TreasuryDirect's records (TD-SECURITIES) gain, change or lose an auction.
 TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
+# quote-svc's load is scheduled on this: marked when FedInvest's prices for a day were added, changed or removed.
+TREASURY_PRICES = Asset("mkt_data_treasury_prices")
 FETCH_PAUSES = (10, 30, 60)
 LOOKBACK_DAYS = 10
 
@@ -194,6 +198,15 @@ def treasury_securities_capture():
                 return "marked"
 
             mark_treasury_securities(got)
+        elif source == "TD-PRICES":
+
+            @task(outlets=[TREASURY_PRICES])
+            def mark_treasury_prices(results: list[dict]) -> str:
+                if not changed(results):
+                    raise AirflowSkipException("no price added, changed or removed: quote-svc has nothing to load")
+                return "marked"
+
+            mark_treasury_prices(got)
 
 
 treasury_securities_capture()

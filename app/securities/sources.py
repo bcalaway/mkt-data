@@ -146,30 +146,41 @@ SOURCES: dict[str, SecuritiesSource] = {
     "TD-SECURITIES": SecuritiesSource(
         _spec("TD-SECURITIES", TD_SECURITIES_URL,
               "TreasuryDirect securities web API, announced and auctioned securities (JSON, by month of auction)",
-              parsers.parse_td_securities),
+              parsers.parse_td_securities,
+              pulls=('Every announced and auctioned marketable security by auction: terms, dates and results. '
+                     'secmaster-svc reads them: the Treasury securities, their terms, auctions, on-the-run aliases and'
+                     ' STRIPS CUSIPs.')),
         kind="month", shape="records", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "TD-PRICES": SecuritiesSource(
         # The results page carries a fresh CSRF token each time and lists same-maturity securities in no
         # fixed order, so a re-fetch is "unchanged" when its date and rows are, in any order.
         _spec("TD-PRICES", TD_PRICES_URL, "FedInvest, prices for Treasury securities (HTML, by price date)",
-              parsers.parse_td_prices, dedupe_view=parsers.td_prices_view),
+              parsers.parse_td_prices, dedupe_view=parsers.td_prices_view,
+              pulls=("FedInvest's buy, sell and end-of-day price per CUSIP for each business day. quote-svc reads "
+                     'them: the end-of-day price is the golden price.')),
         kind="day", shape="observations", calendar="SIFMA-US", first_period="2000-01-03", form=True,
     ),
     "FD-AUCTIONS": SecuritiesSource(
         _spec("FD-AUCTIONS", FD_AUCTIONS_URL, "Fiscal Data, Treasury securities auctions data (JSON, by month of auction)",
-              parsers.parse_fd_auctions),
+              parsers.parse_fd_auctions,
+              pulls=("Fiscal Data's copy of the same auction records. A cross-check only: compared with "
+                     "TreasuryDirect's each evening, nothing reads it otherwise.")),
         kind="month", shape="records", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "FD-MSPD-STRIPS": SecuritiesSource(
         _spec("FD-MSPD-STRIPS", FD_MSPD_STRIPS_URL,
               "Fiscal Data, Monthly Statement of the Public Debt, securities held in stripped form (JSON, by month)",
-              parsers.parse_fd_mspd_strips),
+              parsers.parse_fd_mspd_strips,
+              pulls=("The Monthly Statement of the Public Debt's STRIPS table: each security's amounts outstanding, "
+                     'stripped and reconstituted. secmaster-svc reads them for its STRIPS.')),
         kind="month", shape="records", calendar="SIFMA-US", first_period="1985-01",
     ),
     "BLS-CPI": SecuritiesSource(
         _spec("BLS-CPI", BLS_CPI_URL, "BLS, CPI-U all items, not seasonally adjusted, CUUR0000SA0 (JSON, by year)",
-              parsers.parse_bls_cpi, dedupe_view=bls_view),
+              parsers.parse_bls_cpi, dedupe_view=bls_view,
+              pulls=('CPI-U, all items, not seasonally adjusted, monthly. secmaster-svc reads it for the TIPS '
+                     'reference CPIs and index ratios.')),
         kind="year", shape="observations", calendar="FED", first_period="1913", fetch=fetch_bls,
     ),
 }

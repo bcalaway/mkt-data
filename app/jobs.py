@@ -16,13 +16,13 @@ to reparse. The business-day answer moved to calendar-svc (phase 2, A5).
 """
 
 import hmac
-import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy import select
 
+from app import capture_text as text_view
 from app import db
-from app.calendars import rsc, service, text
+from app.calendars import service
 from app.calendars.parsed import ParseError
 from app.config import settings
 from app.models import Capture, Observation, Record, Source, SourceCheck, SourceDay, SourceYear
@@ -325,36 +325,14 @@ def capture_text(
     with db.session() as s:
         cap, source = _load(s, capture_id)
         body, ctype, fetched = cap.body, cap.content_type or "", cap.fetched_at
-    view, all_lines = _text_lines(capture_id, body, ctype, embedded)
-    if contains:
-        hits = [i for i, ln in enumerate(all_lines) if contains.lower() in ln.lower()]
-        keep = sorted({j for i in hits for j in range(max(0, i - context), min(len(all_lines), i + context + 1))})
-    else:
-        hits, keep = [], list(range(len(all_lines)))
+    try:
+        view, all_lines = text_view.lines(capture_id, body, ctype, embedded)
+    except text_view.NoTextView as e:
+        raise HTTPException(e.status, str(e)) from None
+    keep, matches = text_view.select_lines(all_lines, contains, context)
     return {
         "capture_id": capture_id, "source": source, "fetched_at": fetched.isoformat(),
-        "view": view, "lines_total": len(all_lines), "matches": len(hits) if contains else None,
+        "view": view, "lines_total": len(all_lines), "matches": matches,
         "truncated": len(keep) > limit,
         "lines": [{"n": i + 1, "text": all_lines[i]} for i in keep[:limit]],
     }
-
-
-def _text_lines(capture_id: int, body: bytes, ctype: str, embedded: bool) -> tuple[str, list[str]]:
-    is_html = "html" in ctype.lower() or body.lstrip()[:15].lower().startswith((b"<!doctype", b"<html"))
-    if is_html:
-        html = body.decode("utf-8", errors="replace")
-        lines = rsc.lines(html) if embedded else text.lines(html)
-        if embedded and not lines:
-            raise HTTPException(404, f"capture {capture_id} has no embedded React data; use the default view")
-        return ("embedded" if embedded else "visible"), lines
-    if embedded:
-        raise HTTPException(415, f"capture {capture_id} is {ctype or 'not HTML'}; only HTML has embedded data")
-    binary_type = any(t in ctype.lower() for t in ("pdf", "octet-stream", "zip", "image/", "excel", "spreadsheet"))
-    if binary_type or body.startswith(b"%PDF") or b"\x00" in body[:4096]:
-        raise HTTPException(415, f"capture {capture_id} is {ctype or 'binary'}; no text view")
-    raw = body.decode("utf-8", errors="replace")
-    try:
-        doc = json.loads(raw)
-    except json.JSONDecodeError:
-        return "text", raw.splitlines()
-    return "json", json.dumps(doc, indent=1, ensure_ascii=False).splitlines()

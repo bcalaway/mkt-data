@@ -63,13 +63,17 @@ class PeriodSource:
 
 SOURCES: dict[str, PeriodSource] = {
     "UST-PAR": PeriodSource(
-        SourceSpec("UST-PAR", UST_PAR_URL, "US Treasury, Daily Par Yield Curve Rates (XML, by month)", parsers.parse_ust_par),
+        SourceSpec("UST-PAR", UST_PAR_URL, "US Treasury, Daily Par Yield Curve Rates (XML, by month)", parsers.parse_ust_par,
+                   pulls="The par curve's daily yields, every tenor it publishes (1-month to 30-year). quote-svc reads "
+                         "them: the golden CMT yield wherever Treasury has one."),
         calendar="SIFMA-US", first_period="1990-01",
     ),
     "H15-TCM": PeriodSource(
         SourceSpec(
             "H15-TCM", H15_TCM_URL, "Federal Reserve H.15, Treasury constant maturities, nominal (CSV, by month)",
             parsers.parse_h15_tcm,
+            pulls="The Fed's daily Treasury constant-maturity yields (H.15), every tenor. quote-svc reads them: the golden "
+                  "yield before Treasury's par curve starts (1962-1989), and a cross-check against it after.",
         ),
         calendar="SIFMA-US", first_period="1962-01",
     ),

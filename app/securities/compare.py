@@ -17,6 +17,11 @@ For every auction either source currently lists:
 
 The result is kept (`record_comparison`, the latest per pair) for the metrics
 and the job's answer: counts per field, and a few examples of each.
+
+Month by month (both sources file an auction under the month of its auction
+date), so only a month's records are in memory at once: all 22,000 at once
+got mkt-data OOM-killed at its 256 MB limit (2026-10-07). A record one source
+files under another month than the other is matched at the end.
 """
 
 import re
@@ -126,53 +131,90 @@ def field_pairs(left_names, right_names) -> list[tuple[str, str]]:
     return out
 
 
-def compare(left: dict[str, dict], right: dict[str, dict]) -> dict:
-    """Records by key on each side -> the comparison (pure: no database)."""
-    keys_l, keys_r = set(left), set(right)
-    both = sorted(keys_l & keys_r)
-    names_l = {k for rec in left.values() for k in rec}
-    names_r = {k for rec in right.values() for k in rec}
-    pairs = field_pairs(names_l, names_r)
-    fields: dict[str, dict] = {}
-    differing_records = 0
-    for key in both:
-        a, b = left[key], right[key]
+class Tally:
+    """The comparison, built up a batch of records at a time."""
+
+    def __init__(self):
+        self.compared = 0
+        self.records_differing = 0
+        self.fields: dict[str, dict] = {}
+        self.names: set[str] = set()
+        self.pending_left: dict[str, dict] = {}  # keys not (yet) found in the other source
+        self.pending_right: dict[str, dict] = {}
+
+    def add(self, left: dict[str, dict], right: dict[str, dict]) -> None:
+        """One batch (a month) of records by key on each side; a key on one side only waits for the other."""
+        for key in sorted(set(left) & set(right)):
+            self._pair(key, left[key], right[key])
+        for key in set(left) - set(right):
+            if key in self.pending_right:
+                self._pair(key, left[key], self.pending_right.pop(key))
+            else:
+                self.pending_left[key] = left[key]
+        for key in set(right) - set(left):
+            if key in self.pending_left:
+                self._pair(key, self.pending_left.pop(key), right[key])
+            else:
+                self.pending_right[key] = right[key]
+
+    def _pair(self, key: str, a: dict, b: dict) -> None:
+        self.compared += 1
+        pairs = field_pairs(a, b)
+        self.names.update(ln for ln, _ in pairs)
         any_diff = False
         for ln, rn in pairs:
             va, vb = norm(a.get(ln)), norm(b.get(rn))
             if va == vb:
                 continue
             kind = "different" if va is not None and vb is not None else "one_side_empty"
-            f = fields.setdefault(ln, {"field": ln, "other": rn, "different": 0, "one_side_empty": 0, "examples": []})
+            f = self.fields.setdefault(ln, {"field": ln, "other": rn, "different": 0, "one_side_empty": 0,
+                                            "examples": []})
             f[kind] += 1
             if kind == "different":
                 any_diff = True
                 if len(f["examples"]) < EXAMPLES_PER_FIELD:
                     f["examples"].append({"key": key, LEFT: a.get(ln), RIGHT: b.get(rn)})
-        differing_records += any_diff
-    return {
-        "compared": len(both),
-        "only_left": sorted(keys_l - keys_r),
-        "only_right": sorted(keys_r - keys_l),
-        "fields_compared": len(pairs),
-        "records_differing": differing_records,
-        "fields": sorted(fields.values(), key=lambda f: (-f["different"], -f["one_side_empty"], f["field"])),
-    }
+        self.records_differing += any_diff
+
+    def result(self) -> dict:
+        return {
+            "compared": self.compared,
+            "only_left": sorted(self.pending_left),
+            "only_right": sorted(self.pending_right),
+            "fields_compared": len(self.names),
+            "records_differing": self.records_differing,
+            "fields": sorted(self.fields.values(), key=lambda f: (-f["different"], -f["one_side_empty"], f["field"])),
+        }
 
 
-def _current(s: Session, source: str) -> dict[str, dict]:
-    sid = s.scalar(select(Source.id).where(Source.name == source))
+def compare(left: dict[str, dict], right: dict[str, dict]) -> dict:
+    """Records by key on each side -> the comparison (pure: no database)."""
+    tally = Tally()
+    tally.add(left, right)
+    return tally.result()
+
+
+def _current(s: Session, sid: int | None, period: str) -> dict[str, dict]:
     if sid is None:
         return {}
     return {key: doc for key, doc in s.execute(
         select(Record.source_key, Record.fields).where(
-            Record.source_id == sid, Record.record_type == RECORD_TYPE, Record.valid_to.is_(None)))}
+            Record.source_id == sid, Record.period == period, Record.record_type == RECORD_TYPE,
+            Record.valid_to.is_(None)))}
 
 
 def run(s: Session, now: datetime | None = None) -> dict:
-    """Compare the current records and keep the result. Commits."""
+    """Compare the current records, a month at a time, and keep the result. Commits."""
     now = now or datetime.now(UTC)
-    result = compare(_current(s, LEFT), _current(s, RIGHT))
+    ids = {name: s.scalar(select(Source.id).where(Source.name == name)) for name in (LEFT, RIGHT)}
+    periods = sorted(set(s.scalars(select(Record.period).where(
+        Record.source_id.in_([i for i in ids.values() if i is not None]), Record.record_type == RECORD_TYPE,
+        Record.valid_to.is_(None)).distinct())))
+    tally = Tally()
+    for period in periods:
+        tally.add(_current(s, ids[LEFT], period), _current(s, ids[RIGHT], period))
+        s.expunge_all()
+    result = tally.result()
     row = s.scalar(select(RecordComparison).where(RecordComparison.left_source == LEFT,
                                                   RecordComparison.right_source == RIGHT))
     if row is None:

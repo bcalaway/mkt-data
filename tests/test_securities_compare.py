@@ -67,3 +67,38 @@ def test_run_keeps_the_latest_result(migrated_db):
         compare.run(s, datetime(2026, 10, 8, tzinfo=UTC))
         rows = s.query(RecordComparison).all()
     assert first["compared"] == 0 and len(rows) == 1 and rows[0].ran_at.day == 8
+
+
+def test_a_record_filed_under_different_months_is_still_matched():
+    td, fd = _october()
+    key = min(td)
+    tally = compare.Tally()
+    tally.add({key: td[key]}, {})  # TreasuryDirect files it under one month...
+    tally.add({}, {key: fd[key]})  # ...Fiscal Data under the next
+    out = tally.result()
+    assert out["compared"] == 1 and out["only_left"] == [] and out["only_right"] == []
+
+
+def test_run_reads_a_month_at_a_time(migrated_db):
+    from datetime import date
+
+    from app import db
+    from app.models import Capture, Record, Source
+
+    td, fd = _october()
+    with db.session() as s:
+        for name, recs in (("TD-SECURITIES", td), ("FD-AUCTIONS", fd)):
+            src = Source(name=name, url="x", description="x")
+            s.add(src)
+            s.flush()
+            cap = Capture(source_id=src.id, period="2026-10", fetched_at=datetime(2026, 10, 7, tzinfo=UTC),
+                          sha256=name, size_bytes=1, content_type="x", body=b"x", http_status=200)
+            s.add(cap)
+            s.flush()
+            for key, doc in recs.items():
+                s.add(Record(source_id=src.id, period="2026-10", record_type="auction", source_key=key,
+                             as_of=date(2026, 10, 7), fields=doc, capture_id=cap.id,
+                             valid_from=datetime(2026, 10, 7, tzinfo=UTC)))
+        s.commit()
+        out = compare.run(s, datetime(2026, 10, 7, tzinfo=UTC))
+    assert out["compared"] == 11 and out["records_differing"] == 0

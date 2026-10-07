@@ -11,7 +11,8 @@ For every auction either source currently lists:
 - **only in one source:** listed by one and not the other;
 - for every field both publish, after normalizing what's only presentation (a
   date with or without "T00:00:00", "" and Fiscal Data's "null" both empty,
-  numbers compared as decimals so "4.250000" equals "4.25", text without case):
+  numbers compared as decimals so "4.250000" equals "4.25", text without case,
+  and a hyphen as a space, so "Single-Price" equals "Single Price"):
   - **one side empty:** one has a value, the other none;
   - **different:** both have values, and they differ.
 
@@ -116,7 +117,8 @@ def norm(value) -> object:
         return "yes"
     if low in _FALSE:
         return "no"
-    return " ".join(low.split())
+    # Hyphens and spaces alike: TreasuryDirect's "Single-Price" is Fiscal Data's "Single Price".
+    return " ".join(low.replace("-", " ").split())
 
 
 def field_pairs(left_names, right_names) -> list[tuple[str, str]]:

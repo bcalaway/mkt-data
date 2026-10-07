@@ -216,6 +216,18 @@ def parse_td_prices(body: bytes) -> list[Obs]:
     return obs
 
 
+def td_prices_view(body: bytes) -> object:
+    """A FedInvest page as its date heading and its rows in sorted order, for deciding whether a re-fetch changed.
+
+    FedInvest lists securities with the same maturity in no fixed order (two notes due 2020-06-30 swapped
+    places between fetches of 2020-06-19's page), so comparing the visible text called every such re-fetch
+    new. Rows are compared whole (every column), only their order is ignored.
+    """
+    page = _PricePage()
+    page.feed(body.decode("latin-1"))
+    return " ".join("".join(page.heading).split()), page.tables, sorted(tuple(r) for r in page.rows)
+
+
 # --- BLS-CPI: BLS public data API v2 (JSON) ---------------------------------
 
 

@@ -10,7 +10,8 @@ probes (e.g. `grpc_health_probe -addr=<app>:9090`) can check it.
 
 CalendarSources serves near-raw calendar rows to calendar-svc
 (proto/calendar_sources.proto, docs/phase-2.md Part A); Observations serves
-near-raw time-series values to quote-svc (proto/observations.proto, Part B). ExampleService.Ping
+near-raw time-series values to quote-svc (proto/observations.proto, Part B);
+Records serves near-raw records to secmaster-svc (proto/records.proto, phase 3). ExampleService.Ping
 is still the template's example.
 """
 
@@ -28,12 +29,16 @@ from app.grpc_gen import (
     example_service_pb2_grpc,
     observations_pb2,
     observations_pb2_grpc,
+    records_pb2,
+    records_pb2_grpc,
 )
 from app.rates import api as obs_api
+from app.securities import api as rec_api
 
 EXAMPLE_SERVICE = example_service_pb2.DESCRIPTOR.services_by_name["ExampleService"].full_name
 CALENDAR_SOURCES = calendar_sources_pb2.DESCRIPTOR.services_by_name["CalendarSources"].full_name
 OBSERVATIONS = observations_pb2.DESCRIPTOR.services_by_name["Observations"].full_name
+RECORDS = records_pb2.DESCRIPTOR.services_by_name["Records"].full_name
 
 
 class ExampleService(example_service_pb2_grpc.ExampleServiceServicer):
@@ -108,12 +113,49 @@ class Observations(observations_pb2_grpc.ObservationsServicer):
             await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
 
 
+def _rec_sources() -> records_pb2.ListRecordSourcesResponse:
+    with db.session() as s:
+        rows = rec_api.list_sources(s)
+    return records_pb2.ListRecordSourcesResponse(sources=[records_pb2.RecordSource(**r) for r in rows])
+
+
+def _rec_periods(name: str, since: str) -> records_pb2.ListRecordPeriodsResponse:
+    with db.session() as s:
+        rows = rec_api.list_periods(s, name, since)
+    return records_pb2.ListRecordPeriodsResponse(source=name, periods=[records_pb2.RecordPeriodInfo(**r) for r in rows])
+
+
+def _rec_period(name: str, period: str, superseded: bool) -> records_pb2.PeriodRecords:
+    with db.session() as s:
+        rows = rec_api.get_period(s, name, period, superseded)
+    return records_pb2.PeriodRecords(source=name, period=period, records=[records_pb2.SourceRecord(**r) for r in rows])
+
+
+class Records(records_pb2_grpc.RecordsServicer):
+    # The database work is synchronous SQLAlchemy, so it runs in a thread.
+    async def ListSources(self, request, context):
+        return await asyncio.to_thread(_rec_sources)
+
+    async def ListPeriods(self, request, context):
+        try:
+            return await asyncio.to_thread(_rec_periods, request.source.upper(), request.since_period)
+        except rec_api.UnknownSource as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+
+    async def GetPeriod(self, request, context):
+        try:
+            return await asyncio.to_thread(_rec_period, request.source.upper(), request.period, request.include_superseded)
+        except rec_api.UnknownSource as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+
+
 async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:
     """Start the server; returns it and the bound port (port 0 picks a free one)."""
     server = grpc.aio.server()
     example_service_pb2_grpc.add_ExampleServiceServicer_to_server(ExampleService(), server)
     calendar_sources_pb2_grpc.add_CalendarSourcesServicer_to_server(CalendarSources(), server)
     observations_pb2_grpc.add_ObservationsServicer_to_server(Observations(), server)
+    records_pb2_grpc.add_RecordsServicer_to_server(Records(), server)
 
     health_servicer = health.aio.HealthServicer()
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
@@ -121,6 +163,6 @@ async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:
     bound = server.add_insecure_port(f"[::]:{port}")
     await server.start()
     # "" is the overall server status; each service also reports its own.
-    for service in ("", EXAMPLE_SERVICE, CALENDAR_SOURCES, OBSERVATIONS):
+    for service in ("", EXAMPLE_SERVICE, CALENDAR_SOURCES, OBSERVATIONS, RECORDS):
         await health_servicer.set(service, health_pb2.HealthCheckResponse.SERVING)
     return server, bound

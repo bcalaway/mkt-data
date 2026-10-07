@@ -1,4 +1,4 @@
-"""Near-raw observations for other services (proto/observations.proto, phase 2 Part B).
+"""Near-raw observations for other services (proto/observations.proto, phase 2 Part B, phase 3).
 
 Plain functions returning plain dicts, tested without gRPC;
 app/grpc_server.py's Observations service turns them into messages. Read by
@@ -7,13 +7,25 @@ latest_capture_id moved, and keeps its own watermark per period. A revision
 or a dropped value always moves it: a revision inserts a row from the newer
 capture, and a dropped value is only possible in a newer capture of the same
 month, whose other values it then carries.
+
+Every observation-shaped source is served: the CMT yields (phase 2) and,
+from phase 3, FedInvest's prices (TD-PRICES, a period per day) and BLS's
+CPI (BLS-CPI, a period per year). Record-shaped sources are in
+app/securities/api.py (proto/records.proto).
 """
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import Observation, Source
-from app.rates.sources import SOURCES
+from app.rates.sources import SOURCES as RATE_SOURCES
+from app.securities.sources import SOURCES as SECURITIES_SOURCES
+
+# name -> (description, calendar, first_period)
+SOURCES = {name: (src.spec.description, src.calendar, src.first_period) for name, src in RATE_SOURCES.items()} | {
+    name: (src.spec.description, src.calendar, src.first_period)
+    for name, src in SECURITIES_SOURCES.items() if src.shape == "observations"
+}
 
 
 class UnknownSource(LookupError):
@@ -32,15 +44,15 @@ def _source_id(s: Session, name: str) -> int | None:
 
 def list_sources(s: Session) -> list[dict]:
     out = []
-    for name, src in SOURCES.items():
+    for name, (description, calendar, first_period) in SOURCES.items():
         sid = _source_id(s, name)
         periods = 0
         if sid is not None:
             periods = s.scalar(
                 select(func.count(func.distinct(Observation.period))).where(Observation.source_id == sid)
             ) or 0
-        out.append({"name": name, "description": src.spec.description, "calendar": src.calendar,
-                    "first_period": src.first_period, "periods": periods})
+        out.append({"name": name, "description": description, "calendar": calendar,
+                    "first_period": first_period, "periods": periods})
     return out
 
 

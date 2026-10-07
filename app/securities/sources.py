@@ -36,6 +36,7 @@ BLS on Federal business days (FED). Those calendars label the metrics.
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Literal
@@ -73,6 +74,29 @@ FD_MSPD_STRIPS_URL = (
 BLS_CPI_URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/CUUR0000SA0?startyear={year}&endyear={year}"
 
 
+# What BLS answers instead of data when it won't serve a request (most often: the 25 keyless requests a day are used
+# up). The daily capture DAG looks for it in a failed fetch and doesn't retry or fail over it.
+NOT_SERVED = "REQUEST_NOT_PROCESSED"
+
+
+def fetch_bls(url: str) -> tuple[int, str | None, bytes]:
+    """A GET whose answer BLS refused to serve is a failed fetch, not a capture: nothing stored, nothing to parse.
+
+    BLS answers HTTP 200 with status REQUEST_NOT_PROCESSED and a message ("...daily threshold for total number of
+    requests allocated per user..."). Kept as a capture, the parser rejected it and "Market data parse failed" fired
+    until BLS next served (2026-10-07, after the 1996-2015 history used the day's requests).
+    """
+    status, ctype, body = service.fetch(url)
+    try:
+        doc = json.loads(body)
+    except ValueError:
+        return status, ctype, body  # not JSON at all: the parser says what's wrong with it
+    if isinstance(doc, dict) and doc.get("status") == NOT_SERVED:
+        message = " ".join(str(m) for m in doc.get("message") or [])[:300]
+        raise service.SourceFetchError(f"BLS didn't serve the request ({NOT_SERVED}): {message}")
+    return status, ctype, body
+
+
 def bls_view(body: bytes) -> object:
     """BLS's answer without what changes on every request (responseTime, message)."""
     try:
@@ -93,6 +117,7 @@ class SecuritiesSource:
     first_period: str  # the earliest period to ask for; the real first one is found in the backfill
     ahead: int = 0  # periods past the current one that may already have data (announcements)
     form: bool = False  # fetched by posting FedInvest's form, not a GET
+    fetch: Callable[[str], tuple[int, str | None, bytes]] | None = None  # a GET that knows the source's refusals
 
     def bounds(self, period: str) -> tuple[date, date]:
         if self.kind == "day":
@@ -145,7 +170,7 @@ SOURCES: dict[str, SecuritiesSource] = {
     "BLS-CPI": SecuritiesSource(
         _spec("BLS-CPI", BLS_CPI_URL, "BLS, CPI-U all items, not seasonally adjusted, CUUR0000SA0 (JSON, by year)",
               parsers.parse_bls_cpi, dedupe_view=bls_view),
-        kind="year", shape="observations", calendar="FED", first_period="1913",
+        kind="year", shape="observations", calendar="FED", first_period="1913", fetch=fetch_bls,
     ),
 }
 
@@ -234,6 +259,8 @@ def run_capture(s: Session, name: str, period: str, fetcher=None) -> dict:
     period = check_period(name, period)
     if fetcher is None and src.form:
         fetcher = post_fedinvest(period)
+    elif fetcher is None and src.fetch:
+        fetcher = src.fetch
     cap, is_new, check = service.capture(s, src.spec, fetcher, url=src.url(period), period=period)
     s.commit()
     out = {"source": name, "period": period, "capture_id": cap.id, "new_capture": is_new,

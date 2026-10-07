@@ -27,13 +27,16 @@ def mod(monkeypatch):
 
     sdk.task = task
     sdk.dag = lambda *a, **k: (lambda f: f)
-    sdk.CronTriggerTimetable = sdk.Param = lambda *a, **k: (a, k)
+    sdk.CronTriggerTimetable = sdk.Param = sdk.Asset = lambda *a, **k: (a, k)
+    exc = types.ModuleType("airflow.sdk.exceptions")
+    exc.AirflowSkipException = type("AirflowSkipException", (Exception,), {})
     sdk.get_current_context = dict
     jobs = types.ModuleType("home_platform_jobs")
     jobs.AppJobError = JobError
     jobs.call_app_job = None
     monkeypatch.setitem(sys.modules, "airflow", types.ModuleType("airflow"))
     monkeypatch.setitem(sys.modules, "airflow.sdk", sdk)
+    monkeypatch.setitem(sys.modules, "airflow.sdk.exceptions", exc)
     monkeypatch.setitem(sys.modules, "home_platform_jobs", jobs)
     spec = importlib.util.spec_from_file_location("securities_dags", DAG)
     m = importlib.util.module_from_spec(spec)
@@ -120,3 +123,8 @@ def test_sample_periods(mod):
     assert prices[0] == "2000-01-12" and prices[-1] == "2025-01-08"
     assert all(date.fromisoformat(d).weekday() == 2 and 8 <= date.fromisoformat(d).day <= 14 for d in prices)
     assert "BLS-CPI" not in mod.SAMPLE_FROM
+
+
+def test_changed(mod):
+    assert not mod.changed([{"added": 0, "changed": 0, "removed": 0}, {}])
+    assert mod.changed([{"added": 0}, {"removed": 1}])

@@ -7,20 +7,31 @@ fetch. Use it after a parser change, or to apply captures taken before their
 parser existed (phase 3, step 2: the step 1 captures and the sampling probe's).
 One source after another, since each replays its captures in the same
 container. Safe to re-run: the result depends only on the stored captures.
-No Asset is marked yet: nothing reads these until secmaster-svc (step 3).
+TD-SECURITIES's task marks the Asset `mkt_data_treasury_securities`, so
+secmaster-svc's load re-reads the months whose newest capture moved.
 """
 
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from airflow.sdk import dag, task
+from airflow.sdk import Asset, dag, task
 
 # The platform's helper lives at Airflow's DAG root (see treasury_cmt_rebuild.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from home_platform_jobs import call_app_job
 
 SOURCES = ("TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "TD-PRICES", "BLS-CPI")
+# secmaster-svc's load is scheduled on this (see treasury_securities_capture.py).
+TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
+
+
+def rebuild_source(source: str) -> dict:
+    result = call_app_job("mkt-data", f"securities/{source}/rebuild", timeout=3600)
+    print({k: v for k, v in result.items() if k != "parse_failed"})
+    for failure in result.get("parse_failed", []):
+        print("parse failed:", failure)
+    return result
 
 
 @dag(
@@ -35,17 +46,19 @@ SOURCES = ("TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "TD-PRICES", "BLS-C
     doc_md=__doc__,
 )
 def treasury_securities_rebuild():
+    @task(outlets=[TREASURY_SECURITIES])
+    def rebuild_and_mark(source: str) -> dict:
+        """TD-SECURITIES: rebuilt, then the Asset is marked, so secmaster-svc re-reads the months that moved."""
+        return rebuild_source(source)
+
     @task
     def rebuild(source: str) -> dict:
-        result = call_app_job("mkt-data", f"securities/{source}/rebuild", timeout=3600)
-        print({k: v for k, v in result.items() if k != "parse_failed"})
-        for failure in result.get("parse_failed", []):
-            print("parse failed:", failure)
-        return result
+        return rebuild_source(source)
 
     previous = None
     for source in SOURCES:
-        t = rebuild.override(task_id=f"rebuild_{source.lower().replace('-', '_')}")(source)
+        step = rebuild_and_mark if source == "TD-SECURITIES" else rebuild
+        t = step.override(task_id=f"rebuild_{source.lower().replace('-', '_')}")(source)
         if previous is not None:
             previous >> t
         previous = t

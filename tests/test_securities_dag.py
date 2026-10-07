@@ -108,3 +108,15 @@ def test_periods_for_each_source(mod):
 def test_parse_periods(mod):
     assert mod.parse_periods("1979-01, 1980-01 1979-01,,") == ["1979-01", "1980-01"]
     assert mod.parse_periods("") == []
+
+
+def test_sample_periods(mod):
+    today = date(2026, 1, 9)
+    td = mod.sample_periods("TD-SECURITIES", today)
+    assert td[0] == "1979-02" and td[-1] == "2025-02"  # 2026's February hasn't come
+    assert mod.sample_periods("FD-MSPD-STRIPS", today)[-1] == "2026-01"
+    prices = mod.sample_periods("TD-PRICES", today)
+    # The second Wednesday of January: 2000-01-12, 2025-01-08; 2026-01-14 is after "today".
+    assert prices[0] == "2000-01-12" and prices[-1] == "2025-01-08"
+    assert all(date.fromisoformat(d).weekday() == 2 and 8 <= date.fromisoformat(d).day <= 14 for d in prices)
+    assert "BLS-CPI" not in mod.SAMPLE_FROM

@@ -68,12 +68,39 @@ def _calendar(closed: set[date], fail=False):
 
 
 def test_price_days(mod):
-    # Tuesday after Columbus Day: the previous business day is Friday.
-    assert mod.price_days(date(2026, 10, 13), _calendar({date(2026, 10, 12)})) == ["2026-10-09", "2026-10-13"]
+    # Tuesday after Columbus Day: the five business days before it skip the holiday and the weekend.
+    assert mod.price_days(date(2026, 10, 13), _calendar({date(2026, 10, 12)})) == [
+        "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-13"]
+    assert mod.price_days(date(2026, 10, 13), _calendar({date(2026, 10, 12)}), back=1) == ["2026-10-09", "2026-10-13"]
     assert mod.price_days(date(2026, 10, 12), _calendar({date(2026, 10, 12)})) == []
     assert mod.price_days(date(2026, 10, 10), _calendar(set())) == []  # Saturday
     # calendar-svc down: weekdays stand in.
-    assert mod.price_days(date(2026, 10, 13), _calendar(set(), fail=True)) == ["2026-10-12", "2026-10-13"]
+    assert mod.price_days(date(2026, 10, 13), _calendar(set(), fail=True))[-2:] == ["2026-10-12", "2026-10-13"]
+
+
+class _TI:
+    def __init__(self, try_number, max_tries):
+        self.try_number, self.max_tries = try_number, max_tries
+
+
+def test_end_of_day_missing(mod):
+    up = {"period": "2026-10-06", "by_field": {"buy": 470, "eod": 465, "sell": 470}}
+    zeros = {"period": "2026-10-06", "by_field": {"buy": 470, "sell": 470}}  # end of day printed as 0.000000
+    assert not mod.end_of_day_missing([up], "2026-10-06")
+    assert mod.end_of_day_missing([zeros], "2026-10-06")
+    assert not mod.end_of_day_missing([{"period": "2026-10-06", "values": 940}], "2026-10-06")  # can't tell
+    assert not mod.end_of_day_missing([], "2026-10-06")
+
+
+def test_waits_for_end_of_day_then_carries_on(mod):
+    zeros = [{"period": "2026-10-06", "by_field": {"buy": 470, "sell": 470}}]
+    with pytest.raises(RuntimeError, match="2026-10-06's end-of-day prices"):
+        mod.wait_for_end_of_day(zeros, "2026-10-06", {"ti": _TI(1, 4)})
+    with pytest.raises(RuntimeError):
+        mod.wait_for_end_of_day(zeros, "2026-10-06", {"ti": _TI(4, 4)})
+    mod.wait_for_end_of_day(zeros, "2026-10-06", {"ti": _TI(5, 4)})  # the last try: logged, not raised
+    mod.wait_for_end_of_day(zeros, "2026-10-06", {})  # no task instance (a test or a manual call)
+    mod.wait_for_end_of_day([{"period": "2026-10-06", "by_field": {"eod": 1}}], "2026-10-06", {"ti": _TI(1, 4)})
 
 
 def test_capture_retries_failed_fetches_only(mod):
@@ -111,7 +138,7 @@ def test_periods_for_each_source(mod):
     assert mod.periods_for("FD-AUCTIONS", date(2026, 10, 2)) == ["2026-09", "2026-10", "2026-11"]
     assert mod.periods_for("FD-MSPD-STRIPS", today) == ["2026-09", "2026-10"]
     assert mod.periods_for("BLS-CPI", today) == ["2026"]
-    assert mod.periods_for("TD-PRICES", today, _calendar(set())) == ["2026-10-05", "2026-10-06"]
+    assert mod.periods_for("TD-PRICES", today, _calendar(set()))[-2:] == ["2026-10-05", "2026-10-06"]
     assert set(mod.SOURCES) == {"TD-SECURITIES", "TD-PRICES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "BLS-CPI"}
 
 

@@ -27,6 +27,7 @@ def test_norm_keeps_meaning_and_drops_presentation():
     assert compare.norm("1,000") == Decimal(1000)
     assert compare.norm("Yes") == compare.norm("true") == "yes"
     assert compare.norm(" 10-Year ") == compare.norm("10-year")
+    assert compare.norm("Single-Price") == compare.norm("Single Price")  # 912797WY9/2026-10-13, the one difference
     assert compare.norm("4.25") != compare.norm("4.26")
 
 

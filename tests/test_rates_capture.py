@@ -112,7 +112,7 @@ def test_a_page_that_doesnt_parse_keeps_the_raw_capture(migrated_db):
 
 
 def test_values_outside_the_month_are_rejected(migrated_db):
-    with db.session() as s, pytest.raises(ParseError, match="outside the capture's month"):
+    with db.session() as s, pytest.raises(ParseError, match="outside the capture's period"):
         rates.run_capture(s, "UST-PAR", "2026-08", _fetcher(UST_SEP))
 
 

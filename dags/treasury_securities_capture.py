@@ -18,8 +18,12 @@ failing source doesn't hold up the others:
 - BLS-CPI: the current year, plus the previous one in January.
 
 A second, manual DAG, `mkt_data__treasury_securities_probe`, captures the
-periods given in its form for one source: for finding how far back each
-source goes, and for fixtures, before the real backfill (step 5).
+periods given in its form for one source, for fixtures and spot checks. Run
+with the form left as it is (source "all", no periods), it samples one
+period a year from each source's earliest plausible year to now (not
+BLS-CPI: its history is known, 1913 on, and its keyless API allows 25
+requests a day), and logs each period's size, so a source's first year shows
+where the answers stop being empty. Before the real backfill (step 5).
 
 A failed fetch (HTTP 502 from the job) is tried again after 10, 30 and 60
 seconds within the task, then the task retries once an hour later. The work
@@ -170,6 +174,28 @@ def treasury_securities_capture():
 treasury_securities_capture()
 
 
+# Sample periods per source for the probe's default run: one a year, on a day
+# or month that always has data once the source does.
+SAMPLE_FROM = {"TD-SECURITIES": 1979, "FD-AUCTIONS": 1979, "FD-MSPD-STRIPS": 1985, "TD-PRICES": 2000}
+
+
+def sample_periods(source: str, today: date) -> list[str]:
+    """One period a year: February's auctions (a refunding month), January's MSPD, and the
+    second Wednesday of January's prices (never a holiday)."""
+    out = []
+    for year in range(SAMPLE_FROM[source], today.year + 1):
+        if source == "TD-PRICES":
+            jan1 = date(year, 1, 1)
+            day = jan1 + timedelta(days=(2 - jan1.weekday()) % 7 + 7)
+            if day <= today:
+                out.append(day.isoformat())
+        elif source == "FD-MSPD-STRIPS":
+            out.append(f"{year}-01")
+        elif date(year, 2, 1) <= today:
+            out.append(f"{year}-02")
+    return out
+
+
 def parse_periods(text: str) -> list[str]:
     """Periods from the probe form: comma- or space-separated, in the order given, duplicates dropped."""
     out = []
@@ -188,20 +214,33 @@ def parse_periods(text: str) -> list[str]:
     tags=["mkt-data", "treasury", "securities"],
     doc_md=__doc__,
     params={
-        "source": Param("TD-SECURITIES", enum=list(SOURCES)),
+        "source": Param("all", enum=["all", *SOURCES]),
         "periods": Param("", type="string",
                          description="Comma-separated: YYYY-MM (TD-SECURITIES, FD-AUCTIONS, FD-MSPD-STRIPS), "
-                                     "YYYY-MM-DD (TD-PRICES) or YYYY (BLS-CPI)"),
+                                     "YYYY-MM-DD (TD-PRICES) or YYYY (BLS-CPI). Empty: one sample period a year"),
     },
 )
 def treasury_securities_probe():
     @task
-    def probe() -> list[dict]:
+    def probe() -> dict:
         p = get_current_context()["params"]
         periods = parse_periods(p.get("periods") or "")
-        if not periods:
-            raise ValueError("give at least one period")
-        return capture_all(p["source"], periods)
+        source = p.get("source") or "all"
+        if periods:
+            if source == "all":
+                raise ValueError("periods need a single source")
+            return {source: capture_all(source, periods)}
+        today = datetime.now(NEW_YORK).date()
+        names = list(SAMPLE_FROM) if source == "all" else [source]
+        report, failed = {}, []
+        for name in names:
+            try:
+                report[name] = capture_all(name, sample_periods(name, today))
+            except RuntimeError as e:  # some periods failed: logged above; carry on with the next source
+                failed.append(str(e))
+        if failed:
+            raise RuntimeError("; ".join(failed))
+        return report
 
     probe()
 

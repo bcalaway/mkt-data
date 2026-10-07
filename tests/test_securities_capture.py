@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app import db, jobs
 from app.calendars import service
@@ -292,3 +292,26 @@ def test_a_changed_price_is_still_new(migrated_db, monkeypatch):
         sec.run_capture(s, "TD-PRICES", "2020-06-19")
         again = sec.run_capture(s, "TD-PRICES", "2020-06-19")
     assert again["new_capture"] and again["changed"] == 1
+
+
+# BLS's answer once the day's 25 keyless requests are used (capture #8066, 2026-10-07, as logged).
+BLS_REFUSED = json.dumps({
+    "status": "REQUEST_NOT_PROCESSED", "responseTime": 0,
+    "message": [("Request could not be serviced, as the daily threshold for total number of requests allocated to the "
+                 "user has been reached.")],
+    "Results": {},
+}).encode()
+
+
+def test_a_bls_refusal_is_a_failed_fetch_not_a_capture(migrated_db, monkeypatch):
+    monkeypatch.setattr(service, "fetch", _fetcher(BLS_REFUSED))
+    with db.session() as s, pytest.raises(service.SourceFetchError, match=r"REQUEST_NOT_PROCESSED\): Request could not"):
+        sec.run_capture(s, "BLS-CPI", "2026")
+    with db.session() as s:
+        assert s.scalar(select(func.count()).select_from(Capture)) == 0
+        check = s.scalars(select(SourceCheck)).one()
+        assert check.outcome == "error" and check.parse_outcome is None and "daily threshold" in check.detail
+    # Served again: an ordinary capture.
+    monkeypatch.setattr(service, "fetch", _fetcher(BLS_2026))
+    with db.session() as s:
+        assert sec.run_capture(s, "BLS-CPI", "2026")["new_capture"]

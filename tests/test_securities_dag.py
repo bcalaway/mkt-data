@@ -162,3 +162,16 @@ def test_sample_periods(mod):
 def test_changed(mod):
     assert not mod.changed([{"added": 0, "changed": 0, "removed": 0}, {}])
     assert mod.changed([{"added": 0}, {"removed": 1}])
+
+
+def test_a_bls_refusal_is_logged_not_retried_or_failed(mod):
+    calls, pauses = [], []
+
+    def call(app, path, **kw):
+        calls.append(path)
+        raise JobError("HTTP 502: fetch failed: BLS didn't serve the request (REQUEST_NOT_PROCESSED): daily threshold")
+
+    with pytest.raises(JobError):
+        mod.capture("BLS-CPI", "2026", call, pauses.append)
+    assert len(calls) == 1 and pauses == []  # asking again today is refused again
+    assert mod.capture_all("BLS-CPI", ["2026"], call, pauses.append) == []  # logged; the task doesn't fail

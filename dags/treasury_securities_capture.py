@@ -21,7 +21,9 @@ failing source doesn't hold up the others:
   evenings, and quote-svc's "Treasury prices missing" alert covers it.
 - FD-MSPD-STRIPS: the previous and current month (the statement for a month
   comes out a few business days into the next).
-- BLS-CPI: the current year, plus the previous one in January.
+- BLS-CPI: the current year, plus the previous one in January. A day BLS won't serve
+  (its 25 keyless requests a day used up) is logged, not a failure: the next
+  evening asks again.
 
 Once TD-SECURITIES and FD-AUCTIONS are captured, `compare_auctions` cross-checks
 TreasuryDirect's auction records against Fiscal Data's (the metrics carry
@@ -137,14 +139,19 @@ def end_of_day_missing(results: list[dict], day: str) -> bool:
     return not r["by_field"].get("eod")
 
 
+# BLS's refusal to serve (its 25 keyless requests a day used up, say): mkt-data reports it as a failed fetch (502).
+# Retrying the same day is refused again, and the next day's capture asks again, so it's logged, not a failure.
+NOT_SERVED = "REQUEST_NOT_PROCESSED"
+
+
 def capture(source: str, period: str, call=None, sleep=time.sleep) -> dict:
-    """One capture job call, retried on HTTP 502 (a failed fetch); other errors raise at once."""
+    """One capture job call, retried on HTTP 502 (a failed fetch); other errors, and a source's refusal, raise at once."""
     call = call or call_app_job
     for pause in (*FETCH_PAUSES, None):
         try:
             return call("mkt-data", f"securities/{source}/capture?period={period}", timeout=180)
         except AppJobError as e:
-            if pause is None or "HTTP 502" not in str(e):
+            if pause is None or "HTTP 502" not in str(e) or NOT_SERVED in str(e):
                 raise
             print(f"{source} {period}: fetch failed, trying again in {pause} s: {str(e)[:200]}")
             sleep(pause)
@@ -158,6 +165,9 @@ def capture_all(source: str, periods: list[str], call=None, sleep=time.sleep) ->
         try:
             r = capture(source, p, call, sleep)
         except AppJobError as e:
+            if NOT_SERVED in str(e):
+                print(f"{source} {p}: not served today, the next capture asks again: {str(e)[:300]}")
+                continue
             print(f"{source} {p}: failed: {str(e)[:300]}")
             failed.append(p)
             continue

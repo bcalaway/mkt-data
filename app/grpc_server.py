@@ -20,7 +20,7 @@ import asyncio
 import grpc
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
-from app import db
+from app import db, source_status
 from app.calendars import sources_api
 from app.grpc_gen import (
     calendar_sources_pb2,
@@ -31,6 +31,8 @@ from app.grpc_gen import (
     observations_pb2_grpc,
     records_pb2,
     records_pb2_grpc,
+    source_status_pb2,
+    source_status_pb2_grpc,
 )
 from app.rates import api as obs_api
 from app.securities import api as rec_api
@@ -39,6 +41,7 @@ EXAMPLE_SERVICE = example_service_pb2.DESCRIPTOR.services_by_name["ExampleServic
 CALENDAR_SOURCES = calendar_sources_pb2.DESCRIPTOR.services_by_name["CalendarSources"].full_name
 OBSERVATIONS = observations_pb2.DESCRIPTOR.services_by_name["Observations"].full_name
 RECORDS = records_pb2.DESCRIPTOR.services_by_name["Records"].full_name
+SOURCE_STATUS = source_status_pb2.DESCRIPTOR.services_by_name["SourceStatus"].full_name
 
 
 class ExampleService(example_service_pb2_grpc.ExampleServiceServicer):
@@ -149,6 +152,34 @@ class Records(records_pb2_grpc.RecordsServicer):
             await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
 
 
+def _status_list() -> source_status_pb2.ListSourceStatusResponse:
+    with db.session() as s:
+        rows = source_status.list_sources(s)
+    return source_status_pb2.ListSourceStatusResponse(sources=[source_status_pb2.SourceState(**r) for r in rows])
+
+
+def _status_one(name: str, checks: int) -> source_status_pb2.SourceStatusDetail:
+    with db.session() as s:
+        d = source_status.get_source(s, name, checks)
+    return source_status_pb2.SourceStatusDetail(
+        source=source_status_pb2.SourceState(**d["source"]),
+        checks=[source_status_pb2.SourceCheckRow(**c) for c in d["checks"]],
+        years=[source_status_pb2.PeriodYear(**y) for y in d["years"]],
+    )
+
+
+class SourceStatus(source_status_pb2_grpc.SourceStatusServicer):
+    # The database work is synchronous SQLAlchemy, so it runs in a thread.
+    async def ListSourceStatus(self, request, context):
+        return await asyncio.to_thread(_status_list)
+
+    async def GetSourceStatus(self, request, context):
+        try:
+            return await asyncio.to_thread(_status_one, request.source, request.checks)
+        except source_status.UnknownSource as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+
+
 async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:
     """Start the server; returns it and the bound port (port 0 picks a free one)."""
     server = grpc.aio.server()
@@ -156,6 +187,7 @@ async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:
     calendar_sources_pb2_grpc.add_CalendarSourcesServicer_to_server(CalendarSources(), server)
     observations_pb2_grpc.add_ObservationsServicer_to_server(Observations(), server)
     records_pb2_grpc.add_RecordsServicer_to_server(Records(), server)
+    source_status_pb2_grpc.add_SourceStatusServicer_to_server(SourceStatus(), server)
 
     health_servicer = health.aio.HealthServicer()
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
@@ -163,6 +195,6 @@ async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:
     bound = server.add_insecure_port(f"[::]:{port}")
     await server.start()
     # "" is the overall server status; each service also reports its own.
-    for service in ("", EXAMPLE_SERVICE, CALENDAR_SOURCES, OBSERVATIONS, RECORDS):
+    for service in ("", EXAMPLE_SERVICE, CALENDAR_SOURCES, OBSERVATIONS, RECORDS, SOURCE_STATUS):
         await health_servicer.set(service, health_pb2.HealthCheckResponse.SERVING)
     return server, bound

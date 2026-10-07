@@ -122,3 +122,23 @@ def test_records(migrated_db):
     bond = next(r for r in recs.records if r.source_key == "912810UW6/2026-10-15")
     assert bond.record_type == "auction" and json.loads(bond.fields_json)["interestRate"] == "5.125000"
     assert missing == grpc.StatusCode.NOT_FOUND  # an observation source, not a record source
+
+
+def test_source_status(migrated_db):
+    from app.grpc_gen import source_status_pb2, source_status_pb2_grpc
+
+    async def read(channel):
+        stub = source_status_pb2_grpc.SourceStatusStub(channel)
+        listed = await stub.ListSourceStatus(source_status_pb2.ListSourceStatusRequest())
+        one = await stub.GetSourceStatus(source_status_pb2.GetSourceStatusRequest(source="ust-par"))
+        try:
+            await stub.GetSourceStatus(source_status_pb2.GetSourceStatusRequest(source="NOPE"))
+            missing = None
+        except grpc.aio.AioRpcError as e:
+            missing = e.code()
+        return listed, one, missing
+
+    listed, one, missing = asyncio.run(_call(read))
+    assert {"FED-K8", "UST-PAR", "TD-PRICES"} <= {x.name for x in listed.sources}
+    assert one.source.name == "UST-PAR" and one.source.period_kind == "month" and not one.checks
+    assert missing == grpc.StatusCode.NOT_FOUND

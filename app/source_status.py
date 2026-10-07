@@ -20,6 +20,54 @@ from app.models import Capture, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
 
+# How each group of sources is fetched: the DAG, when it runs, and how long without a successful fetch is late.
+# tests/test_source_status.py checks every DAG id and schedule here against dags/, so this can't drift from them.
+WEEKDAYS_LATE_HOURS = 96  # a weekday DAG: Friday evening to Tuesday evening covers a weekend and a Monday holiday
+WEEKLY_LATE_HOURS = 192  # a weekly DAG: 8 days (the capture-stale alert's threshold)
+
+
+@dataclass(frozen=True)
+class Schedule:
+    dag: str
+    when: str  # in words
+    cron: str  # as in the DAG file, for the drift test
+    late_after_hours: int
+
+
+CALENDAR_SCHEDULES = {
+    "FED": Schedule("mkt_data__fed_calendar", "Mondays 11:17 UTC", "17 11 * * 1", WEEKLY_LATE_HOURS),
+    "SIFMA-US": Schedule("mkt_data__sifma_calendar", "Mondays 11:23 UTC", "23 11 * * 1", WEEKLY_LATE_HOURS),
+    "NYSE": Schedule("mkt_data__nyse_calendar", "Mondays 11:29 UTC", "29 11 * * 1", WEEKLY_LATE_HOURS),
+}
+SOURCE_SCHEDULES = {
+    "UST-PAR": Schedule("mkt_data__ust_par", "Weekdays 6:30 p.m. New York", "30 18 * * 1-5", WEEKDAYS_LATE_HOURS),
+    "H15-TCM": Schedule("mkt_data__h15_tcm", "Weekdays 4:30 p.m. New York", "30 16 * * 1-5", WEEKDAYS_LATE_HOURS),
+}
+SECURITIES_SCHEDULE = Schedule("mkt_data__treasury_securities_capture", "Weekdays 7:15 p.m. New York",
+                               "15 19 * * 1-5", WEEKDAYS_LATE_HOURS)
+
+
+def schedule_for(e: "Entry") -> Schedule:
+    if e.group == "calendars":
+        return CALENDAR_SCHEDULES[e.calendar]
+    return SOURCE_SCHEDULES.get(e.name, SECURITIES_SCHEDULE)
+
+
+def pulls_for(e: "Entry") -> str:
+    """What's taken from the source and who reads it: the spec's text, or for a calendar source, its role."""
+    if e.spec.pulls:
+        return e.spec.pulls
+    cal = service.CALENDARS[e.calendar]
+    names = [s.name for s in cal.sources]
+    rank = names.index(e.name) + 1 if e.name in names else 0
+    what = {"published": "The closed days and early closes it publishes",
+            "rules": "The holiday rules (with cited exceptions) run over the years it covers",
+            "projected": "The holiday rules run forward to 2100"}.get(e.kind, "Its dates")
+    role = ("fills only years no other source covers" if e.kind == "projected"
+            else f"precedence {rank} of {len(names)}: a higher source decides any date it lists")
+    return f"{what}, for {e.calendar}. calendar-svc reads them into the golden {e.calendar} calendar ({role})."
+
+
 FETCHED = ("new", "unchanged")
 RECENT_DAYS = 7
 DEFAULT_CHECKS = 50
@@ -53,6 +101,10 @@ def catalog() -> list[Entry]:
     return list(out.values())
 
 
+def _aware(t: datetime) -> datetime:
+    return t if t.tzinfo else t.replace(tzinfo=UTC)
+
+
 def _iso(t) -> str:
     if t is None:
         return ""
@@ -81,6 +133,7 @@ def _states(s: Session, entries: list[Entry], now: datetime) -> list[dict]:
         .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since).group_by(SourceCheck.source_id))}
     out = []
     for e in entries:
+        sched = schedule_for(e)
         sid, url, desc = rows.get(e.name, (None, e.spec.url, e.spec.description))
         n, size, cap_id, cap_at, periods, first, last_p = stored.get(sid, (0, 0, None, None, 0, None, None))
         check = last.get(sid)
@@ -98,6 +151,8 @@ def _states(s: Session, entries: list[Entry], now: datetime) -> list[dict]:
             "checks_7d": checks, "errors_7d": errors,
             "periods": periods if e.period_kind else 0, "first_period": (first or "") if e.period_kind else "",
             "last_period": (last_p or "") if e.period_kind else "",
+            "pulls": pulls_for(e), "dag": sched.dag, "schedule": sched.when, "late_after_hours": sched.late_after_hours,
+            "late": sid in last_ok and now - _aware(last_ok[sid]) > timedelta(hours=sched.late_after_hours),
         })
     return out
 
@@ -130,3 +185,26 @@ def get_source(s: Session, name: str, checks: int = DEFAULT_CHECKS, now: datetim
                     "parse_detail": c.parse_detail or ""} for c in rows],
         "years": years,
     }
+
+
+def capture_text(s: Session, capture_id: int, contains: str = "", context: int = 0, offset: int = 0,
+                 limit: int = 200) -> dict:
+    """A capture's text lines (app/capture_text.py), a page at a time. UnknownCapture; capture_text.NoTextView."""
+    from app import capture_text as text_view
+
+    row = s.execute(select(Capture.body, Capture.content_type, Capture.fetched_at, Capture.period, Source.name)
+                    .join(Source, Source.id == Capture.source_id).where(Capture.id == capture_id)).first()
+    if row is None:
+        raise UnknownCapture(f"no capture {capture_id}")
+    body, ctype, fetched, period, source = row
+    view, lines = text_view.lines(capture_id, body, ctype or "")
+    keep, matches = text_view.select_lines(lines, contains, min(max(context, 0), 10))
+    start = max(offset, 0)
+    shown = keep[start:start + min(limit or 200, 1000)]
+    return {"capture_id": capture_id, "source": source, "period": period or "", "fetched_at": _iso(fetched),
+            "view": view, "lines_total": len(lines), "matches": matches if matches is not None else -1,
+            "offset": start, "shown_of": len(keep), "lines": [{"n": i + 1, "text": lines[i]} for i in shown]}
+
+
+class UnknownCapture(LookupError):
+    pass

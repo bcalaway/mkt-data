@@ -1,5 +1,6 @@
 """Every source with how its captures are going (app/source_status.py), for the Sources screen."""
 
+import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -84,3 +85,64 @@ def test_get(migrated_db):
     assert d["years"] == [{"year": "2025", "periods": 1, "captures": 1, "capture_bytes": 110_000},
                           {"year": "2026", "periods": 2, "captures": 2, "capture_bytes": 220_000}]
     assert never["checks"] == [] and never["years"] == []
+
+
+def test_every_source_says_what_it_gives_and_who_reads_it():
+    for e in source_status.catalog():
+        text = source_status.pulls_for(e)
+        assert text and any(svc in text for svc in ("calendar-svc", "quote-svc", "secmaster-svc", "cross-check")), e.name
+    by = {e.name: e for e in source_status.catalog()}
+    assert "precedence 1 of" in source_status.pulls_for(by["FED-K8"])
+    # The tests' calendars leave out the rules files (tests/conftest.py), so a projection is made up here.
+    proj = source_status.Entry("SIFMA-US-PROJECTED", "calendars", "SIFMA-US", "projected", "", by["FED-K8"].spec)
+    assert "fills only years" in source_status.pulls_for(proj)
+
+
+def test_schedules_match_the_dags():
+    from pathlib import Path
+
+    dags = "\n".join(p.read_text() for p in (Path(__file__).resolve().parents[1] / "dags").glob("*.py"))
+    for e in source_status.catalog():
+        sched = source_status.schedule_for(e)
+        assert f'"{sched.dag}"' in dags, (e.name, sched.dag)
+        assert f'"{sched.cron}"' in dags, (e.name, sched.cron)
+
+
+def test_late_against_the_schedule(migrated_db):
+    with db.session() as s:
+        _load(s)
+        rows = {r["name"]: r for r in source_status.list_sources(s, NOW)}
+        later = {r["name"]: r for r in source_status.list_sources(s, NOW + timedelta(days=5))}
+    # TD-PRICES last worked a day before NOW: on time; five days on, past its 96 hours.
+    assert not rows["TD-PRICES"]["late"] and later["TD-PRICES"]["late"]
+    assert rows["TD-PRICES"]["dag"] == "mkt_data__treasury_securities_capture" and rows["TD-PRICES"]["late_after_hours"] == 96
+    # FED-K8 last worked a day before NOW and is weekly: still on time five days on.
+    assert not later["FED-K8"]["late"] and later["FED-K8"]["late_after_hours"] == 192
+    assert not rows["UST-PAR"]["late"]  # never fetched: not late, never captured (the status says so)
+
+
+def test_capture_text(migrated_db):
+    with db.session() as s:
+        sid = _source(s, "BLS-CPI")
+        body = json.dumps({"status": "REQUEST_SUCCEEDED", "Results": {"series": [{"data": [
+            {"year": "2026", "period": f"M{m:02d}", "value": str(320 + m)} for m in range(1, 9)]}]}}).encode()
+        c = Capture(source_id=sid, fetched_at=NOW, http_status=200, content_type="application/json", sha256="a",
+                    size_bytes=len(body), body=body, period="2026")
+        s.add(c)
+        pdf = Capture(source_id=sid, fetched_at=NOW, http_status=200, content_type="application/pdf", sha256="b",
+                      size_bytes=4, body=b"%PDF", period="2025")
+        s.add(pdf)
+        s.commit()
+        whole = source_status.capture_text(s, c.id, limit=5)
+        found = source_status.capture_text(s, c.id, contains="m03", context=1)
+        page2 = source_status.capture_text(s, c.id, offset=5, limit=5)
+        with pytest.raises(source_status.UnknownCapture):
+            source_status.capture_text(s, 999)
+        from app.capture_text import NoTextView
+
+        with pytest.raises(NoTextView):
+            source_status.capture_text(s, pdf.id)
+    assert whole["view"] == "json" and whole["matches"] == -1 and len(whole["lines"]) == 5 and whole["lines"][0]["n"] == 1
+    assert whole["shown_of"] == whole["lines_total"] and whole["period"] == "2026" and whole["source"] == "BLS-CPI"
+    assert found["matches"] == 1 and any('"M03"' in x["text"] for x in found["lines"]) and len(found["lines"]) == 3
+    assert page2["offset"] == 5 and page2["lines"][0]["n"] == 6

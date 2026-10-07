@@ -168,6 +168,13 @@ def _status_one(name: str, checks: int) -> source_status_pb2.SourceStatusDetail:
     )
 
 
+def _capture_text(r) -> source_status_pb2.CaptureText:
+    with db.session() as s:
+        d = source_status.capture_text(s, r.capture_id, r.contains, r.context, r.offset, r.limit)
+    return source_status_pb2.CaptureText(**{k: v for k, v in d.items() if k != "lines"},
+                                         lines=[source_status_pb2.TextLine(**x) for x in d["lines"]])
+
+
 class SourceStatus(source_status_pb2_grpc.SourceStatusServicer):
     # The database work is synchronous SQLAlchemy, so it runs in a thread.
     async def ListSourceStatus(self, request, context):
@@ -178,6 +185,16 @@ class SourceStatus(source_status_pb2_grpc.SourceStatusServicer):
             return await asyncio.to_thread(_status_one, request.source, request.checks)
         except source_status.UnknownSource as e:
             await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+
+    async def GetCaptureText(self, request, context):
+        from app.capture_text import NoTextView
+
+        try:
+            return await asyncio.to_thread(_capture_text, request)
+        except source_status.UnknownCapture as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+        except NoTextView as e:
+            await context.abort(grpc.StatusCode.FAILED_PRECONDITION, str(e))
 
 
 async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:

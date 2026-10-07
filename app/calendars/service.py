@@ -61,6 +61,9 @@ class SourceSpec:
     # stamp the request time (BLS's responseTime). The bytes kept are the
     # first fetch's, unchanged.
     dedupe_view: Callable[[bytes], object] | None = None
+    # What's taken from the source and who reads it, for the Sources screen (docs/phase-3.md, step 8). Calendar
+    # sources leave it empty: their text comes from their calendar and rank (app/source_status.py).
+    pulls: str = ""
 
 
 @dataclass(frozen=True)

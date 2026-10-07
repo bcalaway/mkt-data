@@ -136,9 +136,16 @@ def test_source_status(migrated_db):
             missing = None
         except grpc.aio.AioRpcError as e:
             missing = e.code()
-        return listed, one, missing
+        try:
+            await stub.GetCaptureText(source_status_pb2.GetCaptureTextRequest(capture_id=999))
+            no_capture = None
+        except grpc.aio.AioRpcError as e:
+            no_capture = e.code()
+        return listed, one, missing, no_capture
 
-    listed, one, missing = asyncio.run(_call(read))
+    listed, one, missing, no_capture = asyncio.run(_call(read))
+    assert no_capture == grpc.StatusCode.NOT_FOUND
+    assert one.source.dag == "mkt_data__ust_par" and one.source.pulls and not one.source.late
     assert {"FED-K8", "UST-PAR", "TD-PRICES"} <= {x.name for x in listed.sources}
     assert one.source.name == "UST-PAR" and one.source.period_kind == "month" and not one.checks
     assert missing == grpc.StatusCode.NOT_FOUND

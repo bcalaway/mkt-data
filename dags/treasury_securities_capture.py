@@ -17,6 +17,10 @@ failing source doesn't hold up the others:
   comes out a few business days into the next).
 - BLS-CPI: the current year, plus the previous one in January.
 
+After TD-SECURITIES, a mark task sets the Asset `mkt_data_treasury_securities`
+when any of its months gained, changed or lost an auction, so secmaster-svc's
+load (scheduled on it) runs when there's something new.
+
 A second, manual DAG, `mkt_data__treasury_securities_probe`, captures the
 periods given in its form for one source, for fixtures and spot checks. Run
 with the form left as it is (source "all", no periods), it samples one
@@ -37,13 +41,21 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from airflow.sdk import CronTriggerTimetable, Param, dag, get_current_context, task
+from airflow.sdk import Asset, CronTriggerTimetable, Param, dag, get_current_context, task
+
+try:
+    from airflow.sdk.exceptions import AirflowSkipException
+except ImportError:  # older Task SDKs
+    from airflow.exceptions import AirflowSkipException
 
 # The platform's helper lives at Airflow's DAG root (see treasury_cmt_daily.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from home_platform_jobs import AppJobError, call_app_job
 
 NEW_YORK = ZoneInfo("America/New_York")
+# secmaster-svc's load (secmaster_svc__load) is scheduled on this: marked when
+# TreasuryDirect's records (TD-SECURITIES) gain, change or lose an auction.
+TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
 FETCH_PAUSES = (10, 30, 60)
 LOOKBACK_DAYS = 10
 
@@ -131,6 +143,10 @@ def capture_all(source: str, periods: list[str], call=None, sleep=time.sleep) ->
     return results
 
 
+def changed(results: list[dict]) -> bool:
+    return any(r.get("added") or r.get("changed") or r.get("removed") for r in results)
+
+
 def periods_for(source: str, today: date, call=None) -> list[str]:
     if source in ("TD-SECURITIES", "FD-AUCTIONS"):
         return months(today, ahead=1)
@@ -168,7 +184,16 @@ def treasury_securities_capture():
                 return []
             return capture_all(source, periods)
 
-        run()
+        got = run()
+        if source == "TD-SECURITIES":
+
+            @task(outlets=[TREASURY_SECURITIES])
+            def mark_treasury_securities(results: list[dict]) -> str:
+                if not changed(results):
+                    raise AirflowSkipException("no auction added, changed or removed: secmaster-svc has nothing to load")
+                return "marked"
+
+            mark_treasury_securities(got)
 
 
 treasury_securities_capture()

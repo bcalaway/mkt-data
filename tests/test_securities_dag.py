@@ -19,9 +19,16 @@ class JobError(RuntimeError):
 def mod(monkeypatch):
     sdk = types.ModuleType("airflow.sdk")
 
+    class _Ref:  # a task's output: only wired up (>>), never run
+        def __rshift__(self, other):
+            return other
+
+        def __rrshift__(self, other):
+            return self
+
     def task(*a, **k):
         def wrap(fn):
-            return lambda *x, **y: None
+            return lambda *x, **y: _Ref()
 
         return wrap(a[0]) if a and callable(a[0]) else wrap
 

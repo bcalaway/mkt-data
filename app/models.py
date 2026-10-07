@@ -241,3 +241,20 @@ class Record(Base):
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class RecordComparison(Base):
+    """The latest cross-check of two sources' records (docs/phase-3.md, step 5): one row per pair, replaced each run."""
+
+    __tablename__ = "record_comparison"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    left_source: Mapped[str] = mapped_column(String(40))  # TD-SECURITIES
+    right_source: Mapped[str] = mapped_column(String(40))  # FD-AUCTIONS
+    record_type: Mapped[str] = mapped_column(String(30))
+    ran_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    compared: Mapped[int] = mapped_column(Integer)  # records both list
+    only_left: Mapped[int] = mapped_column(Integer)
+    only_right: Mapped[int] = mapped_column(Integer)
+    records_differing: Mapped[int] = mapped_column(Integer)  # records with at least one field that differs
+    detail: Mapped[dict] = mapped_column(JSON_DOC)  # per field: counts and examples; keys only in one source

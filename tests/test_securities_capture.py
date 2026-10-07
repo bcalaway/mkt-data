@@ -258,3 +258,37 @@ def test_metrics_label_the_new_sources(migrated_db):
         sec.run_capture(s, "BLS-CPI", "2026", _fetcher(BLS_2026))
     body = client.get("/metrics").text
     assert 'mkt_data_source_captures{calendar="FED",source="BLS-CPI",kind="published"} 1' in body
+
+
+# Two real fetches of 2020-06-19's page (captures #6109 and #7932): the same rows, but the two notes due
+# 2020-06-30 (912828VJ6, 912828XH8) in the opposite order, as FedInvest lists same-maturity rows in no fixed order.
+JUNE19_A = (FIXTURES / "td_prices_2020_06_19_capture6109.html").read_bytes()
+JUNE19_B = (FIXTURES / "td_prices_2020_06_19_capture7932.html").read_bytes()
+
+
+def test_a_reordered_prices_page_is_unchanged(migrated_db, monkeypatch):
+    from app.calendars import text
+    from app.securities import parsers
+
+    def lines(b):
+        return text.lines(b.decode("utf-8", errors="replace"))
+
+    assert JUNE19_A != JUNE19_B and lines(JUNE19_A) != lines(JUNE19_B)  # why text dedupe called it new
+    assert parsers.td_prices_view(JUNE19_A) == parsers.td_prices_view(JUNE19_B)
+    pages = [JUNE19_A, JUNE19_B]
+    monkeypatch.setattr(sec, "post_fedinvest", lambda period: _fetcher(pages.pop(0), "text/html"))
+    with db.session() as s:
+        first = sec.run_capture(s, "TD-PRICES", "2020-06-19")
+        again = sec.run_capture(s, "TD-PRICES", "2020-06-19")
+    assert first["new_capture"] and not again["new_capture"] and again["capture_id"] == first["capture_id"]
+
+
+def test_a_changed_price_is_still_new(migrated_db, monkeypatch):
+    changed = JUNE19_A.replace(b"94.750000", b"94.781250", 1)  # 912810SN9's end of day, up a 32nd
+    assert changed != JUNE19_A
+    pages = [JUNE19_A, changed]
+    monkeypatch.setattr(sec, "post_fedinvest", lambda period: _fetcher(pages.pop(0), "text/html"))
+    with db.session() as s:
+        sec.run_capture(s, "TD-PRICES", "2020-06-19")
+        again = sec.run_capture(s, "TD-PRICES", "2020-06-19")
+    assert again["new_capture"] and again["changed"] == 1

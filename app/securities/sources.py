@@ -125,9 +125,10 @@ SOURCES: dict[str, SecuritiesSource] = {
         kind="month", shape="records", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "TD-PRICES": SecuritiesSource(
-        # The results page carries a fresh CSRF token each time, so dedupe on its visible text.
+        # The results page carries a fresh CSRF token each time and lists same-maturity securities in no
+        # fixed order, so a re-fetch is "unchanged" when its date and rows are, in any order.
         _spec("TD-PRICES", TD_PRICES_URL, "FedInvest, prices for Treasury securities (HTML, by price date)",
-              parsers.parse_td_prices, dedupe_on_text=True),
+              parsers.parse_td_prices, dedupe_view=parsers.td_prices_view),
         kind="day", shape="observations", calendar="SIFMA-US", first_period="2000-01-03", form=True,
     ),
     "FD-AUCTIONS": SecuritiesSource(

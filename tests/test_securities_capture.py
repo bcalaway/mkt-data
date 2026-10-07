@@ -1,7 +1,8 @@
-"""Treasury securities sources (phase 3, step 1): captured raw by period, no parsers yet."""
+"""Treasury securities sources (phase 3): captured raw by period, then parsed into near-raw."""
 
 import json
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,20 +10,26 @@ from sqlalchemy import select
 
 from app import db, jobs
 from app.calendars import service
+from app.calendars.parsed import ParseError
 from app.config import Settings
 from app.main import app
-from app.models import Capture, SourceCheck
+from app.models import Capture, Observation, SourceCheck
 from app.securities import sources as sec
+from tests.conftest import FIXTURES
 
 client = TestClient(app)
 TOKEN = "test-token"
 NOW = datetime(2026, 10, 6, 19, 15, tzinfo=sec.EASTERN)
 
 TD_JSON = json.dumps([
-    {"cusip": "91282CNT4", "issueDate": "2026-10-15T00:00:00", "securityType": "Note", "securityTerm": "10-Year",
-     "interestRate": "4.250000", "corpusCusip": "912821AB1"},
+    {"cusip": "91282CNT4", "issueDate": "2026-10-15T00:00:00", "auctionDate": "2026-10-08T00:00:00",
+     "securityType": "Note", "securityTerm": "10-Year", "interestRate": "4.250000", "corpusCusip": "912821AB1"},
 ]).encode()
+TD_EMPTY = b"[]"
+FD_EMPTY = json.dumps({"data": [], "meta": {"count": 0, "total-pages": 1}}).encode()
 PRICES_CSV = b"912797KX4,MARKET BASED BILL,0.000000,10/09/2026,,99.910000,99.912000,99.911000\n"
+PRICES_OCT5 = (FIXTURES / "td_prices_2026_10_05_capture1270.html").read_bytes()
+BLS_2026 = (FIXTURES / "bls_cpi_2026_capture1267.json").read_bytes()
 
 
 def _auth():
@@ -50,7 +57,7 @@ def test_urls_by_period():
     assert "record_date:gte:2026-09-01,record_date:lte:2026-09-30" in sec.SOURCES["FD-MSPD-STRIPS"].url("2026-09")
     assert sec.SOURCES["BLS-CPI"].url("2026").endswith("startyear=2026&endyear=2026")
     assert sec.SOURCES["TD-PRICES"].url("2026-10-06") == sec.TD_PRICES_URL
-    assert all(src.spec.parse is None for src in sec.SOURCES.values())
+    assert all(src.spec.parse is not None for src in sec.SOURCES.values())
 
 
 def test_periods_are_checked_by_kind():
@@ -79,10 +86,10 @@ def test_capture_keeps_raw_and_dedupes_per_period(migrated_db):
     seen = []
     with db.session() as s:
         r = sec.run_capture(s, "TD-SECURITIES", "2026-10", _fetcher(TD_JSON, seen=seen))
-        assert r["new_capture"] and r["parsed"] is False and r["content_type"] == "application/json"
+        assert r["new_capture"] and r["parsed"] and r["added"] == 1 and r["content_type"] == "application/json"
         again = sec.run_capture(s, "TD-SECURITIES", "2026-10", _fetcher(TD_JSON))
-        assert not again["new_capture"] and again["capture_id"] == r["capture_id"]
-        other = sec.run_capture(s, "TD-SECURITIES", "2026-09", _fetcher(TD_JSON))
+        assert not again["new_capture"] and again["capture_id"] == r["capture_id"] and again["added"] == 0
+        other = sec.run_capture(s, "TD-SECURITIES", "2026-09", _fetcher(TD_EMPTY))
         assert other["new_capture"]  # same bytes, another period: its own capture
         periods = s.scalars(select(Capture.period).order_by(Capture.id)).all()
         outcomes = s.scalars(select(SourceCheck.outcome).order_by(SourceCheck.id)).all()
@@ -96,12 +103,13 @@ def test_prices_post_the_form(migrated_db, monkeypatch):
 
     def fake(period):
         forms.append(period)
-        return _fetcher(PRICES_CSV, "text/csv")
+        return _fetcher(PRICES_OCT5, "text/html")
 
     monkeypatch.setattr(sec, "post_fedinvest", fake)
     with db.session() as s:
-        r = sec.run_capture(s, "TD-PRICES", "2026-10-02")
-    assert forms == ["2026-10-02"] and r["new_capture"] and r["period"] == "2026-10-02"
+        r = sec.run_capture(s, "TD-PRICES", "2026-10-05")
+    assert forms == ["2026-10-05"] and r["new_capture"] and r["period"] == "2026-10-05"
+    assert r["values"] == 1359 and r["last_date"] == "2026-10-05"
 
 
 FORM_PAGE = b'<form method="post"><input type="date" name="priceDate"/><input type="hidden" name="_csrf" value="tok-123"/></form>'
@@ -162,8 +170,9 @@ def test_fedinvest_errors_are_fetch_errors(monkeypatch):
 
 def test_bls_ignores_its_response_time(migrated_db):
     def bls(ms):
+        row = {"year": "2026", "period": "M08", "value": "334.980"}
         return json.dumps({"status": "REQUEST_SUCCEEDED", "responseTime": ms, "message": [],
-                           "Results": {"series": [{"seriesID": "CUUR0000SA0", "data": [{"year": "2026"}]}]}}).encode()
+                           "Results": {"series": [{"seriesID": "CUUR0000SA0", "data": [row]}]}}).encode()
 
     with db.session() as s:
         first = sec.run_capture(s, "BLS-CPI", "2026", _fetcher(bls(81)))
@@ -172,10 +181,18 @@ def test_bls_ignores_its_response_time(migrated_db):
         detail = s.scalars(select(SourceCheck.detail).order_by(SourceCheck.id.desc()).limit(1)).one()
         assert "content identical" in detail
         changed = json.loads(bls(70))
-        changed["Results"]["series"][0]["data"].append({"year": "2026", "period": "M09"})
-        assert sec.run_capture(s, "BLS-CPI", "2026", _fetcher(json.dumps(changed).encode()))["new_capture"]
-        # Unreadable JSON is never "the same".
-        assert sec.run_capture(s, "BLS-CPI", "2026", _fetcher(b"<html>throttled</html>"))["new_capture"]
+        changed["Results"]["series"][0]["data"].append({"year": "2026", "period": "M09", "value": "335.5"})
+        r = sec.run_capture(s, "BLS-CPI", "2026", _fetcher(json.dumps(changed).encode()))
+        assert r["new_capture"] and r["added"] == 1
+        # Unreadable JSON is never "the same": kept as a new capture, and its parse fails.
+        with pytest.raises(ParseError):
+            sec.run_capture(s, "BLS-CPI", "2026", _fetcher(b"<html>throttled</html>"))
+        assert s.scalar(select(Capture.id).order_by(Capture.id.desc()).limit(1)) == 3
+        check = s.scalars(select(SourceCheck).order_by(SourceCheck.id.desc()).limit(1)).one()
+        assert check.parse_outcome == "error" and "not JSON" in check.parse_detail
+        # The values from the last good capture stand.
+        assert s.scalar(select(Observation.value).where(Observation.as_of == date(2026, 9, 1),
+                                                        Observation.valid_to.is_(None))) == Decimal("335.5")
 
 
 def test_empty_answer_is_a_fetch_error(migrated_db):
@@ -187,12 +204,15 @@ def test_job_endpoint(token, migrated_db, monkeypatch):
     monkeypatch.setattr(service, "fetch", _fetcher(TD_JSON))
     assert client.post("/jobs/securities/NOPE/capture", headers=_auth()).status_code == 404
     assert client.post("/jobs/securities/td-securities/capture?period=2026-10-06", headers=_auth()).status_code == 400
-    r = client.post("/jobs/securities/td-securities/capture?period=2026-09", headers=_auth())
+    r = client.post("/jobs/securities/td-securities/capture?period=2026-10", headers=_auth())
     assert r.status_code == 200, r.text
-    assert r.json()["source"] == "TD-SECURITIES" and r.json()["new_capture"]
+    assert r.json()["source"] == "TD-SECURITIES" and r.json()["new_capture"] and r.json()["records"] == 1
+    # A record outside the month asked for: the capture is kept, the parse refused.
+    assert client.post("/jobs/securities/td-securities/capture?period=2026-09", headers=_auth()).status_code == 422
     # Default period: the current month.
+    monkeypatch.setattr(service, "fetch", _fetcher(FD_EMPTY))
     r = client.post("/jobs/securities/FD-AUCTIONS/capture", headers=_auth())
-    assert r.status_code == 200 and len(r.json()["period"]) == 7
+    assert r.status_code == 200 and len(r.json()["period"]) == 7 and r.json()["records"] == 0
 
     def down(url):
         raise service.SourceFetchError(f"{url}: HTTP 404")
@@ -201,14 +221,17 @@ def test_job_endpoint(token, migrated_db, monkeypatch):
     assert client.post("/jobs/securities/FD-MSPD-STRIPS/capture?period=2026-09", headers=_auth()).status_code == 502
 
     caps = client.get("/jobs/captures", params={"source": "td-securities"}, headers=_auth()).json()["captures"]
-    assert caps[0]["period"] == "2026-09" and caps[0]["parsed"] is False and not caps[0]["applied"]
+    assert [(c["period"], c["parsed"], c["applied"]) for c in caps] == [("2026-09", True, False), ("2026-10", True, True)]
+    r = client.post("/jobs/securities/td-securities/rebuild", headers=_auth())
+    assert r.status_code == 200 and r.json()["current_records"] == 1 and len(r.json()["parse_failed"]) == 1
 
 
 def test_capture_text_reads_json_and_csv(token, migrated_db, monkeypatch):
     monkeypatch.setattr(service, "fetch", _fetcher(TD_JSON))
     client.post("/jobs/securities/TD-SECURITIES/capture?period=2026-10", headers=_auth())
     monkeypatch.setattr(sec, "post_fedinvest", lambda period: _fetcher(PRICES_CSV, "text/csv"))
-    client.post("/jobs/securities/TD-PRICES/capture?period=2026-10-02", headers=_auth())
+    # Not FedInvest's page: the parse fails (422), the capture stays and has a text view.
+    assert client.post("/jobs/securities/TD-PRICES/capture?period=2026-10-02", headers=_auth()).status_code == 422
 
     j = client.get("/jobs/captures/1/text", params={"contains": "corpusCusip"},
                    headers={"Authorization": "Bearer read-token"}).json()
@@ -220,6 +243,6 @@ def test_capture_text_reads_json_and_csv(token, migrated_db, monkeypatch):
 
 def test_metrics_label_the_new_sources(migrated_db):
     with db.session() as s:
-        sec.run_capture(s, "BLS-CPI", "2026", _fetcher(b'{"status": "REQUEST_SUCCEEDED"}'))
+        sec.run_capture(s, "BLS-CPI", "2026", _fetcher(BLS_2026))
     body = client.get("/metrics").text
     assert 'mkt_data_source_captures{calendar="FED",source="BLS-CPI",kind="published"} 1' in body

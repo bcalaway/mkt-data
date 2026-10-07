@@ -86,7 +86,39 @@ def test_observations(migrated_db):
         return listed, periods, values, missing
 
     listed, periods, values, missing = asyncio.run(_call(read))
-    assert {x.name for x in listed.sources} == {"UST-PAR", "H15-TCM"}
+    assert {x.name for x in listed.sources} == {"UST-PAR", "H15-TCM", "TD-PRICES", "BLS-CPI"}
     assert [(p.period, p.values) for p in periods.periods] == [("2026-10", 28)]
     assert len(values.values) == 28 and values.values[0].unit == "percent"
     assert missing == grpc.StatusCode.NOT_FOUND
+
+
+def test_records(migrated_db):
+    import json
+
+    from app import db
+    from app.grpc_gen import records_pb2, records_pb2_grpc
+    from app.securities import sources as sec
+    from tests.conftest import FIXTURES
+
+    body = (FIXTURES / "td_securities_2026_10_capture1261.json").read_bytes()
+    with db.session() as s:
+        sec.run_capture(s, "TD-SECURITIES", "2026-10", lambda url: (200, "application/json", body))
+
+    async def read(channel):
+        stub = records_pb2_grpc.RecordsStub(channel)
+        listed = await stub.ListSources(records_pb2.ListRecordSourcesRequest())
+        periods = await stub.ListPeriods(records_pb2.ListRecordPeriodsRequest(source="td-securities"))
+        recs = await stub.GetPeriod(records_pb2.GetRecordPeriodRequest(source="TD-SECURITIES", period="2026-10"))
+        try:
+            await stub.ListPeriods(records_pb2.ListRecordPeriodsRequest(source="TD-PRICES"))
+            missing = None
+        except grpc.aio.AioRpcError as e:
+            missing = e.code()
+        return listed, periods, recs, missing
+
+    listed, periods, recs, missing = asyncio.run(_call(read))
+    assert {x.name for x in listed.sources} == {"TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS"}
+    assert [(p.period, p.records) for p in periods.periods] == [("2026-10", 11)]
+    bond = next(r for r in recs.records if r.source_key == "912810UW6/2026-10-15")
+    assert bond.record_type == "auction" and json.loads(bond.fields_json)["interestRate"] == "5.125000"
+    assert missing == grpc.StatusCode.NOT_FOUND  # an observation source, not a record source

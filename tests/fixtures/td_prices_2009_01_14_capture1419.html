@@ -1,0 +1,2824 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+ 
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta name="GENERATOR" content="Rational Application Developer" />
+	<link type="text/css" rel="stylesheet" media="screen" href = "/GA-FI/FedInvest/static/css/global_null.css" />
+	<link type="text/css" rel="stylesheet" media="screen" href = "/GA-FI/FedInvest/static/css/gw_govt_screen.css" />
+	<link type="text/css" rel="stylesheet" media="screen" href = "/GA-FI/FedInvest/static/css/ga_all.css" />
+	<link type="text/css" rel="stylesheet" media="print" href = "/GA-FI/FedInvest/static/css/govt_print.css" />
+
+	<link type="text/css" rel="alternate stylesheet" media="all" title="66" href = "/GA-FI/FedInvest/static/css/global_fontsize66.css" />
+	<link type="text/css" rel="stylesheet" media="all" title="76" href = "/GA-FI/FedInvest/static/css/global_fontsize76.css" />
+	<link type="text/css" rel="alternate stylesheet" media="all" title="86" href = "/GA-FI/FedInvest/static/css/global_fontsize86.css" />
+	<link type="text/css" rel="alternate stylesheet" media="all" title="96" href = "/GA-FI/FedInvest/static/css/global_fontsize96.css" />
+<title>Security Prices</title>
+</head>
+<body id="govt">
+	<div id="container">
+
+<!-- BEGIN HEADER -->
+<div id="header">
+
+	<!-- BEGIN LOGO -->
+	<div id="logo">
+		<a href="/tdhome.htm"><img src="/GA-FI/FedInvest/static/images/td_logo.gif" width="232" height="50" alt="TreasuryDirect Logo" /></a>
+	</div>
+	<!-- END LOGO -->
+
+	<!-- BEGIN TYPE NAVIGATION -->
+	<div id="typenav">
+		<ul id="investortype">
+			<li>You are in:</li>
+			<li><a href="/indiv/indiv.htm">Individual</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><a href="/instit/instit.htm">Institutional</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><strong>&gt; Government</strong></li>
+		</ul>
+	</div>
+	<!-- END TYPE NAVIGATION -->
+
+	<!-- BEGIN SEARCH BOX -->
+	<div id="searchbox">
+		<form id="gs" method="get" action="https://search.treas.gov/search">
+		    <fieldset>
+		    	<label for="q">Search: </label>
+				<input type="text" name="q" id="q" size="25" maxlength="256" value="" />
+				<input name="btnG" value="Search" class="button" type="image" src="/GA-FI/FedInvest/static/images/go.gif" alt="Go" />
+				<input type="hidden" name="sort" value="date:D:L:d1" />
+				<input type="hidden" name="output" value="xml_no_dtd" />
+				<input type="hidden" name="ie" value="UTF-8" />
+				<input type="hidden" name="oe" value="UTF-8" />
+				<input type="hidden" name="client" value="BPD-treasurydirect" />
+				<input type="hidden" name="proxystylesheet" value="BPD-treasurydirect" />
+				<input type="hidden" name="site" value="BPD-treasurydirect" />
+			</fieldset>
+		</form>
+	</div>
+	<!-- END SEARCH BOX -->
+
+	<!-- BEGIN UTILITY NAVIGATION -->
+	<div id="utilitynav">
+		<ul>
+			<li><a href="/maillist/maillist.htm">Mailing Lists</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><a href="/news/news.htm">News</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><a href="/about.htm">About</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><a href="/sitemap.htm">Sitemap</a></li>
+			<li>&nbsp;|&nbsp;</li>
+			<li><a href="/email.htm">Contact Us</a></li>
+		</ul>
+	</div>
+	<!-- END UTILITY NAVIGATION -->
+
+</div>
+<!-- END HEADER -->
+
+<!-- BEGIN PERSISTENT NAVIGATION -->
+<div id="persistentnav">
+	
+		<ul>
+	<li class="doubleline"><a class="nonactive" href="/govt/apps/apps.htm">Applications &amp; Programs</a></li>
+	<li class="singleline"><a class="nonactive" href="/govt/reports/reports.htm">Reports</a></li>
+	<li class="doubleline"><a class="active" href="/govt/rates/rates.htm">Interest Rates<br /> &amp; Prices</a></li>
+	<li class="singleline"><a class="nonactive" href="/govt/charts/charts.htm">Charts &amp; Analysis</a></li>
+	<li class="singleline"><a class="nonactive" href="/govt/resources/resources.htm">Resources</a></li>
+</ul>
+	
+</div>
+<!-- END PERSISTENT NAVIGATION -->
+
+<div id="contentwrap">
+
+<!-- BEGIN BREADCRUMBNAV -->
+<div id="breadcrumbnav">
+	<ul id="breadcrumb">
+		<li><a href="https://www.treasurydirect.gov">Home</a></li>
+		<li>&#8250;</li>
+		
+		<li><a href="/govt/govt.htm">Government</a></li>
+		<li>&#8250;</li>
+			
+		<li><a href="/govt/rates/rates.htm">Interest Rate Data</a></li>
+		<li>&#8250;</li>
+		
+		<li><a href="/govt/rates/rates_fip.htm">Federal Investments Program Rates and Prices</a></li>
+
+		<li>Historical Prices</li>
+	</ul>
+</div>
+<!-- END BREADCRUMBNAV -->
+
+  		<!-- BEGIN LOCALNAV -->
+<div id="localnav">
+	
+	<h1>INTEREST RATES AND PRICES</h1>
+<div id="verticalline">
+	<ul>
+		<li class="open"><a href="/govt/rates/rates_fip.htm" class="active">Federal Investments Program Rates and Prices</a>
+			<div class="subindent"><a href="/GA-FI/FedInvest/todaySecurityPriceDate.htm">Today's Prices</a></div>
+			<div class="subindent"><a href="/GA-FI/FedInvest/selectOvernightRateDate.htm">Overnight Rates</a></div>
+			<div class="subindent2"><a href="/GA-FI/FedInvest/selectSecurityPriceDate.htm" class="active">Historical Prices</a></div>
+</li>
+		<li class="closed"><a href="/govt/rates/slgs/slgs.htm">SLGS Rates</a></li>
+		<li class="closed"><a href="/govt/rates/rates_irstcb.htm">IRS Tax Credit Bonds Rates</a></li>
+		<li class="closed"><a href="/govt/rates/tcir/tcir.htm">Treasury's Certified Interest Rates</a></li>
+		<li class="closed"><a href="/govt/rates/avg/avg.htm">Average Interest Rates</a></li>
+		<li class="closedlast"><a href="/govt/rates/rates_tfr.htm">UTF Quarterly Yields</a></li>
+	</ul>
+</div>
+
+<!-- BEGIN ACCOUNT CENTER -->
+<div id="login">
+<h2>ACCOUNT CENTER</h2>
+<h3>Log in now</h3>
+<ul>
+	<li><a href="/SZ/BPDLogin?application=spss">SLGSafe<sup>&reg;</sup></a></li>
+	<li><a href="/FD/FedInvestGateway.htm">FedInvest<sup>&reg;</sup></a></li>
+</ul>
+<ul id="openacct">
+	<li><a href="/govt/govt_acctsetup.htm">Set up an account</a></li>
+</ul>
+</div>
+<!-- END ACCOUNT CENTER -->
+
+	<noscript>
+		<div id="acsialert"><p><img src="/GA-FI/FedInvest/static/images/alertmessage.gif" width="16" height="16" alt="Exclamation Point" />We're pleased to hear from our customers regarding their satisfaction with our website. Although your browser settings don't allow you to view the website survey we're conducting, please <a href="mailto:oadmin@fiscal.treasury.gov">e-mail</a> your comments.</p></div>
+	</noscript>
+</div>
+<!-- END LOCALNAV -->
+<!-- BEGIN CONTENT -->
+<div id="content"> 
+
+<div class="columnwrap">
+	<div class="column60">
+		<img src="/GA-FI/FedInvest/static/images/fedinvest3.gif" width="190" height="64" alt="Fed Invest" />
+	</div>
+	
+	<div class="column20">
+		<form id="CSVFormat" action="/GA-FI/FedInvest/securityPriceDetail" method="post">
+		<div class="buttons">
+			<input type="hidden" name="priceDateDay" value="14" />
+			<input type="hidden" name="priceDateMonth" value="1" />
+			<input type="hidden" name="priceDateYear" value="2009" />
+			<input type="hidden" name="fileType" value="csv" />
+			<input type="submit" value="CSV FORMAT" class="action" name="csv" />
+		</div>
+		<div>
+<input type="hidden" name="_csrf" value="LFEr38riGXl83iGkeKZOVwfjLHXOh3Cq9CvipO9VUqRJpI7IHWUf7fmEIBpR6kWXSIt6NGLXART6tUCHlxyAlYtnYcB_wu_x" />
+</div></form><br />
+		<form id="XMLFormat" action="/GA-FI/FedInvest/securityPriceDetail" method="post">
+		<div class="buttons">
+			<input type="hidden" name="priceDateDay" value="14" />
+			<input type="hidden" name="priceDateMonth" value="1" />
+			<input type="hidden" name="priceDateYear" value="2009" />
+			<input type="hidden" name="fileType" value="xml" />
+			<input type="submit" value="XML FORMAT" class="action" name="xml" />
+		</div>
+		<div>
+<input type="hidden" name="_csrf" value="LFEr38riGXl83iGkeKZOVwfjLHXOh3Cq9CvipO9VUqRJpI7IHWUf7fmEIBpR6kWXSIt6NGLXART6tUCHlxyAlYtnYcB_wu_x" />
+</div></form>
+	</div>
+	
+</div>
+
+<p><br /></p>
+<h1>Historical Prices</h1>
+<h2>Prices For: January 14, 2009</h2>
+(<strong>NOTE:</strong> These prices apply only to market-based Treasury special securities.) <br /><br />
+<table class="data1">
+	<tr><th>CUSIP</th><th>SECURITY TYPE</th><th>RATE</th><th>MATURITY DATE</th><th>CALL DATE</th><th>BUY</th><th>SELL</th><th>END OF DAY</th></tr>
+	
+	<tr>
+		<td>912795J77</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>01/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>99.999917</td>
+		<td>100.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912795J85</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>01/22/2009</td>
+		<td></td>
+		<td>99.999667</td>
+		<td>99.999556</td>
+		<td>99.999611</td>
+	</tr>
+	
+	<tr>
+		<td>912795J93</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>01/29/2009</td>
+		<td></td>
+		<td>99.998958</td>
+		<td>99.998750</td>
+		<td>99.998833</td>
+	</tr>
+	
+	<tr>
+		<td>912795K26</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>02/05/2009</td>
+		<td></td>
+		<td>99.997861</td>
+		<td>99.997556</td>
+		<td>99.998250</td>
+	</tr>
+	
+	<tr>
+		<td>912795K34</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>02/12/2009</td>
+		<td></td>
+		<td>99.997986</td>
+		<td>99.997583</td>
+		<td>99.997667</td>
+	</tr>
+	
+	<tr>
+		<td>912795K42</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>02/19/2009</td>
+		<td></td>
+		<td>99.995500</td>
+		<td>99.995000</td>
+		<td>99.996111</td>
+	</tr>
+	
+	<tr>
+		<td>912795K59</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>02/26/2009</td>
+		<td></td>
+		<td>99.994625</td>
+		<td>99.994028</td>
+		<td>99.993000</td>
+	</tr>
+	
+	<tr>
+		<td>912795K67</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>03/05/2009</td>
+		<td></td>
+		<td>99.990972</td>
+		<td>99.990278</td>
+		<td>99.990472</td>
+	</tr>
+	
+	<tr>
+		<td>912795K75</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>03/12/2009</td>
+		<td></td>
+		<td>99.985750</td>
+		<td>99.984167</td>
+		<td>99.986000</td>
+	</tr>
+	
+	<tr>
+		<td>912795K83</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>03/19/2009</td>
+		<td></td>
+		<td>99.985778</td>
+		<td>99.984000</td>
+		<td>99.986000</td>
+	</tr>
+	
+	<tr>
+		<td>912795K91</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>03/26/2009</td>
+		<td></td>
+		<td>99.986194</td>
+		<td>99.984222</td>
+		<td>99.984444</td>
+	</tr>
+	
+	<tr>
+		<td>912795L25</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/02/2009</td>
+		<td></td>
+		<td>99.982667</td>
+		<td>99.980500</td>
+		<td>99.982889</td>
+	</tr>
+	
+	<tr>
+		<td>912795L33</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/09/2009</td>
+		<td></td>
+		<td>99.983472</td>
+		<td>99.981111</td>
+		<td>99.983667</td>
+	</tr>
+	
+	<tr>
+		<td>912795L41</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/16/2009</td>
+		<td></td>
+		<td>99.973167</td>
+		<td>99.971889</td>
+		<td>99.972194</td>
+	</tr>
+	
+	<tr>
+		<td>912795L58</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/23/2009</td>
+		<td></td>
+		<td>99.969750</td>
+		<td>99.967000</td>
+		<td>99.967333</td>
+	</tr>
+	
+	<tr>
+		<td>912795T92</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/29/2009</td>
+		<td></td>
+		<td>99.967917</td>
+		<td>99.965000</td>
+		<td>99.962444</td>
+	</tr>
+	
+	<tr>
+		<td>912795L66</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>04/30/2009</td>
+		<td></td>
+		<td>99.967611</td>
+		<td>99.964667</td>
+		<td>99.976667</td>
+	</tr>
+	
+	<tr>
+		<td>912795L74</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>05/07/2009</td>
+		<td></td>
+		<td>99.962333</td>
+		<td>99.959194</td>
+		<td>99.978222</td>
+	</tr>
+	
+	<tr>
+		<td>912795L82</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>05/14/2009</td>
+		<td></td>
+		<td>99.956667</td>
+		<td>99.953333</td>
+		<td>99.973556</td>
+	</tr>
+	
+	<tr>
+		<td>912795V32</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>05/15/2009</td>
+		<td></td>
+		<td>99.959667</td>
+		<td>99.956306</td>
+		<td>99.956667</td>
+	</tr>
+	
+	<tr>
+		<td>912795L90</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>05/21/2009</td>
+		<td></td>
+		<td>99.961194</td>
+		<td>99.957667</td>
+		<td>99.968500</td>
+	</tr>
+	
+	<tr>
+		<td>912795M24</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>05/28/2009</td>
+		<td></td>
+		<td>99.957194</td>
+		<td>99.951611</td>
+		<td>99.955667</td>
+	</tr>
+	
+	<tr>
+		<td>912795Q79</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>06/04/2009</td>
+		<td></td>
+		<td>99.937333</td>
+		<td>99.933417</td>
+		<td>99.933889</td>
+	</tr>
+	
+	<tr>
+		<td>912795M40</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>06/11/2009</td>
+		<td></td>
+		<td>99.934222</td>
+		<td>99.930111</td>
+		<td>99.930583</td>
+	</tr>
+	
+	<tr>
+		<td>912795M57</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>06/18/2009</td>
+		<td></td>
+		<td>99.909583</td>
+		<td>99.905278</td>
+		<td>99.910167</td>
+	</tr>
+	
+	<tr>
+		<td>912795U25</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>06/24/2009</td>
+		<td></td>
+		<td>99.899375</td>
+		<td>99.897139</td>
+		<td>99.902222</td>
+	</tr>
+	
+	<tr>
+		<td>912795M65</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>06/25/2009</td>
+		<td></td>
+		<td>99.898750</td>
+		<td>99.896500</td>
+		<td>99.901611</td>
+	</tr>
+	
+	<tr>
+		<td>912795Q87</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>07/02/2009</td>
+		<td></td>
+		<td>99.877944</td>
+		<td>99.873250</td>
+		<td>99.878667</td>
+	</tr>
+	
+	<tr>
+		<td>912795M99</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>07/09/2009</td>
+		<td></td>
+		<td>99.868000</td>
+		<td>99.863111</td>
+		<td>99.863889</td>
+	</tr>
+	
+	<tr>
+		<td>912795Q95</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>07/30/2009</td>
+		<td></td>
+		<td>99.846778</td>
+		<td>99.846778</td>
+		<td>99.842111</td>
+	</tr>
+	
+	<tr>
+		<td>912795S28</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>08/27/2009</td>
+		<td></td>
+		<td>99.865625</td>
+		<td>99.862500</td>
+		<td>99.863111</td>
+	</tr>
+	
+	<tr>
+		<td>912795V81</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>09/15/2009</td>
+		<td></td>
+		<td>99.817000</td>
+		<td>99.810222</td>
+		<td>99.804250</td>
+	</tr>
+	
+	<tr>
+		<td>912795S36</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>09/24/2009</td>
+		<td></td>
+		<td>99.834847</td>
+		<td>99.831333</td>
+		<td>99.832000</td>
+	</tr>
+	
+	<tr>
+		<td>912795S44</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>10/22/2009</td>
+		<td></td>
+		<td>99.734611</td>
+		<td>99.726806</td>
+		<td>99.735556</td>
+	</tr>
+	
+	<tr>
+		<td>912795S51</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>11/19/2009</td>
+		<td></td>
+		<td>99.699583</td>
+		<td>99.691000</td>
+		<td>99.692000</td>
+	</tr>
+	
+	<tr>
+		<td>912795S69</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BILL</td>
+		<td>0.000%</td>
+		<td>12/17/2009</td>
+		<td></td>
+		<td>99.653639</td>
+		<td>99.644278</td>
+		<td>99.654667</td>
+	</tr>
+	
+	<tr>
+		<td>912828BV1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.250%</td>
+		<td>01/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.000000</td>
+		<td>100.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912828GE4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>01/31/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.187500</td>
+		<td>100.187500</td>
+	</tr>
+	
+	<tr>
+		<td>912828BZ2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.000%</td>
+		<td>02/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.218750</td>
+		<td>100.218750</td>
+	</tr>
+	
+	<tr>
+		<td>912828EV8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>02/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.343750</td>
+		<td>100.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912828GJ3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>02/28/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.531250</td>
+		<td>100.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828CC2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.625%</td>
+		<td>03/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.406250</td>
+		<td>100.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GL8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>03/31/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.875000</td>
+		<td>100.875000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CE8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.125%</td>
+		<td>04/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.750000</td>
+		<td>100.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912828GP9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>04/30/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.250000</td>
+		<td>101.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CH1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>05/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.218750</td>
+		<td>101.250000</td>
+	</tr>
+	
+	<tr>
+		<td>9128275G3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.500%</td>
+		<td>05/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.750000</td>
+		<td>101.750000</td>
+	</tr>
+	
+	<tr>
+		<td>912828FE5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>05/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.562500</td>
+		<td>101.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828GT1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>05/31/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.718750</td>
+		<td>101.750000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CL2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>06/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>101.562500</td>
+		<td>101.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828GV6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>06/30/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>102.125000</td>
+		<td>102.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CN8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>07/15/2009</td>
+		<td></td>
+		<td>101.656250</td>
+		<td>101.656250</td>
+		<td>101.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912828GY0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>07/31/2009</td>
+		<td></td>
+		<td>102.328125</td>
+		<td>102.312500</td>
+		<td>102.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FP0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>08/15/2009</td>
+		<td></td>
+		<td>102.609375</td>
+		<td>102.593750</td>
+		<td>102.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CS7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>08/15/2009</td>
+		<td></td>
+		<td>101.843750</td>
+		<td>101.843750</td>
+		<td>101.843750</td>
+	</tr>
+	
+	<tr>
+		<td>9128275N8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>6.000%</td>
+		<td>08/15/2009</td>
+		<td></td>
+		<td>103.265625</td>
+		<td>103.250000</td>
+		<td>103.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HB9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>08/31/2009</td>
+		<td></td>
+		<td>102.250000</td>
+		<td>102.250000</td>
+		<td>102.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CV0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.375%</td>
+		<td>09/15/2009</td>
+		<td></td>
+		<td>102.000000</td>
+		<td>102.000000</td>
+		<td>102.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HD5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>09/30/2009</td>
+		<td></td>
+		<td>102.546875</td>
+		<td>102.531250</td>
+		<td>102.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828CX6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.375%</td>
+		<td>10/15/2009</td>
+		<td></td>
+		<td>102.234375</td>
+		<td>102.218750</td>
+		<td>102.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HF0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>10/31/2009</td>
+		<td></td>
+		<td>102.515625</td>
+		<td>102.500000</td>
+		<td>102.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828FX3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>11/15/2009</td>
+		<td></td>
+		<td>103.453125</td>
+		<td>103.437500</td>
+		<td>103.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828DB3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>11/15/2009</td>
+		<td></td>
+		<td>102.546875</td>
+		<td>102.531250</td>
+		<td>102.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HJ2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.125%</td>
+		<td>11/30/2009</td>
+		<td></td>
+		<td>102.328125</td>
+		<td>102.312500</td>
+		<td>102.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912828DE7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>12/15/2009</td>
+		<td></td>
+		<td>102.796875</td>
+		<td>102.781250</td>
+		<td>102.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828HL7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.250%</td>
+		<td>12/31/2009</td>
+		<td></td>
+		<td>102.703125</td>
+		<td>102.687500</td>
+		<td>102.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912828DG2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>01/15/2010</td>
+		<td></td>
+		<td>103.265625</td>
+		<td>103.250000</td>
+		<td>103.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HP8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.125%</td>
+		<td>01/31/2010</td>
+		<td></td>
+		<td>101.703125</td>
+		<td>101.687500</td>
+		<td>101.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912828GG9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>02/15/2010</td>
+		<td></td>
+		<td>104.609375</td>
+		<td>104.593750</td>
+		<td>104.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828DL1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>02/15/2010</td>
+		<td></td>
+		<td>103.406250</td>
+		<td>103.375000</td>
+		<td>103.406250</td>
+	</tr>
+	
+	<tr>
+		<td>9128275Z1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>6.500%</td>
+		<td>02/15/2010</td>
+		<td></td>
+		<td>106.484375</td>
+		<td>106.468750</td>
+		<td>106.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HS2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.000%</td>
+		<td>02/28/2010</td>
+		<td></td>
+		<td>101.671875</td>
+		<td>101.656250</td>
+		<td>101.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912828DP2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>03/15/2010</td>
+		<td></td>
+		<td>104.265625</td>
+		<td>104.250000</td>
+		<td>104.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HU7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.750%</td>
+		<td>03/31/2010</td>
+		<td></td>
+		<td>101.484375</td>
+		<td>101.468750</td>
+		<td>101.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912828DR8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>04/15/2010</td>
+		<td></td>
+		<td>104.515625</td>
+		<td>104.500000</td>
+		<td>104.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HX1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.125%</td>
+		<td>04/30/2010</td>
+		<td></td>
+		<td>102.218750</td>
+		<td>102.218750</td>
+		<td>102.218750</td>
+	</tr>
+	
+	<tr>
+		<td>912828GR5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>05/15/2010</td>
+		<td></td>
+		<td>105.359375</td>
+		<td>105.343750</td>
+		<td>105.375000</td>
+	</tr>
+	
+	<tr>
+		<td>912828DU1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>05/15/2010</td>
+		<td></td>
+		<td>104.687500</td>
+		<td>104.656250</td>
+		<td>104.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JA9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.625%</td>
+		<td>05/31/2010</td>
+		<td></td>
+		<td>102.921875</td>
+		<td>102.906250</td>
+		<td>102.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912828DX5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>06/15/2010</td>
+		<td></td>
+		<td>104.468750</td>
+		<td>104.437500</td>
+		<td>104.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828JC5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.875%</td>
+		<td>06/30/2010</td>
+		<td></td>
+		<td>103.515625</td>
+		<td>103.500000</td>
+		<td>103.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828DZ0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>07/15/2010</td>
+		<td></td>
+		<td>105.234375</td>
+		<td>105.218750</td>
+		<td>105.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JF8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.750%</td>
+		<td>07/31/2010</td>
+		<td></td>
+		<td>103.515625</td>
+		<td>103.500000</td>
+		<td>103.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828ED8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.125%</td>
+		<td>08/15/2010</td>
+		<td></td>
+		<td>105.828125</td>
+		<td>105.812500</td>
+		<td>105.843750</td>
+	</tr>
+	
+	<tr>
+		<td>9128276J6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.750%</td>
+		<td>08/15/2010</td>
+		<td></td>
+		<td>108.421875</td>
+		<td>108.406250</td>
+		<td>108.437500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JJ0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.375%</td>
+		<td>08/31/2010</td>
+		<td></td>
+		<td>103.015625</td>
+		<td>103.000000</td>
+		<td>103.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828EG1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>09/15/2010</td>
+		<td></td>
+		<td>105.765625</td>
+		<td>105.750000</td>
+		<td>105.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828JL5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.000%</td>
+		<td>09/30/2010</td>
+		<td></td>
+		<td>102.515625</td>
+		<td>102.500000</td>
+		<td>102.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828EJ5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>10/15/2010</td>
+		<td></td>
+		<td>106.562500</td>
+		<td>106.531250</td>
+		<td>106.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JP6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.500%</td>
+		<td>10/31/2010</td>
+		<td></td>
+		<td>101.515625</td>
+		<td>101.500000</td>
+		<td>101.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912828EM8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>11/15/2010</td>
+		<td></td>
+		<td>107.109375</td>
+		<td>107.093750</td>
+		<td>107.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JS0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.250%</td>
+		<td>11/30/2010</td>
+		<td></td>
+		<td>101.078125</td>
+		<td>101.062500</td>
+		<td>101.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912828EQ9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.375%</td>
+		<td>12/15/2010</td>
+		<td></td>
+		<td>107.234375</td>
+		<td>107.218750</td>
+		<td>107.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JV3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>0.875%</td>
+		<td>12/31/2010</td>
+		<td></td>
+		<td>100.265625</td>
+		<td>100.250000</td>
+		<td>100.312500</td>
+	</tr>
+	
+	<tr>
+		<td>912828ES5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>01/15/2011</td>
+		<td></td>
+		<td>107.406250</td>
+		<td>107.375000</td>
+		<td>107.437500</td>
+	</tr>
+	
+	<tr>
+		<td>9128276T4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.000%</td>
+		<td>02/15/2011</td>
+		<td></td>
+		<td>109.093750</td>
+		<td>109.062500</td>
+		<td>109.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912828EX4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>02/28/2011</td>
+		<td></td>
+		<td>108.015625</td>
+		<td>108.000000</td>
+		<td>108.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828FA3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>03/31/2011</td>
+		<td></td>
+		<td>108.796875</td>
+		<td>108.781250</td>
+		<td>108.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828FD7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>04/30/2011</td>
+		<td></td>
+		<td>109.453125</td>
+		<td>109.437500</td>
+		<td>109.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FH8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>05/31/2011</td>
+		<td></td>
+		<td>109.796875</td>
+		<td>109.781250</td>
+		<td>109.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828FK1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.125%</td>
+		<td>06/30/2011</td>
+		<td></td>
+		<td>110.578125</td>
+		<td>110.562500</td>
+		<td>110.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FN5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>07/31/2011</td>
+		<td></td>
+		<td>110.343750</td>
+		<td>110.312500</td>
+		<td>110.343750</td>
+	</tr>
+	
+	<tr>
+		<td>9128277B2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.000%</td>
+		<td>08/15/2011</td>
+		<td></td>
+		<td>111.140625</td>
+		<td>111.125000</td>
+		<td>111.156250</td>
+	</tr>
+	
+	<tr>
+		<td>912828FS4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>08/31/2011</td>
+		<td></td>
+		<td>109.796875</td>
+		<td>109.781250</td>
+		<td>109.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828FU9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>09/30/2011</td>
+		<td></td>
+		<td>109.593750</td>
+		<td>109.562500</td>
+		<td>109.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828FW5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>10/31/2011</td>
+		<td></td>
+		<td>110.281250</td>
+		<td>110.250000</td>
+		<td>110.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912828JU5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.750%</td>
+		<td>11/15/2011</td>
+		<td></td>
+		<td>102.171875</td>
+		<td>102.156250</td>
+		<td>102.156250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GA2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>11/30/2011</td>
+		<td></td>
+		<td>110.031250</td>
+		<td>110.000000</td>
+		<td>110.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912828KA7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.125%</td>
+		<td>12/15/2011</td>
+		<td></td>
+		<td>100.421875</td>
+		<td>100.406250</td>
+		<td>100.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GC8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>12/31/2011</td>
+		<td></td>
+		<td>110.656250</td>
+		<td>110.625000</td>
+		<td>110.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828KB5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.125%</td>
+		<td>01/15/2012</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>0.000000</td>
+		<td>100.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912828GF1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>01/31/2012</td>
+		<td></td>
+		<td>111.156250</td>
+		<td>111.125000</td>
+		<td>111.156250</td>
+	</tr>
+	
+	<tr>
+		<td>9128277L0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>02/15/2012</td>
+		<td></td>
+		<td>111.640625</td>
+		<td>111.593750</td>
+		<td>111.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GK0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>02/29/2012</td>
+		<td></td>
+		<td>110.953125</td>
+		<td>110.906250</td>
+		<td>110.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912828GM6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>03/31/2012</td>
+		<td></td>
+		<td>111.031250</td>
+		<td>111.000000</td>
+		<td>111.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GQ7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>04/30/2012</td>
+		<td></td>
+		<td>111.250000</td>
+		<td>111.218750</td>
+		<td>111.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828GU8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>05/31/2012</td>
+		<td></td>
+		<td>112.375000</td>
+		<td>112.343750</td>
+		<td>112.312500</td>
+	</tr>
+	
+	<tr>
+		<td>912828GW4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>06/30/2012</td>
+		<td></td>
+		<td>113.062500</td>
+		<td>113.031250</td>
+		<td>113.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GZ7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>07/31/2012</td>
+		<td></td>
+		<td>112.562500</td>
+		<td>112.531250</td>
+		<td>112.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912828AJ9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.375%</td>
+		<td>08/15/2012</td>
+		<td></td>
+		<td>112.359375</td>
+		<td>112.312500</td>
+		<td>112.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HC7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.125%</td>
+		<td>08/31/2012</td>
+		<td></td>
+		<td>111.062500</td>
+		<td>111.031250</td>
+		<td>111.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HE3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>09/30/2012</td>
+		<td></td>
+		<td>111.875000</td>
+		<td>111.843750</td>
+		<td>111.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828HG8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>10/31/2012</td>
+		<td></td>
+		<td>110.750000</td>
+		<td>110.718750</td>
+		<td>110.750000</td>
+	</tr>
+	
+	<tr>
+		<td>912828AP5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>11/15/2012</td>
+		<td></td>
+		<td>111.468750</td>
+		<td>111.437500</td>
+		<td>111.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828HK9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.375%</td>
+		<td>11/30/2012</td>
+		<td></td>
+		<td>109.218750</td>
+		<td>109.187500</td>
+		<td>109.218750</td>
+	</tr>
+	
+	<tr>
+		<td>912828HM5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>12/31/2012</td>
+		<td></td>
+		<td>110.406250</td>
+		<td>110.375000</td>
+		<td>110.375000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HQ6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.875%</td>
+		<td>01/31/2013</td>
+		<td></td>
+		<td>107.625000</td>
+		<td>107.593750</td>
+		<td>107.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828AU4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>02/15/2013</td>
+		<td></td>
+		<td>111.640625</td>
+		<td>111.593750</td>
+		<td>111.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HT0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.750%</td>
+		<td>02/28/2013</td>
+		<td></td>
+		<td>107.093750</td>
+		<td>107.062500</td>
+		<td>107.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HV5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.500%</td>
+		<td>03/31/2013</td>
+		<td></td>
+		<td>106.156250</td>
+		<td>106.125000</td>
+		<td>106.187500</td>
+	</tr>
+	
+	<tr>
+		<td>912828HY9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.125%</td>
+		<td>04/30/2013</td>
+		<td></td>
+		<td>108.781250</td>
+		<td>108.750000</td>
+		<td>108.843750</td>
+	</tr>
+	
+	<tr>
+		<td>912828BA7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.625%</td>
+		<td>05/15/2013</td>
+		<td></td>
+		<td>110.828125</td>
+		<td>110.781250</td>
+		<td>110.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JB7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>05/31/2013</td>
+		<td></td>
+		<td>110.343750</td>
+		<td>110.312500</td>
+		<td>110.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912828JD3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.375%</td>
+		<td>06/30/2013</td>
+		<td></td>
+		<td>109.812500</td>
+		<td>109.781250</td>
+		<td>109.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JG6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.375%</td>
+		<td>07/31/2013</td>
+		<td></td>
+		<td>109.890625</td>
+		<td>109.875000</td>
+		<td>109.906250</td>
+	</tr>
+	
+	<tr>
+		<td>912828BH2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>08/15/2013</td>
+		<td></td>
+		<td>114.343750</td>
+		<td>114.312500</td>
+		<td>114.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912828JK7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.125%</td>
+		<td>08/31/2013</td>
+		<td></td>
+		<td>108.484375</td>
+		<td>108.468750</td>
+		<td>108.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JM3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.125%</td>
+		<td>09/30/2013</td>
+		<td></td>
+		<td>108.593750</td>
+		<td>108.562500</td>
+		<td>108.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JQ4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.750%</td>
+		<td>10/31/2013</td>
+		<td></td>
+		<td>106.937500</td>
+		<td>106.906250</td>
+		<td>106.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912828BR0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>11/15/2013</td>
+		<td></td>
+		<td>114.890625</td>
+		<td>114.843750</td>
+		<td>114.875000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JT8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>2.000%</td>
+		<td>11/30/2013</td>
+		<td></td>
+		<td>103.296875</td>
+		<td>103.281250</td>
+		<td>103.312500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JW1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>1.500%</td>
+		<td>12/31/2013</td>
+		<td></td>
+		<td>100.656250</td>
+		<td>100.656250</td>
+		<td>100.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912828CA6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>02/15/2014</td>
+		<td></td>
+		<td>114.234375</td>
+		<td>114.187500</td>
+		<td>114.187500</td>
+	</tr>
+	
+	<tr>
+		<td>912828CJ7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>05/15/2014</td>
+		<td></td>
+		<td>118.640625</td>
+		<td>118.593750</td>
+		<td>118.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828CT5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>08/15/2014</td>
+		<td></td>
+		<td>116.078125</td>
+		<td>116.031250</td>
+		<td>116.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912828DC1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>11/15/2014</td>
+		<td></td>
+		<td>116.734375</td>
+		<td>116.687500</td>
+		<td>116.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828DM9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>02/15/2015</td>
+		<td></td>
+		<td>114.984375</td>
+		<td>114.937500</td>
+		<td>114.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912828DV9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.125%</td>
+		<td>05/15/2015</td>
+		<td></td>
+		<td>115.640625</td>
+		<td>115.593750</td>
+		<td>115.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828EE6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>08/15/2015</td>
+		<td></td>
+		<td>116.734375</td>
+		<td>116.687500</td>
+		<td>116.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912828EN6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>11/15/2015</td>
+		<td></td>
+		<td>119.437500</td>
+		<td>119.406250</td>
+		<td>119.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912828EW6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>02/15/2016</td>
+		<td></td>
+		<td>118.656250</td>
+		<td>118.625000</td>
+		<td>118.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FF2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>5.125%</td>
+		<td>05/15/2016</td>
+		<td></td>
+		<td>122.187500</td>
+		<td>122.156250</td>
+		<td>121.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FQ8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.875%</td>
+		<td>08/15/2016</td>
+		<td></td>
+		<td>120.265625</td>
+		<td>120.218750</td>
+		<td>120.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FY1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>11/15/2016</td>
+		<td></td>
+		<td>118.734375</td>
+		<td>118.687500</td>
+		<td>118.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828GH7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.625%</td>
+		<td>02/15/2017</td>
+		<td></td>
+		<td>118.812500</td>
+		<td>118.781250</td>
+		<td>118.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912828GS3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.500%</td>
+		<td>05/15/2017</td>
+		<td></td>
+		<td>117.859375</td>
+		<td>117.812500</td>
+		<td>117.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HA1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.750%</td>
+		<td>08/15/2017</td>
+		<td></td>
+		<td>120.109375</td>
+		<td>120.062500</td>
+		<td>120.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HH6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.250%</td>
+		<td>11/15/2017</td>
+		<td></td>
+		<td>116.859375</td>
+		<td>116.812500</td>
+		<td>116.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HR4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.500%</td>
+		<td>02/15/2018</td>
+		<td></td>
+		<td>110.906250</td>
+		<td>110.875000</td>
+		<td>110.843750</td>
+	</tr>
+	
+	<tr>
+		<td>912828HZ6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.875%</td>
+		<td>05/15/2018</td>
+		<td></td>
+		<td>114.531250</td>
+		<td>114.500000</td>
+		<td>114.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912828JH4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>4.000%</td>
+		<td>08/15/2018</td>
+		<td></td>
+		<td>115.718750</td>
+		<td>115.687500</td>
+		<td>115.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828JR2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED NOTE</td>
+		<td>3.750%</td>
+		<td>11/15/2018</td>
+		<td></td>
+		<td>113.609375</td>
+		<td>113.593750</td>
+		<td>113.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DJ4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>13.250%</td>
+		<td>05/15/2014</td>
+		<td>05/15/2009</td>
+		<td>104.218750</td>
+		<td>104.093750</td>
+		<td>104.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912810DL9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>12.500%</td>
+		<td>08/15/2014</td>
+		<td>08/15/2009</td>
+		<td>106.859375</td>
+		<td>106.843750</td>
+		<td>106.906250</td>
+	</tr>
+	
+	<tr>
+		<td>912810DN5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>11.750%</td>
+		<td>11/15/2014</td>
+		<td>11/15/2009</td>
+		<td>109.093750</td>
+		<td>108.968750</td>
+		<td>109.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912810DP0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>11.250%</td>
+		<td>02/15/2015</td>
+		<td></td>
+		<td>153.656250</td>
+		<td>153.406250</td>
+		<td>153.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DS4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>10.625%</td>
+		<td>08/15/2015</td>
+		<td></td>
+		<td>153.312500</td>
+		<td>153.062500</td>
+		<td>153.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DT2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>9.875%</td>
+		<td>11/15/2015</td>
+		<td></td>
+		<td>150.031250</td>
+		<td>150.000000</td>
+		<td>149.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DV7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>9.250%</td>
+		<td>02/15/2016</td>
+		<td></td>
+		<td>146.375000</td>
+		<td>146.125000</td>
+		<td>146.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912810DW5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.250%</td>
+		<td>05/15/2016</td>
+		<td></td>
+		<td>134.406250</td>
+		<td>134.156250</td>
+		<td>134.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DX3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.500%</td>
+		<td>11/15/2016</td>
+		<td></td>
+		<td>137.109375</td>
+		<td>137.062500</td>
+		<td>136.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912810DY1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.750%</td>
+		<td>05/15/2017</td>
+		<td></td>
+		<td>147.640625</td>
+		<td>147.593750</td>
+		<td>147.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912810DZ8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.875%</td>
+		<td>08/15/2017</td>
+		<td></td>
+		<td>149.328125</td>
+		<td>149.281250</td>
+		<td>149.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EA2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>9.125%</td>
+		<td>05/15/2018</td>
+		<td></td>
+		<td>155.156250</td>
+		<td>155.093750</td>
+		<td>155.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912810EB0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>9.000%</td>
+		<td>11/15/2018</td>
+		<td></td>
+		<td>155.343750</td>
+		<td>155.281250</td>
+		<td>155.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EC8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.875%</td>
+		<td>02/15/2019</td>
+		<td></td>
+		<td>154.281250</td>
+		<td>154.031250</td>
+		<td>154.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912810ED6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.125%</td>
+		<td>08/15/2019</td>
+		<td></td>
+		<td>148.281250</td>
+		<td>148.031250</td>
+		<td>148.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912810EE4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.500%</td>
+		<td>02/15/2020</td>
+		<td></td>
+		<td>152.500000</td>
+		<td>152.375000</td>
+		<td>152.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EF1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.750%</td>
+		<td>05/15/2020</td>
+		<td></td>
+		<td>155.656250</td>
+		<td>155.531250</td>
+		<td>155.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912810EG9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.750%</td>
+		<td>08/15/2020</td>
+		<td></td>
+		<td>156.015625</td>
+		<td>155.875000</td>
+		<td>155.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912810EH7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.875%</td>
+		<td>02/15/2021</td>
+		<td></td>
+		<td>148.625000</td>
+		<td>148.500000</td>
+		<td>148.531250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EJ3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.125%</td>
+		<td>05/15/2021</td>
+		<td></td>
+		<td>151.828125</td>
+		<td>151.687500</td>
+		<td>151.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EK0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.125%</td>
+		<td>08/15/2021</td>
+		<td></td>
+		<td>152.343750</td>
+		<td>152.218750</td>
+		<td>152.250000</td>
+	</tr>
+	
+	<tr>
+		<td>912810EL8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>8.000%</td>
+		<td>11/15/2021</td>
+		<td></td>
+		<td>151.671875</td>
+		<td>151.531250</td>
+		<td>151.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912810EM6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.250%</td>
+		<td>08/15/2022</td>
+		<td></td>
+		<td>145.140625</td>
+		<td>145.000000</td>
+		<td>145.062500</td>
+	</tr>
+	
+	<tr>
+		<td>912810EN4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.625%</td>
+		<td>11/15/2022</td>
+		<td></td>
+		<td>150.062500</td>
+		<td>149.906250</td>
+		<td>149.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912810EP9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.125%</td>
+		<td>02/15/2023</td>
+		<td></td>
+		<td>144.640625</td>
+		<td>144.562500</td>
+		<td>144.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EQ7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.250%</td>
+		<td>08/15/2023</td>
+		<td></td>
+		<td>136.046875</td>
+		<td>135.906250</td>
+		<td>135.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912810ES3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.500%</td>
+		<td>11/15/2024</td>
+		<td></td>
+		<td>158.968750</td>
+		<td>158.875000</td>
+		<td>158.906250</td>
+	</tr>
+	
+	<tr>
+		<td>912810ET1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>7.625%</td>
+		<td>02/15/2025</td>
+		<td></td>
+		<td>160.921875</td>
+		<td>160.843750</td>
+		<td>160.875000</td>
+	</tr>
+	
+	<tr>
+		<td>912810EV6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.875%</td>
+		<td>08/15/2025</td>
+		<td></td>
+		<td>150.812500</td>
+		<td>150.718750</td>
+		<td>150.781250</td>
+	</tr>
+	
+	<tr>
+		<td>912810EW4</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.000%</td>
+		<td>02/15/2026</td>
+		<td></td>
+		<td>138.421875</td>
+		<td>138.343750</td>
+		<td>138.437500</td>
+	</tr>
+	
+	<tr>
+		<td>912810EX2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.750%</td>
+		<td>08/15/2026</td>
+		<td></td>
+		<td>149.562500</td>
+		<td>149.468750</td>
+		<td>149.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912810EY0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.500%</td>
+		<td>11/15/2026</td>
+		<td></td>
+		<td>146.093750</td>
+		<td>146.000000</td>
+		<td>146.093750</td>
+	</tr>
+	
+	<tr>
+		<td>912810EZ7</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.625%</td>
+		<td>02/15/2027</td>
+		<td></td>
+		<td>148.000000</td>
+		<td>147.906250</td>
+		<td>148.031250</td>
+	</tr>
+	
+	<tr>
+		<td>912810FA1</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.375%</td>
+		<td>08/15/2027</td>
+		<td></td>
+		<td>144.656250</td>
+		<td>144.562500</td>
+		<td>144.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912810FB9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.125%</td>
+		<td>11/15/2027</td>
+		<td></td>
+		<td>141.562500</td>
+		<td>141.468750</td>
+		<td>141.750000</td>
+	</tr>
+	
+	<tr>
+		<td>912810FE3</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>5.500%</td>
+		<td>08/15/2028</td>
+		<td></td>
+		<td>133.187500</td>
+		<td>133.093750</td>
+		<td>133.343750</td>
+	</tr>
+	
+	<tr>
+		<td>912810FF0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>5.250%</td>
+		<td>11/15/2028</td>
+		<td></td>
+		<td>129.812500</td>
+		<td>129.718750</td>
+		<td>130.000000</td>
+	</tr>
+	
+	<tr>
+		<td>912810FG8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>5.250%</td>
+		<td>02/15/2029</td>
+		<td></td>
+		<td>130.203125</td>
+		<td>130.031250</td>
+		<td>130.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912810FJ2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.125%</td>
+		<td>08/15/2029</td>
+		<td></td>
+		<td>144.000000</td>
+		<td>143.906250</td>
+		<td>144.218750</td>
+	</tr>
+	
+	<tr>
+		<td>912810FM5</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>6.250%</td>
+		<td>05/15/2030</td>
+		<td></td>
+		<td>147.328125</td>
+		<td>147.218750</td>
+		<td>147.562500</td>
+	</tr>
+	
+	<tr>
+		<td>912810FP8</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>5.375%</td>
+		<td>02/15/2031</td>
+		<td></td>
+		<td>134.218750</td>
+		<td>134.031250</td>
+		<td>134.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912810FT0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>4.500%</td>
+		<td>02/15/2036</td>
+		<td></td>
+		<td>127.781250</td>
+		<td>127.687500</td>
+		<td>128.281250</td>
+	</tr>
+	
+	<tr>
+		<td>912810PT9</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>4.750%</td>
+		<td>02/15/2037</td>
+		<td></td>
+		<td>134.031250</td>
+		<td>133.937500</td>
+		<td>134.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912810PU6</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>5.000%</td>
+		<td>05/15/2037</td>
+		<td></td>
+		<td>139.093750</td>
+		<td>139.000000</td>
+		<td>139.500000</td>
+	</tr>
+	
+	<tr>
+		<td>912810PW2</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>4.375%</td>
+		<td>02/15/2038</td>
+		<td></td>
+		<td>128.515625</td>
+		<td>128.406250</td>
+		<td>128.906250</td>
+	</tr>
+	
+	<tr>
+		<td>912810PX0</td>
+		<td style="white-space: nowrap; text-align: left">MARKET BASED BOND</td>
+		<td>4.500%</td>
+		<td>05/15/2038</td>
+		<td></td>
+		<td>131.218750</td>
+		<td>131.187500</td>
+		<td>131.718750</td>
+	</tr>
+	
+	<tr>
+		<td>9128274Y5</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.875%</td>
+		<td>01/15/2009</td>
+		<td></td>
+		<td>0.000000</td>
+		<td>100.000000</td>
+		<td>100.000000</td>
+	</tr>
+	
+	<tr>
+		<td>9128275W8</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>4.250%</td>
+		<td>01/15/2010</td>
+		<td></td>
+		<td>98.921875</td>
+		<td>98.718750</td>
+		<td>98.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912828CZ1</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>0.875%</td>
+		<td>04/15/2010</td>
+		<td></td>
+		<td>95.015625</td>
+		<td>94.812500</td>
+		<td>94.812500</td>
+	</tr>
+	
+	<tr>
+		<td>9128276R8</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.500%</td>
+		<td>01/15/2011</td>
+		<td></td>
+		<td>99.875000</td>
+		<td>99.656250</td>
+		<td>99.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828FB1</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.375%</td>
+		<td>04/15/2011</td>
+		<td></td>
+		<td>98.828125</td>
+		<td>98.625000</td>
+		<td>98.531250</td>
+	</tr>
+	
+	<tr>
+		<td>9128277J5</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.375%</td>
+		<td>01/15/2012</td>
+		<td></td>
+		<td>100.906250</td>
+		<td>100.656250</td>
+		<td>100.625000</td>
+	</tr>
+	
+	<tr>
+		<td>912828GN4</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.000%</td>
+		<td>04/15/2012</td>
+		<td></td>
+		<td>99.250000</td>
+		<td>98.937500</td>
+		<td>98.843750</td>
+	</tr>
+	
+	<tr>
+		<td>912828AF7</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.000%</td>
+		<td>07/15/2012</td>
+		<td></td>
+		<td>101.140625</td>
+		<td>100.937500</td>
+		<td>100.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828HW3</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>0.625%</td>
+		<td>04/15/2013</td>
+		<td></td>
+		<td>97.078125</td>
+		<td>96.750000</td>
+		<td>96.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828BD1</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.875%</td>
+		<td>07/15/2013</td>
+		<td></td>
+		<td>98.031250</td>
+		<td>97.718750</td>
+		<td>97.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912828BW9</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.000%</td>
+		<td>01/15/2014</td>
+		<td></td>
+		<td>98.500000</td>
+		<td>98.187500</td>
+		<td>97.937500</td>
+	</tr>
+	
+	<tr>
+		<td>912828CP3</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.000%</td>
+		<td>07/15/2014</td>
+		<td></td>
+		<td>98.343750</td>
+		<td>98.031250</td>
+		<td>97.875000</td>
+	</tr>
+	
+	<tr>
+		<td>912828DH0</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.625%</td>
+		<td>01/15/2015</td>
+		<td></td>
+		<td>96.546875</td>
+		<td>96.343750</td>
+		<td>95.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912828EA4</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.875%</td>
+		<td>07/15/2015</td>
+		<td></td>
+		<td>98.218750</td>
+		<td>97.906250</td>
+		<td>97.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912828ET3</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.000%</td>
+		<td>01/15/2016</td>
+		<td></td>
+		<td>99.125000</td>
+		<td>98.812500</td>
+		<td>98.468750</td>
+	</tr>
+	
+	<tr>
+		<td>912828FL9</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.500%</td>
+		<td>07/15/2016</td>
+		<td></td>
+		<td>102.625000</td>
+		<td>102.312500</td>
+		<td>101.906250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GD6</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.375%</td>
+		<td>01/15/2017</td>
+		<td></td>
+		<td>102.156250</td>
+		<td>101.843750</td>
+		<td>101.406250</td>
+	</tr>
+	
+	<tr>
+		<td>912828GX2</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.625%</td>
+		<td>07/15/2017</td>
+		<td></td>
+		<td>104.906250</td>
+		<td>104.593750</td>
+		<td>104.125000</td>
+	</tr>
+	
+	<tr>
+		<td>912828HN3</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.625%</td>
+		<td>01/15/2018</td>
+		<td></td>
+		<td>97.687500</td>
+		<td>97.218750</td>
+		<td>96.812500</td>
+	</tr>
+	
+	<tr>
+		<td>912828JE1</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.375%</td>
+		<td>07/15/2018</td>
+		<td></td>
+		<td>96.656250</td>
+		<td>96.187500</td>
+		<td>95.687500</td>
+	</tr>
+	
+	<tr>
+		<td>912810FR4</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.375%</td>
+		<td>01/15/2025</td>
+		<td></td>
+		<td>100.812500</td>
+		<td>100.031250</td>
+		<td>99.656250</td>
+	</tr>
+	
+	<tr>
+		<td>912810FS2</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.000%</td>
+		<td>01/15/2026</td>
+		<td></td>
+		<td>95.875000</td>
+		<td>95.093750</td>
+		<td>94.593750</td>
+	</tr>
+	
+	<tr>
+		<td>912810PS1</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>2.375%</td>
+		<td>01/15/2027</td>
+		<td></td>
+		<td>102.312500</td>
+		<td>101.531250</td>
+		<td>100.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912810PV4</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>1.750%</td>
+		<td>01/15/2028</td>
+		<td></td>
+		<td>93.562500</td>
+		<td>92.781250</td>
+		<td>92.187500</td>
+	</tr>
+	
+	<tr>
+		<td>912810FD5</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.625%</td>
+		<td>04/15/2028</td>
+		<td></td>
+		<td>120.953125</td>
+		<td>120.281250</td>
+		<td>119.718750</td>
+	</tr>
+	
+	<tr>
+		<td>912810FH6</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.875%</td>
+		<td>04/15/2029</td>
+		<td></td>
+		<td>125.359375</td>
+		<td>124.687500</td>
+		<td>123.968750</td>
+	</tr>
+	
+	<tr>
+		<td>912810FQ6</td>
+		<td style="white-space: nowrap; text-align: left">TIPS</td>
+		<td>3.375%</td>
+		<td>04/15/2032</td>
+		<td></td>
+		<td>126.687500</td>
+		<td>125.906250</td>
+		<td>125.218750</td>
+	</tr>
+	
+</table>
+
+
+		</div>
+<!-- END CONTENT --> 
+
+<!-- BEGIN SUBLOCALNAV -->
+<div id="right">
+	
+	<img src="/GA-FI/FedInvest/static/images/relatedlinks.gif" width="170" height="20" alt="Related Links" />
+<ul class="relatedlinks">
+	<li><a href="/govt/reports/fip/fip.htm">Federal Investments Program Reports</a></li>
+	<li><a href="/govt/apps/fip/fip.htm">Federal Investments Program</a></li>
+	<li><a href="/govt/resources/faq/faq_fedinvest.htm">FAQ</a></li>
+</ul>
+</div>
+<!-- END SUBLOCALNAV -->
+		</div>
+  		<!-- BEGIN FOOTER -->
+<div id="footer">
+	<ul>
+		<li><a href="/foia.htm">Freedom of Information Act</a></li>
+		<li>|</li>
+		<li><a href="/law_and_guidance.htm">Law &amp; Guidance</a></li>
+		<li>|</li>
+		<li><a href="/privacy.htm">Privacy &amp; Legal Notices</a></li>
+		<li>|</li>
+		<li><a href="/terms.htm">Website Terms &amp; Conditions</a></li>
+		<li>|</li>
+		<li><a href="/accessibility.htm">Accessibility</a></li>
+		<li>|</li>
+		<li><a href="/data_quality.htm">Data Quality</a></li>
+	</ul>
+	<p><a href="https://www.fiscal.treasury.gov/">U.S. Department of the Treasury, Bureau of the Fiscal Service</a></p>
+	<p><em>Last Updated January 15, 2026</em></p>
+</div>
+<!-- END FOOTER -->
+	</div>
+</body>
+</html>

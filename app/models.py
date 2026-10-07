@@ -27,6 +27,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     Date,
     DateTime,
@@ -42,6 +43,7 @@ from sqlalchemy import (
     func,
     text,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -193,6 +195,49 @@ class Observation(Base):
     field: Mapped[str] = mapped_column(String(20))
     value: Mapped[Decimal] = mapped_column(Numeric)
     unit: Mapped[str] = mapped_column(String(20))
+    capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
+    valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+# JSONB on Postgres (the hub); plain JSON on SQLite (tests).
+JSON_DOC = JSON().with_variant(JSONB(), "postgresql")
+
+
+class Record(Base):
+    """A record as one source publishes it (near-raw, phase 3): what isn't a time series.
+
+    An auction's terms and results (TreasuryDirect, Fiscal Data) or a line of
+    the stripped-securities table, keyed by the source's own identity for it
+    ("912810UW6/2026-10-15": CUSIP and issue date), with every field exactly
+    as printed in `fields`. Nothing typed or renamed; secmaster-svc does that.
+    History like observation: within a capture's period, a changed record
+    closes the old row (`valid_to`) and adds a new one, and a record the source
+    drops is closed off. Times are the captures' fetch times, so a rebuild from
+    raw gives the same rows.
+    """
+
+    __tablename__ = "record"
+    __table_args__ = (
+        Index(
+            "uq_record_current",
+            "source_id",
+            "record_type",
+            "source_key",
+            unique=True,
+            postgresql_where=text("valid_to IS NULL"),
+            sqlite_where=text("valid_to IS NULL"),
+        ),
+        Index("ix_record_source_period", "source_id", "period"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int] = mapped_column(Integer, ForeignKey("source.id"))
+    period: Mapped[str] = mapped_column(String(10))
+    record_type: Mapped[str] = mapped_column(String(30))
+    source_key: Mapped[str] = mapped_column(String(80))
+    as_of: Mapped[date] = mapped_column(Date)
+    fields: Mapped[dict] = mapped_column(JSON_DOC)
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

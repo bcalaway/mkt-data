@@ -7,7 +7,10 @@ package mkt_data;
 // (BC_10YEAR, RIFLGFCY10_N.B), value as printed with its unit. quote-svc reads
 // these and builds golden quotes.
 //
-// Read by period (a month): a source's periods with the newest capture each
+// Also FedInvest's prices per CUSIP (TD-PRICES, phase 3; a period is a day,
+// YYYY-MM-DD) and BLS's CPI-U (BLS-CPI; a period is a year, YYYY).
+//
+// Read by period (a month for the CMT sources): a source's periods with the newest capture each
 // one's values came from, so a client re-reads only the months that changed,
 // and one period's values. Internal-only per ADR-0020: mkt-data:9090 on the
 // home-platform network. Dates are YYYY-MM-DD; values are decimal strings
@@ -24,10 +27,10 @@ service Observations {
 message ListObservationSourcesRequest {}
 
 message ObservationSource {
-  string name = 1;          // UST-PAR, H15-TCM
+  string name = 1;          // UST-PAR, H15-TCM, TD-PRICES, BLS-CPI
   string description = 2;
   string calendar = 3;      // publication calendar (calendar-svc), e.g. SIFMA-US
-  string first_period = 4;  // earliest month the source serves, YYYY-MM
+  string first_period = 4;  // earliest period the source serves (YYYY-MM, YYYY-MM-DD or YYYY)
   int32 periods = 5;        // months with values so far
 }
 
@@ -37,11 +40,11 @@ message ListObservationSourcesResponse {
 
 message ListPeriodsRequest {
   string source = 1;
-  string since_period = 2;  // optional: only periods >= this one (YYYY-MM)
+  string since_period = 2;  // optional: only periods >= this one (same form as the source's periods)
 }
 
 message PeriodInfo {
-  string period = 1;               // YYYY-MM
+  string period = 1;               // YYYY-MM (or YYYY-MM-DD, YYYY)
   int64 latest_capture_id = 2;     // newest capture any of the period's rows came from (changes when values change)
   int32 values = 3;                // current values
   string first_date = 4;

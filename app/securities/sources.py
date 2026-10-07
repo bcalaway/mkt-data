@@ -45,7 +45,10 @@ import httpx2
 from sqlalchemy.orm import Session
 
 from app.calendars import service
+from app.calendars.parsed import ParseError
 from app.calendars.service import SourceFetchError, SourceSpec
+from app.rates import near_raw
+from app.securities import parsers, records
 
 EASTERN = ZoneInfo("America/New_York")
 Kind = Literal["day", "month", "year"]
@@ -83,8 +86,9 @@ def bls_view(body: bytes) -> object:
 
 @dataclass(frozen=True)
 class SecuritiesSource:
-    spec: SourceSpec  # name, url template, description; parse is None (raw only) this step
+    spec: SourceSpec  # name, url template, description, parser
     kind: Kind  # what a period is: a day, a month or a year
+    shape: Literal["records", "observations"]  # which near-raw table its parse goes to
     calendar: str  # publication calendar (calendar-svc), for metric labels
     first_period: str  # the earliest period to ask for; the real first one is found in the backfill
     ahead: int = 0  # periods past the current one that may already have data (announcements)
@@ -109,35 +113,38 @@ class SecuritiesSource:
         )
 
 
-def _spec(name: str, url: str, description: str, **kw) -> SourceSpec:
-    return SourceSpec(name, url, description, None, **kw)
+def _spec(name: str, url: str, description: str, parse, **kw) -> SourceSpec:
+    return SourceSpec(name, url, description, parse, **kw)
 
 
 SOURCES: dict[str, SecuritiesSource] = {
     "TD-SECURITIES": SecuritiesSource(
         _spec("TD-SECURITIES", TD_SECURITIES_URL,
-              "TreasuryDirect securities web API, announced and auctioned securities (JSON, by month of auction)"),
-        kind="month", calendar="SIFMA-US", first_period="1979-01", ahead=1,
+              "TreasuryDirect securities web API, announced and auctioned securities (JSON, by month of auction)",
+              parsers.parse_td_securities),
+        kind="month", shape="records", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "TD-PRICES": SecuritiesSource(
         # The results page carries a fresh CSRF token each time, so dedupe on its visible text.
         _spec("TD-PRICES", TD_PRICES_URL, "FedInvest, prices for Treasury securities (HTML, by price date)",
-              dedupe_on_text=True),
-        kind="day", calendar="SIFMA-US", first_period="2000-01-03", form=True,
+              parsers.parse_td_prices, dedupe_on_text=True),
+        kind="day", shape="observations", calendar="SIFMA-US", first_period="2000-01-03", form=True,
     ),
     "FD-AUCTIONS": SecuritiesSource(
-        _spec("FD-AUCTIONS", FD_AUCTIONS_URL, "Fiscal Data, Treasury securities auctions data (JSON, by month of auction)"),
-        kind="month", calendar="SIFMA-US", first_period="1979-01", ahead=1,
+        _spec("FD-AUCTIONS", FD_AUCTIONS_URL, "Fiscal Data, Treasury securities auctions data (JSON, by month of auction)",
+              parsers.parse_fd_auctions),
+        kind="month", shape="records", calendar="SIFMA-US", first_period="1979-01", ahead=1,
     ),
     "FD-MSPD-STRIPS": SecuritiesSource(
         _spec("FD-MSPD-STRIPS", FD_MSPD_STRIPS_URL,
-              "Fiscal Data, Monthly Statement of the Public Debt, securities held in stripped form (JSON, by month)"),
-        kind="month", calendar="SIFMA-US", first_period="1985-01",
+              "Fiscal Data, Monthly Statement of the Public Debt, securities held in stripped form (JSON, by month)",
+              parsers.parse_fd_mspd_strips),
+        kind="month", shape="records", calendar="SIFMA-US", first_period="1985-01",
     ),
     "BLS-CPI": SecuritiesSource(
         _spec("BLS-CPI", BLS_CPI_URL, "BLS, CPI-U all items, not seasonally adjusted, CUUR0000SA0 (JSON, by year)",
-              dedupe_view=bls_view),
-        kind="year", calendar="FED", first_period="1913",
+              parsers.parse_bls_cpi, dedupe_view=bls_view),
+        kind="year", shape="observations", calendar="FED", first_period="1913",
     ),
 }
 
@@ -210,15 +217,41 @@ def post_fedinvest(period: str):
     return fetch
 
 
+def _apply(src: SecuritiesSource):
+    return records.apply_period if src.shape == "records" else near_raw.apply_period
+
+
 def run_capture(s: Session, name: str, period: str, fetcher=None) -> dict:
-    """Fetch one period of one source and keep it raw if new. Commits. No parse this step."""
+    """Fetch one period of one source, keep it raw if new, and apply its parse to near-raw. Commits.
+
+    As for the CMT sources: the raw capture is committed before parsing, so a
+    parse error never loses what was fetched; the error is recorded on the
+    check and raised (422). An unchanged fetch re-applies the same capture,
+    which changes nothing.
+    """
     src = SOURCES[name]
     period = check_period(name, period)
     if fetcher is None and src.form:
         fetcher = post_fedinvest(period)
-    cap, is_new, _check = service.capture(s, src.spec, fetcher, url=src.url(period), period=period)
+    cap, is_new, check = service.capture(s, src.spec, fetcher, url=src.url(period), period=period)
     s.commit()
-    return {
-        "source": name, "period": period, "capture_id": cap.id, "new_capture": is_new,
-        "size_bytes": cap.size_bytes, "content_type": cap.content_type, "parsed": False, "note": service.NOT_PARSED,
-    }
+    out = {"source": name, "period": period, "capture_id": cap.id, "new_capture": is_new,
+           "size_bytes": cap.size_bytes, "content_type": cap.content_type}
+    try:
+        result = _apply(src)(s, cap, src.spec.parse(cap.body))
+    except ParseError as e:  # raised before any row changes (apply_period checks first)
+        check.parse_outcome, check.parse_detail = "error", str(e)[:2000]
+        s.commit()
+        raise
+    check.parse_outcome = "ok"
+    s.commit()
+    return out | {"parsed": True} | result
+
+
+def run_rebuild(s: Session, name: str) -> dict:
+    """Rebuild one source's near-raw rows from every stored capture."""
+    src = SOURCES[name]
+    service._source(s, src.spec)
+    if src.shape == "records":
+        return records.rebuild(s, name, src.spec.parse)
+    return near_raw.rebuild(s, name, src.spec.parse)

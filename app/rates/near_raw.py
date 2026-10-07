@@ -1,6 +1,7 @@
 """Near-raw observations: each CMT source's values as that source publishes them.
 
-A capture covers one month (its period); its parse is that month's values.
+A capture covers one period (a month for the CMT sources; a day or a year for
+some phase 3 sources); its parse is that period's values.
 Within the period: a new value is inserted, a changed value closes the old
 row (`valid_to`) and adds a new one (a revision), and a value the source no
 longer lists is closed off. Other months are left alone. Times are the
@@ -16,6 +17,11 @@ from app.models import Capture, Observation, Source
 from app.rates.parsers import Obs
 
 
+def in_period(day, period: str) -> bool:
+    """Whether a date falls in a capture period: a day (YYYY-MM-DD), a month (YYYY-MM) or a year (YYYY)."""
+    return day.isoformat()[: len(period)] == period
+
+
 def apply_period(s: Session, cap: Capture, obs: list[Obs]) -> dict:
     """Record one capture's observations for its source and period. Flushes, doesn't commit."""
     at = cap.fetched_at
@@ -28,9 +34,9 @@ def apply_period(s: Session, cap: Capture, obs: list[Obs]) -> dict:
     new = {(o.source_key, o.as_of, o.field): o for o in obs}
     if len(new) != len(obs):
         raise ParseError("the same series, date and field appears twice")
-    outside = [k for k in new if f"{k[1]:%Y-%m}" != cap.period]
+    outside = [k for k in new if not in_period(k[1], cap.period)]
     if outside:
-        raise ParseError(f"{len(outside)} values fall outside the capture's month {cap.period} (first: {outside[0][1]})")
+        raise ParseError(f"{len(outside)} values fall outside the capture's period {cap.period} (first: {outside[0][1]})")
     added = changed = 0
     to_close = [r for k, r in current.items() if k not in new]
     for k, o in new.items():

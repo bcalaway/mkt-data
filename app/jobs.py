@@ -165,6 +165,15 @@ def rebuild_securities(source: str) -> dict:
         return securities.run_rebuild(s, key)
 
 
+@router.post("/securities/compare", dependencies=[Depends(require_token)])
+def compare_securities() -> dict:
+    """Cross-check TreasuryDirect's auction records against Fiscal Data's; kept for the metrics (docs/phase-3.md, step 5)."""
+    from app.securities import compare
+
+    with db.session() as s:
+        return compare.run(s)
+
+
 # Raw captures, read-only: for turning a real capture into a test fixture,
 # or checking what a parser saw. home-mcp's mkt_data_captures and
 # mkt_data_capture_text tools read these with the read-only token.

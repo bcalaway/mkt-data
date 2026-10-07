@@ -21,7 +21,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.calendars import service
-from app.models import Capture, Observation, Source, SourceCheck
+from app.models import Capture, Observation, RecordComparison, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
 
@@ -139,3 +139,19 @@ def _collect(s, out: _Out) -> None:
     out.metric("mkt_data_observation_last_date_timestamp_seconds", "gauge",
                "Each CMT source key's latest date with a value (midnight UTC), from the source's newest month.",
                last_dates)
+
+    # The latest cross-check of two sources' records (TreasuryDirect's auctions against Fiscal Data's).
+    rows = list(s.scalars(select(RecordComparison)))
+    pair = [({"left": r.left_source, "right": r.right_source}, r) for r in rows]
+    out.metric("mkt_data_record_compare_timestamp_seconds", "gauge", "When the two sources' records were last compared.",
+               [(lb, _epoch(r.ran_at)) for lb, r in pair])
+    out.metric("mkt_data_record_compare_records", "gauge",
+               "Records in the latest comparison: both (listed by both), left_only, right_only, differing "
+               "(both list it and at least one field differs).",
+               [(lb | {"which": w}, v) for lb, r in pair for w, v in
+                (("both", r.compared), ("left_only", r.only_left), ("right_only", r.only_right),
+                 ("differing", r.records_differing))])
+    out.metric("mkt_data_record_compare_field", "gauge",
+               "Per field in the latest comparison, records where it differs (both have values) or only one side has one.",
+               [(lb | {"field": f["field"], "kind": k}, f[k]) for lb, r in pair
+                for f in (r.detail or {}).get("fields", [])[:60] for k in ("different", "one_side_empty") if f.get(k)])

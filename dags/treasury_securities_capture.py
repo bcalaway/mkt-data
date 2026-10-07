@@ -17,7 +17,9 @@ failing source doesn't hold up the others:
   comes out a few business days into the next).
 - BLS-CPI: the current year, plus the previous one in January.
 
-After TD-PRICES, a mark task sets the Asset `mkt_data_treasury_prices` when
+Once TD-SECURITIES and FD-AUCTIONS are captured, `compare_auctions` cross-checks
+TreasuryDirect's auction records against Fiscal Data's (the metrics carry
+the result). After TD-PRICES, a mark task sets the Asset `mkt_data_treasury_prices` when
 any of its days gained, changed or lost a price, so quote-svc's load runs.
 After TD-SECURITIES, a mark task sets the Asset `mkt_data_treasury_securities`
 when any of its months gained, changed or lost an auction, so secmaster-svc's
@@ -177,6 +179,7 @@ SOURCES = ("TD-SECURITIES", "TD-PRICES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "BLS-C
     doc_md=__doc__,
 )
 def treasury_securities_capture():
+    captured = {}
     for source in SOURCES:
 
         @task(task_id=f"capture_{source.lower().replace('-', '_')}", retries=1, retry_delay=timedelta(hours=1))
@@ -189,6 +192,7 @@ def treasury_securities_capture():
             return capture_all(source, periods)
 
         got = run()
+        captured[source] = got
         if source == "TD-SECURITIES":
 
             @task(outlets=[TREASURY_SECURITIES])
@@ -207,6 +211,17 @@ def treasury_securities_capture():
                 return "marked"
 
             mark_treasury_prices(got)
+
+    # TreasuryDirect's auctions against Fiscal Data's, once both are in (whatever happened to either).
+    @task(trigger_rule="all_done", retries=1, retry_delay=timedelta(minutes=10))
+    def compare_auctions() -> dict:
+        result = call_app_job("mkt-data", "securities/compare", timeout=600)
+        print({k: v for k, v in result.items() if k != "fields_differing"})
+        for f in result.get("fields_differing", []):
+            print(f"differs: {f['field']}: {f['different']} records, e.g. {f['examples'][:2]}")
+        return result
+
+    [captured["TD-SECURITIES"], captured["FD-AUCTIONS"]] >> compare_auctions()
 
 
 treasury_securities_capture()

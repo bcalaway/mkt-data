@@ -10,9 +10,15 @@ failing source doesn't hold up the others:
 - TD-SECURITIES and FD-AUCTIONS: the current and next month of auctions
   (announcements land up to a week or so ahead; results on auction day),
   plus the previous month in a month's first five days.
-- TD-PRICES: today's FedInvest prices and the previous SIFMA-US business
-  day's (in case today's weren't up yet, or yesterday's changed), only on a
-  SIFMA-US business day.
+- TD-PRICES: today's FedInvest prices and the five SIFMA-US business days
+  before it, only on a SIFMA-US business day. FedInvest prints a day's
+  end-of-day prices the next evening (buy and sell the same day), so the
+  previous business day's capture is the one that brings them in, and the
+  older days catch any evening that missed (an unchanged page adds nothing).
+  If the previous business day's end-of-day prices still aren't up, the task
+  tries again every hour, four times (to about 11:15 p.m.); after that it
+  logs the gap and carries on, the older days pick it up on the following
+  evenings, and quote-svc's "Treasury prices missing" alert covers it.
 - FD-MSPD-STRIPS: the previous and current month (the statement for a month
   comes out a few business days into the next).
 - BLS-CPI: the current year, plus the previous one in January.
@@ -64,6 +70,8 @@ TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
 TREASURY_PRICES = Asset("mkt_data_treasury_prices")
 FETCH_PAUSES = (10, 30, 60)
 LOOKBACK_DAYS = 10
+PRICE_DAYS_BACK = 5  # business days before today re-fetched for TD-PRICES each evening
+PRICE_RETRIES = 4  # hourly tries for the previous business day's end-of-day prices
 
 
 def months(today: date, ahead: int = 0) -> list[str]:
@@ -98,24 +106,35 @@ def business_day(calendar: str, day: date, call=None) -> bool | None:
     return bool(r["business_day"])
 
 
-def price_days(today: date, call=None) -> list[str]:
-    """The previous SIFMA-US business day and today, or nothing if today isn't one.
+def price_days(today: date, call=None, back: int = PRICE_DAYS_BACK) -> list[str]:
+    """The `back` SIFMA-US business days before today and today, oldest first; nothing if today isn't one.
 
     If calendar-svc can't answer, weekdays stand in for business days: a
     capture on a holiday only stores whatever FedInvest answers for it.
     """
     if today.weekday() >= 5 or business_day("SIFMA-US", today, call) is False:
         return []
-    prev = None
-    for n in range(1, LOOKBACK_DAYS + 1):
-        day = today - timedelta(days=n)
+    days: list[date] = []
+    day = today
+    while len(days) < back and (today - day).days < LOOKBACK_DAYS + 2 * back:
+        day -= timedelta(days=1)
         if day.weekday() >= 5:
             continue
         answer = business_day("SIFMA-US", day, call)
         if answer is None or answer:
-            prev = day
-            break
-    return [d.isoformat() for d in (prev, today) if d]
+            days.append(day)
+    return [d.isoformat() for d in (*reversed(days), today)]
+
+
+def end_of_day_missing(results: list[dict], day: str) -> bool:
+    """Whether a day's capture brought no end-of-day prices (FedInvest prints them as zeros until they're up).
+
+    False when the answer doesn't count by field (an older mkt-data): there's no telling.
+    """
+    r = next((r for r in results if r.get("period") == day), None)
+    if r is None or "by_field" not in r:
+        return False
+    return not r["by_field"].get("eod")
 
 
 def capture(source: str, period: str, call=None, sleep=time.sleep) -> dict:
@@ -149,6 +168,18 @@ def capture_all(source: str, periods: list[str], call=None, sleep=time.sleep) ->
     return results
 
 
+def wait_for_end_of_day(results: list[dict], day: str, context=None) -> None:
+    """Raise (so Airflow tries again in an hour) while the previous business day's end-of-day prices aren't up;
+    on the last try, log it and carry on."""
+    if not end_of_day_missing(results, day):
+        return
+    ti = (context if context is not None else get_current_context()).get("ti")
+    tries_left = ti is not None and ti.try_number <= ti.max_tries
+    if tries_left:
+        raise RuntimeError(f"TD-PRICES: FedInvest hasn't put up {day}'s end-of-day prices yet; trying again in an hour")
+    print(f"TD-PRICES: still no end-of-day prices for {day}; the next evenings' captures re-fetch it")
+
+
 def changed(results: list[dict]) -> bool:
     return any(r.get("added") or r.get("changed") or r.get("removed") for r in results)
 
@@ -174,7 +205,7 @@ SOURCES = ("TD-SECURITIES", "TD-PRICES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "BLS-C
     start_date=datetime(2026, 10, 1, tzinfo=UTC),
     catchup=False,
     max_active_runs=1,
-    dagrun_timeout=timedelta(hours=4),
+    dagrun_timeout=timedelta(hours=5),
     tags=["mkt-data", "treasury", "securities"],
     doc_md=__doc__,
 )
@@ -182,14 +213,18 @@ def treasury_securities_capture():
     captured = {}
     for source in SOURCES:
 
-        @task(task_id=f"capture_{source.lower().replace('-', '_')}", retries=1, retry_delay=timedelta(hours=1))
+        @task(task_id=f"capture_{source.lower().replace('-', '_')}",
+              retries=PRICE_RETRIES if source == "TD-PRICES" else 1, retry_delay=timedelta(hours=1))
         def run(source: str = source) -> list[dict]:
             today = datetime.now(NEW_YORK).date()
             periods = periods_for(source, today)
             if not periods:
                 print(f"{source}: nothing to capture today")
                 return []
-            return capture_all(source, periods)
+            results = capture_all(source, periods)
+            if source == "TD-PRICES" and len(periods) > 1:
+                wait_for_end_of_day(results, periods[-2])
+            return results
 
         got = run()
         captured[source] = got

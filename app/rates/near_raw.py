@@ -58,8 +58,11 @@ def apply_period(s: Session, cap: Capture, obs: list[Obs]) -> dict:
             ))
     s.flush()
     last = max((k[1] for k in new), default=None)
+    by_field: dict[str, int] = {}
+    for k in new:
+        by_field[k[2]] = by_field.get(k[2], 0) + 1
     return {"values": len(new), "days": len({k[1] for k in new}), "last_date": last.isoformat() if last else None,
-            "added": added, "changed": changed,
+            "by_field": dict(sorted(by_field.items())), "added": added, "changed": changed,
             "removed": len(to_close) - changed}
 
 

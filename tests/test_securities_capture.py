@@ -29,6 +29,7 @@ TD_EMPTY = b"[]"
 FD_EMPTY = json.dumps({"data": [], "meta": {"count": 0, "total-pages": 1}}).encode()
 PRICES_CSV = b"912797KX4,MARKET BASED BILL,0.000000,10/09/2026,,99.910000,99.912000,99.911000\n"
 PRICES_OCT5 = (FIXTURES / "td_prices_2026_10_05_capture1270.html").read_bytes()
+PRICES_OCT6 = (FIXTURES / "td_prices_2026_10_06_capture1271.html").read_bytes()  # fetched that evening
 BLS_2026 = (FIXTURES / "bls_cpi_2026_capture1267.json").read_bytes()
 
 
@@ -110,6 +111,17 @@ def test_prices_post_the_form(migrated_db, monkeypatch):
         r = sec.run_capture(s, "TD-PRICES", "2026-10-05")
     assert forms == ["2026-10-05"] and r["new_capture"] and r["period"] == "2026-10-05"
     assert r["values"] == 1359 and r["last_date"] == "2026-10-05"
+    assert sum(r["by_field"].values()) == 1359 and set(r["by_field"]) <= {"buy", "sell", "eod"}
+
+
+def test_prices_count_by_field_so_the_dag_can_tell_end_of_day_is_up(migrated_db, monkeypatch):
+    pages = {"2026-10-05": PRICES_OCT5, "2026-10-06": PRICES_OCT6}
+    monkeypatch.setattr(sec, "post_fedinvest", lambda period: _fetcher(pages[period], "text/html"))
+    with db.session() as s:
+        up = sec.run_capture(s, "TD-PRICES", "2026-10-05")  # fetched the next evening
+        same_day = sec.run_capture(s, "TD-PRICES", "2026-10-06")  # fetched that evening
+    assert up["by_field"]["eod"] > 400
+    assert not same_day["by_field"].get("eod") and same_day["by_field"]["buy"] > 400
 
 
 FORM_PAGE = b'<form method="post"><input type="date" name="priceDate"/><input type="hidden" name="_csrf" value="tok-123"/></form>'

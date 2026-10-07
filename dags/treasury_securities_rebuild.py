@@ -8,7 +8,9 @@ parser existed (phase 3, step 2: the step 1 captures and the sampling probe's).
 One source after another, since each replays its captures in the same
 container. Safe to re-run: the result depends only on the stored captures.
 TD-SECURITIES's task marks the Asset `mkt_data_treasury_securities`, so
-secmaster-svc's load re-reads the months whose newest capture moved.
+secmaster-svc's load re-reads the months whose newest capture moved, and
+TD-PRICES's marks `mkt_data_treasury_prices`, so quote-svc's load re-reads
+the days whose newest capture moved.
 """
 
 import sys
@@ -24,6 +26,8 @@ from home_platform_jobs import call_app_job
 SOURCES = ("TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS", "TD-PRICES", "BLS-CPI")
 # secmaster-svc's load is scheduled on this (see treasury_securities_capture.py).
 TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
+# quote-svc's load is scheduled on this.
+TREASURY_PRICES = Asset("mkt_data_treasury_prices")
 
 
 def rebuild_source(source: str) -> dict:
@@ -51,13 +55,18 @@ def treasury_securities_rebuild():
         """TD-SECURITIES: rebuilt, then the Asset is marked, so secmaster-svc re-reads the months that moved."""
         return rebuild_source(source)
 
+    @task(outlets=[TREASURY_PRICES])
+    def rebuild_and_mark_prices(source: str) -> dict:
+        """TD-PRICES: rebuilt, then the Asset is marked, so quote-svc re-reads the days that moved."""
+        return rebuild_source(source)
+
     @task
     def rebuild(source: str) -> dict:
         return rebuild_source(source)
 
     previous = None
     for source in SOURCES:
-        step = rebuild_and_mark if source == "TD-SECURITIES" else rebuild
+        step = {"TD-SECURITIES": rebuild_and_mark, "TD-PRICES": rebuild_and_mark_prices}.get(source, rebuild)
         t = step.override(task_id=f"rebuild_{source.lower().replace('-', '_')}")(source)
         if previous is not None:
             previous >> t

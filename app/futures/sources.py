@@ -16,7 +16,9 @@ reach these hosts, so the formats are read on the hub
   the Data Download Program's "Daily Indexes" package, CSV. Published
   weekly, Mondays. (Meant to be the daily rates package; the series id
   turned out to be the indexes', which are worth keeping. The rates package
-  is a source of its own once its id is known.) The DDP answers empty to a
+  is FRB-H10-RATES.)
+- FRB-H10-RATES (month): the H.10 daily rates, every currency, the DDP's
+  "Daily rates" package, CSV, January 1971 on. The DDP answers empty to a
   request that follows another within a second or so, so a fetch waits and
   asks again.
 - ECB-EXR (month): the ECB's euro reference rates, every currency, daily, from
@@ -51,6 +53,12 @@ NYFED_SOFR_AVG_URL = NYFED + "/secured/sofrai/search.json?startDate={first}&endD
 # checked on the first captures, 2026-10-08), a month at a time.
 FRB_H10_URL = (
     "https://www.federalreserve.gov/datadownload/Output.aspx?rel=H10&series=122e3bcb627e8e53f1bf72a1a09cfb81"
+    "&lastobs=&from={first_us}&to={last_us}&filetype=csv&label=include&layout=seriescolumn"
+)
+# The DDP's preformatted "H.10 Statistical Release - Daily rates" package (Bill read its id off the DDP page,
+# 2026-10-08), a month at a time.
+FRB_H10_RATES_URL = (
+    "https://www.federalreserve.gov/datadownload/Output.aspx?rel=H10&series=60f32914ab61dfab590e0e470153e3ae"
     "&lastobs=&from={first_us}&to={last_us}&filetype=csv&label=include&layout=seriescolumn"
 )
 # EXR, daily (D), every currency (blank), against the euro, spot (SP00), average (A): the reference rates.
@@ -140,6 +148,10 @@ SOURCES: dict[str, SecuritiesSource] = {
         "FRB-H10", FRB_H10_URL, "Federal Reserve H.10, nominal dollar indexes, daily (CSV, by month)",
         f"The Fed's daily nominal dollar indexes: broad, advanced foreign economies and emerging market economies. "
         f"{KEPT_RAW}", "month", "FED", "2006-01", fetch_ddp),
+    "FRB-H10-RATES": _source(
+        "FRB-H10-RATES", FRB_H10_RATES_URL, "Federal Reserve H.10, foreign exchange rates, daily (CSV, by month)",
+        f"The Fed's daily noon buying rates in New York for each currency, as H.10 quotes them: what CME's FX futures "
+        f"track. {KEPT_RAW}", "month", "FED", "1971-01", fetch_ddp),
     "ECB-EXR": _source(
         "ECB-EXR", ECB_EXR_URL, "ECB euro foreign exchange reference rates, daily (CSV, by month)",
         f"The ECB's euro reference rate for each currency, each TARGET business day. {KEPT_RAW}",

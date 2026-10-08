@@ -47,6 +47,7 @@ from app.calendars import (
     rules,
     sifma,
     sifma_history,
+    six_sic,
     text,
 )
 from app.calendars.parsed import ParsedCalendar, ParseError
@@ -230,13 +231,13 @@ CALENDARS: dict[str, CalendarSpec] = {
         ),
     ),
     # Zurich: SIC's banking holidays, for the Swiss franc futures (docs/phase-4.md, "Calendars"). SIX's PDF lists next
-    # year; it's captured raw until its parser is written against a real capture. The cited rules run 1990-2100.
+    # year (app/calendars/six_sic.py); the cited rules run 1990-2100.
     "CH": CalendarSpec(
         name="CH",
         description="Swiss franc payments holidays (SIC, Zurich)",
         timezone="Europe/Zurich",
         sources=(
-            SourceSpec("SIX-SIC", SIX_SIC_URL, "SIX, SIC banking holidays (PDF, next year)", None),
+            SourceSpec("SIX-SIC", SIX_SIC_URL, "SIX, SIC banking holidays (PDF, next year)", six_sic.parse),
             SourceSpec("CH-RULES", f"{rules.REPO_PREFIX}ch.json",
                        "SIC banking holidays, 1990-2100 (rules; cited)", rules.parse),
         ),

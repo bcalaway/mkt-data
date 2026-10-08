@@ -1,6 +1,6 @@
-# Phase 4: Treasury analytics from prices
+# Analytics (deferred): Treasury analytics from prices
 
-**Status: draft for Bill's decisions (2026-10-07).** Nothing is built. Phase 3 (Treasury securities by CUSIP: terms, auctions, STRIPS, FIGIs, TIPS index ratios, 18 years of FedInvest prices) closes once step 3's BLS history is in: see [phase-3.md](phase-3.md). The choices that shape this phase are under "Decisions to make", each with a recommendation; nothing here is settled until Bill says so.
+**Deferred (Bill, 2026-10-07): analytics will be a much later build-out.** This was drafted as phase 4 and is kept as notes for when that time comes; it is not a phase plan, and nothing in it is decided. The next phases keep building the data platform. Its "Decisions to make" stay open.
 
 **Goal:** turn phase 3's terms and prices into analytics: every outstanding Treasury's yield, accrued interest and risk each day since 2008, and a fitted Treasury curve each day, each checked against an independent published answer before anything is shown.
 

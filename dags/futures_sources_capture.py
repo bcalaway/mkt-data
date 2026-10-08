@@ -7,7 +7,7 @@ on the hub before writing parsers.
 One DAG, weekdays at 7:45 p.m. New York time, one task per source so a
 failing source doesn't hold up the others:
 
-- NYFED-SOFR, NYFED-EFFR, NYFED-SOFR-AVG, FRB-H10, ECB-EXR: the months of
+- NYFED-SOFR, NYFED-EFFR, NYFED-SOFR-AVG, FRB-H10 and FRB-H10-RATES, ECB-EXR: the months of
   the last ten days up to yesterday (the New York Fed publishes a day's rates
   the next morning, H.10 comes out weekly on Mondays), so a month is
   re-fetched for ten days after it ends and a revision is caught.
@@ -50,7 +50,7 @@ CFTC_REPORTS = 2  # the latest reports due, re-fetched each evening
 # What mkt-data says when a period has nothing published yet (app/futures/sources.py): logged, not a failure.
 NOT_PUBLISHED = "NOT_PUBLISHED"
 
-MONTHLY = ("NYFED-SOFR", "NYFED-EFFR", "NYFED-SOFR-AVG", "FRB-H10", "ECB-EXR")
+MONTHLY = ("NYFED-SOFR", "NYFED-EFFR", "NYFED-SOFR-AVG", "FRB-H10", "FRB-H10-RATES", "ECB-EXR")
 WEEKLY = ("CFTC-TFF", "CFTC-TFF-COMBINED")
 SOURCES = MONTHLY + WEEKLY
 
@@ -138,8 +138,9 @@ futures_sources_capture()
 
 
 # The first year to sample for each source's history depth: before its known or plausible start.
-SAMPLE_FROM = {"NYFED-SOFR": 2018, "NYFED-EFFR": 1999, "NYFED-SOFR-AVG": 2020, "FRB-H10": 1971, "ECB-EXR": 1999,
-               "CFTC-TFF": 2006, "CFTC-TFF-COMBINED": 2006}
+# Never before the source's first_period in app/futures/sources.py (the job refuses a period before it).
+SAMPLE_FROM = {"NYFED-SOFR": 2018, "NYFED-EFFR": 2000, "NYFED-SOFR-AVG": 2020, "FRB-H10": 2006, "FRB-H10-RATES": 1971,
+               "ECB-EXR": 1999, "CFTC-TFF": 2006, "CFTC-TFF-COMBINED": 2006}
 
 
 def sample_periods(source: str, today: date) -> list[str]:

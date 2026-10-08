@@ -11,9 +11,16 @@ reach these hosts, so the formats are read on the hub
   with its percentiles and volume; EFFR with its percentiles, volume and the
   target range; the SOFR Averages (30, 90, 180-day) and the SOFR Index.
   Published each business day morning for the previous one.
-- FRB-H10 (month): the Fed's H.10 daily rates (noon buying rates in New
-  York), the Data Download Program's "Daily rates" package, CSV. Published
-  weekly, Mondays.
+- FRB-H10 (month): the Fed's H.10 daily dollar indexes (nominal broad,
+  advanced foreign economies, emerging market economies; January 2006 on),
+  the Data Download Program's "Daily Indexes" package, CSV. Published
+  weekly, Mondays. (Meant to be the daily rates package; the series id
+  turned out to be the indexes', which are worth keeping. The rates package
+  is FRB-H10-RATES.)
+- FRB-H10-RATES (month): the H.10 daily rates, every currency, the DDP's
+  "Daily rates" package, CSV, January 1971 on. The DDP answers empty to a
+  request that follows another within a second or so, so a fetch waits and
+  asks again.
 - ECB-EXR (month): the ECB's euro reference rates, every currency, daily, from
   the ECB data portal's SDMX API, CSV. Published each TARGET business day
   around 16:00 CET.
@@ -29,6 +36,7 @@ an empty answer never becomes a capture; the capture DAG logs it quietly, like B
 """
 
 import json
+import time
 
 from app.calendars import service
 from app.calendars.service import SourceFetchError, SourceSpec
@@ -41,10 +49,16 @@ NYFED = "https://markets.newyorkfed.org/api/rates"
 NYFED_SOFR_URL = NYFED + "/secured/sofr/search.json?startDate={first}&endDate={last}"
 NYFED_EFFR_URL = NYFED + "/unsecured/effr/search.json?startDate={first}&endDate={last}"
 NYFED_SOFR_AVG_URL = NYFED + "/secured/sofrai/search.json?startDate={first}&endDate={last}"
-# The DDP's preformatted "H.10 Statistical Release - Daily rates" package (every currency and the dollar indexes'
-# rates; checked on the first capture), a month at a time.
+# The DDP's preformatted "H.10 Statistical Release - Daily Indexes" package (JRXWTFB_N.B, JRXWTFN_N.B, JRXWTFO_N.B;
+# checked on the first captures, 2026-10-08), a month at a time.
 FRB_H10_URL = (
     "https://www.federalreserve.gov/datadownload/Output.aspx?rel=H10&series=122e3bcb627e8e53f1bf72a1a09cfb81"
+    "&lastobs=&from={first_us}&to={last_us}&filetype=csv&label=include&layout=seriescolumn"
+)
+# The DDP's preformatted "H.10 Statistical Release - Daily rates" package (Bill read its id off the DDP page,
+# 2026-10-08), a month at a time.
+FRB_H10_RATES_URL = (
+    "https://www.federalreserve.gov/datadownload/Output.aspx?rel=H10&series=60f32914ab61dfab590e0e470153e3ae"
     "&lastobs=&from={first_us}&to={last_us}&filetype=csv&label=include&layout=seriescolumn"
 )
 # EXR, daily (D), every currency (blank), against the euro, spot (SP00), average (A): the reference rates.
@@ -75,6 +89,22 @@ def fetch_nyfed(url: str) -> tuple[int, str | None, bytes]:
     if isinstance(doc, dict) and doc.get("refRates") == []:
         raise _not_published(url, "no rates for these dates yet")
     return status, ctype, body
+
+
+DDP_TRIES = 3
+DDP_PAUSE_SECONDS = 5
+
+
+def fetch_ddp(url: str, sleep=time.sleep) -> tuple[int, str | None, bytes]:
+    """The Fed's Data Download Program answers 200 with nothing in it when asked again too soon (every other request
+    of the probe's run, 2026-10-08): wait and ask again, a few times, before calling it a failed fetch."""
+    for attempt in range(DDP_TRIES):
+        status, ctype, body = service.fetch(url)
+        if body:
+            return status, ctype, body
+        if attempt < DDP_TRIES - 1:
+            sleep(DDP_PAUSE_SECONDS)
+    raise SourceFetchError(f"{url}: empty response, {DDP_TRIES} tries")
 
 
 def fetch_ecb(url: str) -> tuple[int, str | None, bytes]:
@@ -115,9 +145,13 @@ SOURCES: dict[str, SecuritiesSource] = {
         f"The 30-, 90- and 180-day SOFR Averages and the SOFR Index each business day. {KEPT_RAW}",
         "month", "SIFMA-US", "2020-03", fetch_nyfed),
     "FRB-H10": _source(
-        "FRB-H10", FRB_H10_URL, "Federal Reserve H.10, foreign exchange rates, daily (CSV, by month)",
+        "FRB-H10", FRB_H10_URL, "Federal Reserve H.10, nominal dollar indexes, daily (CSV, by month)",
+        f"The Fed's daily nominal dollar indexes: broad, advanced foreign economies and emerging market economies. "
+        f"{KEPT_RAW}", "month", "FED", "2006-01", fetch_ddp),
+    "FRB-H10-RATES": _source(
+        "FRB-H10-RATES", FRB_H10_RATES_URL, "Federal Reserve H.10, foreign exchange rates, daily (CSV, by month)",
         f"The Fed's daily noon buying rates in New York for each currency, as H.10 quotes them: what CME's FX futures "
-        f"track. {KEPT_RAW}", "month", "FED", "1971-01", None),
+        f"track. {KEPT_RAW}", "month", "FED", "1971-01", fetch_ddp),
     "ECB-EXR": _source(
         "ECB-EXR", ECB_EXR_URL, "ECB euro foreign exchange reference rates, daily (CSV, by month)",
         f"The ECB's euro reference rate for each currency, each TARGET business day. {KEPT_RAW}",

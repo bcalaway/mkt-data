@@ -45,6 +45,8 @@ def test_urls_by_period():
     assert "/secured/sofrai/" in fut.SOURCES["NYFED-SOFR-AVG"].url("2026-09")
     assert "rel=H10&" in fut.SOURCES["FRB-H10"].url("2026-09") and "from=09/01/2026&to=09/30/2026" in fut.SOURCES[
         "FRB-H10"].url("2026-09")
+    assert "series=60f32914ab61dfab590e0e470153e3ae&" in fut.SOURCES["FRB-H10-RATES"].url("1971-01")
+    assert fut.SOURCES["FRB-H10-RATES"].spec.url != fut.SOURCES["FRB-H10"].spec.url
     assert fut.SOURCES["ECB-EXR"].url("2026-09").endswith("startPeriod=2026-09-01&endPeriod=2026-09-30&format=csvdata")
     tff = fut.SOURCES["CFTC-TFF"].url("2026-09-29")
     assert tff.startswith("https://publicreporting.cftc.gov/resource/gpe5-46if.csv?")
@@ -52,6 +54,15 @@ def test_urls_by_period():
     assert "/yw9f-hn96.csv?" in fut.SOURCES["CFTC-TFF-COMBINED"].url("2026-09-29")
     assert all(src.spec.parse is None and src.spec.pulls for src in fut.SOURCES.values())
     assert not set(fut.SOURCES) & set(sec.SOURCES)
+
+
+def test_the_ddp_is_asked_again_when_it_answers_empty(monkeypatch):
+    answers = [b"", b"", b"csv"]
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/csv", answers.pop(0)))
+    assert fut.fetch_ddp("u", sleep=lambda s: None)[2] == b"csv"
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/csv", b""))
+    with pytest.raises(service.SourceFetchError, match="empty response, 3 tries"):
+        fut.fetch_ddp("u", sleep=lambda s: None)
 
 
 def test_periods_are_checked():

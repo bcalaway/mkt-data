@@ -98,6 +98,14 @@ def test_a_failed_fetch_is_retried_then_fails(mod):
     assert len(calls) == 4
 
 
+def test_samples_start_at_or_after_each_source_first_period(mod):
+    from app.futures import sources as fut
+
+    assert set(mod.SAMPLE_FROM) == set(fut.SOURCES) == set(mod.SOURCES)
+    for name, year in mod.SAMPLE_FROM.items():
+        assert str(year) >= fut.SOURCES[name].first_period[:4], name
+
+
 def test_sample_periods(mod):
     tff = mod.sample_periods("CFTC-TFF", date(2026, 10, 7))
     assert tff[0] == "2006-06-20" and tff[-1] == "2026-06-16" and len(tff) == 21

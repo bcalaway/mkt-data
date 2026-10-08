@@ -26,17 +26,27 @@ A file looks like this (every field but "calendar" is optional):
     }
 
 - A holiday is a fixed date ("month" and "day"), the n-th weekday of a month
-  ("month", "weekday" and "n", where -1 is the last) or a day relative to
-  Easter Sunday ("easter": -2 is Good Friday), optionally limited to years
-  "from"/"to". "offset" shifts it by that many days (the day after
+  ("month", "weekday" and "n", where -1 is the last), a weekday relative to a
+  date ("month", "day", "weekday" and "match": "on_or_before",
+  "on_or_after" or "nearest": Canada's Victoria Day is the Monday on or
+  before May 24), a day relative to Easter Sunday ("easter": -2 is Good
+  Friday), or a table of dates by year ("dates": {"2022": "06-24"}, for a
+  holiday set year by year, such as New Zealand's Matariki), optionally
+  limited to years "from"/"to". "offset" shifts it by that many days (the day after
   Thanksgiving is the 4th Thursday of November, offset 1).
 - A holiday is a full close unless it says "status": "early_close" with a
   "close_time". Such a rule can be limited to some days of the week
   ("weekdays": ["monday", ...]); on any other day it doesn't apply, and it's
   never moved.
 - Observance moves a weekend holiday: "saturday" is "none" (no weekday
-  closes) or "friday"; "sunday" is "none" or "monday". A holiday can
-  override either for itself. A moved day is named "<holiday> (observed)".
+  closes), "friday" or "monday"; "sunday" is "none" or "monday". A holiday
+  can override either for itself. A moved day is named "<holiday> (observed)".
+  With "collision": "next", a moved day that lands on another holiday goes
+  to the next free weekday instead (the UK: Christmas on a Saturday is the
+  Monday, Boxing Day on the Sunday then the Tuesday; and Boxing Day on a
+  Monday stays, so Christmas on the Sunday before moves to the Tuesday).
+  Holidays on weekdays are placed first, then the moved ones. Without it, two
+  holidays on one day are an error.
 - An exception sets one date: "closed", "early_close" (with "close_time")
   or "open" (removes a day the rules would close). Every exception needs a
   citation.
@@ -80,19 +90,31 @@ def parse(content: bytes) -> ParsedCalendar:
     default = {"saturday": "none", "sunday": "monday"} | spec.get("observance", {})
 
     days: dict[date, Day] = {}
-    for h in spec.get("holidays", []):
-        for y in years:
+    for y in years:
+        nominals = []
+        for h in spec.get("holidays", []):
             if not h.get("from", y) <= y <= h.get("to", y):
                 continue
-            nominal = _nominal(h, y) + timedelta(days=h.get("offset", 0))
+            d = _nominal(h, y)
+            if d is not None:
+                nominals.append((h, d + timedelta(days=h.get("offset", 0))))
+        # Weekday holidays first, so a moved weekend holiday never displaces a holiday on its own day.
+        nominals.sort(key=lambda x: x[1].weekday() >= 5)
+        for h, nominal in nominals:
+            observance = {**default, **h.get("observance", {})}
             if h.get("status", "closed") == "early_close":
                 day = _early(nominal, h)
             else:
-                day = _observed(nominal, {**default, **h.get("observance", {})}, h)
+                day = _observed(nominal, observance, h)
             if day is None:
                 continue
             if day.day in days and days[day.day] != day:
-                raise ParseError(f"two holidays close {day.day}: {days[day.day].holiday}, {day.holiday}")
+                if observance.get("collision") != "next" or nominal.weekday() < 5:
+                    raise ParseError(f"two holidays close {day.day}: {days[day.day].holiday}, {day.holiday}")
+                d = day.day
+                while d in days or d.weekday() >= 5:
+                    d += timedelta(days=1)
+                day = Day(d, day.status, day.holiday, day.close_time)
             days[day.day] = day
 
     seen = set()
@@ -117,15 +139,41 @@ def parse(content: bytes) -> ParsedCalendar:
     return ParsedCalendar(years, tuple(sorted(days.values(), key=lambda x: x.day)))
 
 
-def _nominal(h: dict, year: int) -> date:
+MATCHES = ("on_or_before", "on_or_after", "nearest")
+
+
+def _nominal(h: dict, year: int) -> date | None:
+    """The holiday's date in a year before observance; None if a table of dates has no date that year."""
     name = h.get("name")
     if not name:
         raise ParseError(f"holiday without a name: {h}")
     if "easter" in h:
         return easter(year) + timedelta(days=h["easter"])
+    if "dates" in h:
+        table = h["dates"]
+        if not isinstance(table, dict):
+            raise ParseError(f"{name}: 'dates' must map years to MM-DD")
+        md = table.get(str(year))
+        if md is None:
+            return None
+        try:
+            return date.fromisoformat(f"{year}-{md}")
+        except ValueError:
+            raise ParseError(f"{name}: bad date {md!r} for {year}") from None
     month = h.get("month")
     if not isinstance(month, int) or not 1 <= month <= 12:
         raise ParseError(f"{name}: bad month {month!r}")
+    if "day" in h and "match" in h:
+        if h["match"] not in MATCHES or h.get("weekday") not in WEEKDAYS:
+            raise ParseError(f"{name}: 'match' needs a 'weekday' and one of {MATCHES}")
+        anchor, target = date(year, month, h["day"]), WEEKDAYS.index(h["weekday"])
+        before = anchor - timedelta(days=(anchor.weekday() - target) % 7)
+        after = anchor + timedelta(days=(target - anchor.weekday()) % 7)
+        if h["match"] == "on_or_before":
+            return before
+        if h["match"] == "on_or_after":
+            return after
+        return before if (anchor - before) <= (after - anchor) else after
     if "day" in h:
         return date(year, month, h["day"])
     wd, n = h.get("weekday"), h.get("n")
@@ -174,6 +222,8 @@ def _observed(d: date, observance: dict, h: dict) -> Day | None:
         return None
     if d.weekday() == 5 and rule == "friday":
         return Day(d - timedelta(days=1), "closed", f"{name} (observed)")
+    if d.weekday() == 5 and rule == "monday":
+        return Day(d + timedelta(days=2), "closed", f"{name} (observed)")
     if d.weekday() == 6 and rule == "monday":
         return Day(d + timedelta(days=1), "closed", f"{name} (observed)")
     raise ParseError(f"{name}: unknown observance {rule!r} for {d:%A}")

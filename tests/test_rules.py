@@ -98,6 +98,52 @@ def test_observance_and_nth_weekday_rules():
     }
 
 
+UK_CHRISTMAS = {
+    "calendar": "X", "first_year": 2010, "last_year": 2022,
+    "observance": {"saturday": "monday", "sunday": "monday", "collision": "next"},
+    "holidays": [{"name": "Christmas Day", "month": 12, "day": 25}, {"name": "Boxing Day", "month": 12, "day": 26}],
+}
+
+
+def test_substitute_days_move_to_the_next_free_weekday():
+    days = {d.day: d.holiday for d in _parse(UK_CHRISTMAS).days if d.day.year in (2010, 2016, 2021, 2022)}
+    assert days == {
+        # Saturday and Sunday: Monday, then the Tuesday (gov.uk's 2021: Dec 27 and 28 substitute days).
+        date(2010, 12, 27): "Christmas Day (observed)", date(2010, 12, 28): "Boxing Day (observed)",
+        date(2021, 12, 27): "Christmas Day (observed)", date(2021, 12, 28): "Boxing Day (observed)",
+        # Sunday and Monday: Boxing Day keeps its Monday, Christmas moves to the Tuesday (gov.uk's 2022).
+        date(2016, 12, 26): "Boxing Day", date(2016, 12, 27): "Christmas Day (observed)",
+        date(2022, 12, 26): "Boxing Day", date(2022, 12, 27): "Christmas Day (observed)",
+    }
+
+
+def test_without_collision_next_two_holidays_on_a_day_fail():
+    spec = UK_CHRISTMAS | {"observance": {"saturday": "monday", "sunday": "monday"}}
+    with pytest.raises(ParseError, match="two holidays close 2010-12-27"):
+        _parse(spec)
+
+
+def test_weekday_relative_to_a_date_and_date_tables():
+    spec = {
+        "calendar": "X", "first_year": 2024, "last_year": 2026,
+        "holidays": [
+            # Victoria Day: the Monday on or before May 24 (May 20, 2024; May 19, 2025; May 18, 2026).
+            {"name": "Victoria Day", "month": 5, "day": 24, "weekday": "monday", "match": "on_or_before"},
+            # Wellington Anniversary: the Monday nearest January 22 (Jan 22, 2024; Jan 20, 2025; Jan 19, 2026).
+            {"name": "Wellington Anniversary Day", "month": 1, "day": 22, "weekday": "monday", "match": "nearest"},
+            {"name": "Matariki", "dates": {"2024": "06-28", "2025": "06-20", "2026": "07-10"}},
+            {"name": "Later", "month": 3, "day": 1, "weekday": "friday", "match": "on_or_after", "from": 2026},
+        ],
+    }
+    assert sorted(d.day for d in _parse(spec).days) == [
+        date(2024, 1, 22), date(2024, 5, 20), date(2024, 6, 28),
+        date(2025, 1, 20), date(2025, 5, 19), date(2025, 6, 20),
+        date(2026, 1, 19), date(2026, 3, 6), date(2026, 5, 18), date(2026, 7, 10),
+    ]
+    with pytest.raises(ParseError, match="'match' needs"):
+        _parse(spec | {"holidays": [{"name": "Bad", "month": 5, "day": 24, "match": "closest", "weekday": "monday"}]})
+
+
 def test_open_exception_removes_a_rule_day():
     spec = _fed_rules(exceptions=[{"date": "2025-12-25", "status": "open", "citation": "https://example.org/x"}])
     assert date(2025, 12, 25) not in {d.day for d in _parse(spec).days}

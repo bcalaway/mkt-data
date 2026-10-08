@@ -40,6 +40,7 @@ from app.calendars import (
     fed,
     govuk,
     jpcao,
+    nbo,
     near_raw,
     nyfed,
     nyse,
@@ -279,14 +280,14 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "Swedish bank holidays, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
-    # Oslo, for the krone futures (docs/phase-4.md, "Calendars"): Norges Bank's settlement days page (the current year,
-    # captured raw until its parser is written against a real capture) and the cited rules.
+    # Oslo, for the krone futures (docs/phase-4.md, "Calendars"): Norges Bank's settlement days page (the current year;
+    # app/calendars/nbo.py) and the cited rules.
     "NO": CalendarSpec(
         name="NO",
         description="Norwegian krone settlement holidays (NBO, Oslo)",
         timezone="Europe/Oslo",
         sources=(
-            SourceSpec("NO-NBO", NO_NBO_URL, "Norges Bank, NBO settlement days (web page, this year)", None,
+            SourceSpec("NO-NBO", NO_NBO_URL, "Norges Bank, NBO settlement days (web page, this year)", nbo.parse,
                        dedupe_on_text=True),
             SourceSpec("NO-RULES", f"{rules.REPO_PREFIX}no.json",
                        "NBO closing days, 1990-2100 (rules; cited)", rules.parse),

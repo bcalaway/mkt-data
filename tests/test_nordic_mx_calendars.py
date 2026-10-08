@@ -4,7 +4,9 @@ from datetime import date
 
 import pytest
 
-from app.calendars import rules, service
+from app.calendars import nbo, rules, service
+from app.calendars.parsed import ParseError
+from tests.conftest import FIXTURES
 
 
 def _days(name: str) -> dict[date, str]:
@@ -25,7 +27,6 @@ def test_years(name):
 
 def test_registered():
     assert service.CALENDARS["NO"].source_names == ["NO-NBO", "NO-RULES"]
-    assert service.SOURCES["NO-NBO"].parse is None  # kept raw until its parser is written against a real capture
 
 
 def test_se_is_sebs_lists():
@@ -73,3 +74,39 @@ def test_mx_mondays_from_2006_and_inaugurations():
     assert MX[date(2005, 3, 21)] == "Benito Juárez's Birthday" and MX[date(2006, 3, 20)] == "Benito Juárez's Birthday"
     assert MX[date(2006, 12, 1)] == "Presidential Inauguration" and MX[date(2030, 10, 1)] == "Presidential Inauguration"
     assert date(2025, 10, 1) not in MX
+
+
+NBO = (FIXTURES / "no_nbo_settlement_days_capture8332.html").read_bytes()  # the hub's first capture, 2026-10-08
+
+
+def test_norges_banks_page_matches_the_rules():
+    p = nbo.parse(NBO)
+    assert p.years == (2026,)
+    assert {d.day for d in p.days} == {d for d in NO if d.year == 2026}  # weekend rows (May 17, Dec 26) dropped
+    assert {d.day: d.holiday for d in p.days}[date(2026, 4, 2)] == "Maundy Thursday"
+
+
+PAGE = ("<p>" + nbo.INTRO + "</p><p>2027</p>" + "".join(f"<p>{r}</p>" for r in (
+    "1 January: New Year's Day", "25 March: Maundy Thursday", "26 March: Good Friday", "29 March: Easter Monday",
+    "1 May: Labour Day (Saturday)", "6 May: Ascension Day", "17 May: Constitution Day", "17 May: Whit Monday",
+    "24 December: Christmas Eve", "25 December: Christmas Day (Saturday)", "26 December: Boxing Day (Sunday)",
+)) + "<p>Edited 5 November 2026</p>")
+
+
+def test_nbo_one_day_for_two_holidays_as_the_rules_have_it():
+    p = nbo.parse(PAGE.encode())
+    assert p.years == (2027,)
+    assert {d.day: d.holiday for d in p.days}[date(2027, 5, 17)] == "Constitution Day and Whit Monday"
+    assert {d.day for d in p.days} == {d for d in NO if d.year == 2027}
+    assert NO[date(2027, 5, 17)] == "Constitution Day and Whit Monday"
+
+
+@pytest.mark.parametrize(("page", "message"), [
+    ("<p>Settlement days</p>", "no line"),
+    (PAGE.replace("(Saturday)</p><p>6 May", "(Friday)</p><p>6 May"), "isn't a Friday"),
+    (PAGE.replace("29 March", "30 Febtober"), "can't read"),
+    (PAGE.split("<p>24 December")[0], "fewer than 10"),
+])
+def test_nbo_refuses_what_it_doesnt_understand(page, message):
+    with pytest.raises(ParseError, match=message):
+        nbo.parse(page.encode())

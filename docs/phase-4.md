@@ -105,7 +105,7 @@ Every contract date counts business days: CME's for trading, and for the FX cont
 
 | Calendar | For | Publisher's list (captured) | Rules and exceptions for older years |
 |---|---|---|---|
-| `CME` | CME's business days for the rates and FX futures (trading days) | CME's holiday notices, read by hand (CME's terms rule out scraping); checked against them, not captured | The NYSE holidays (Good Friday, Juneteenth from 2022), with cited exceptions: the Good Fridays CME opened its rates markets for a payrolls release, and one-off closes |
+| `CME-IR`, `CME-FX` | CME's business days (a trade date and a settlement) for the rates and the FX futures, separately: on one-off days CME has closed one and not the other (2018-12-05: rates closed, FX open) | CME's notices, read by hand (CME's terms rule out capturing its pages) and cited in the rules files, which are extended a year at a time | NYSE's holidays (Good Friday, Juneteenth from 2022), with cited exceptions: the payrolls Good Fridays CME traded and settled (2007, 2010, 2012, 2015, 2021, 2023, 2026), September 11–12, 2001, Sandy (2012-10-29, rates) and the Bush mourning day (2018-12-05, rates). Built in mkt-data #118 |
 | `TARGET` | euro | ECB: TARGET closing days (fixed since 2002: New Year, Good Friday, Easter Monday, 1 May, 25 and 26 December), [ECB press release, 1999-07-15](https://www.ecb.europa.eu/press/pr/date/1999/html/pr990715_1.en.html) and later | Rules, with the 1999–2001 extra closing days cited |
 | `GB` | sterling (London) | [gov.uk bank holidays JSON](https://www.gov.uk/bank-holidays.json), England and Wales, 2019 on | Rules (substitute days) with the one-offs (VE Day moves, jubilees, royal weddings, the 2022 funeral, the 2023 coronation) |
 | `JP` | yen (Tokyo) | [Cabinet Office national holidays CSV](https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv), 1955 to next year (Shift_JIS) | Bank holidays December 31 to January 3 by rule; the CSV covers everything else, back to 1955 |
@@ -117,7 +117,7 @@ Every contract date counts business days: CME's for trading, and for the FX cont
 
 Each calendar's rules must reproduce its publisher's list exactly for every year both cover (as FED's and NYSE's did); a difference is fixed or cited before the calendar is used. History starts in 1990 (1999 for TARGET), the earliest a futures contract here is generated from (open question below). The rules engine (`app/calendars/rules.py`) needs a few additions: substitute days that move to the next free weekday (the UK's Christmas and Boxing Day pair), "the Monday on or before a date" (Victoria Day), and a fixed table of dates (Matariki, Japan's CSV years).
 
-**Build order:** the rules engine additions, then `CME` (all the rates contracts need), then `GB`, `TARGET`, `JP` (the biggest FX contracts), then `CA`, `CH`, `AU`, `NZ`, `MX`. Each calendar is a PR in mkt-data (sources, rules, tests against its publisher) and, where needed, one in calendar-svc (registering the calendar); the Calendars screen and home-mcp's business-day tool pick them up with no change.
+**Build order:** the rules engine additions (#117, done), then `CME-IR` and `CME-FX` (all the rates contracts need), then `GB`, `TARGET`, `JP` (the biggest FX contracts), then `CA`, `CH`, `AU`, `NZ`, `MX`. Each calendar is a PR in mkt-data (sources, rules, tests against its publisher) and, where needed, one in calendar-svc (registering the calendar); the Calendars screen and home-mcp's business-day tool pick them up with no change.
 
 ## Contracts (`secmaster-svc`)
 

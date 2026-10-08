@@ -54,6 +54,15 @@ def test_urls_by_period():
     assert not set(fut.SOURCES) & set(sec.SOURCES)
 
 
+def test_the_ddp_is_asked_again_when_it_answers_empty(monkeypatch):
+    answers = [b"", b"", b"csv"]
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/csv", answers.pop(0)))
+    assert fut.fetch_ddp("u", sleep=lambda s: None)[2] == b"csv"
+    monkeypatch.setattr(service, "fetch", lambda url: (200, "text/csv", b""))
+    with pytest.raises(service.SourceFetchError, match="empty response, 3 tries"):
+        fut.fetch_ddp("u", sleep=lambda s: None)
+
+
 def test_periods_are_checked():
     assert fut.check_period("NYFED-SOFR", "2018-04", NOW) == "2018-04"
     assert fut.check_period("CFTC-TFF", "2026-09-29", NOW) == "2026-09-29"

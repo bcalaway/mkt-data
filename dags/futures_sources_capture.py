@@ -138,7 +138,8 @@ futures_sources_capture()
 
 
 # The first year to sample for each source's history depth: before its known or plausible start.
-SAMPLE_FROM = {"NYFED-SOFR": 2018, "NYFED-EFFR": 1999, "NYFED-SOFR-AVG": 2020, "FRB-H10": 1971, "ECB-EXR": 1999,
+# Never before the source's first_period in app/futures/sources.py (the job refuses a period before it).
+SAMPLE_FROM = {"NYFED-SOFR": 2018, "NYFED-EFFR": 2000, "NYFED-SOFR-AVG": 2020, "FRB-H10": 2006, "ECB-EXR": 1999,
                "CFTC-TFF": 2006, "CFTC-TFF-COMBINED": 2006}
 
 

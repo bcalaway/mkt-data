@@ -1,4 +1,4 @@
-"""Calendars SE, NO and MX (app/calendars/rules/se.json, no.json, mx.json), against their published lists."""
+"""Calendars SE, NO, DK and MX (app/calendars/rules/se.json, no.json, dk.json, mx.json), against published lists."""
 
 from datetime import date
 
@@ -11,14 +11,14 @@ def _days(name: str) -> dict[date, str]:
     return {d.day: d.holiday for d in rules.parse(rules.read(f"repo:{name}.json")).days}
 
 
-SE, NO, MX = _days("se"), _days("no"), _days("mx")
+SE, NO, DK, MX = _days("se"), _days("no"), _days("dk"), _days("mx")
 
 
 def _year(days: dict, y: int) -> list[str]:
     return [f"{d:%m-%d}" for d in sorted(days) if d.year == y]
 
 
-@pytest.mark.parametrize("name", ["se", "no", "mx"])
+@pytest.mark.parametrize("name", ["se", "no", "dk", "mx"])
 def test_years(name):
     assert rules.parse(rules.read(f"repo:{name}.json")).years == tuple(range(1990, 2101))
 
@@ -47,6 +47,18 @@ def test_no_is_norges_banks_and_sebs_lists():
     assert _year(NO, 2026) == ["01-01", "04-02", "04-03", "04-06", "05-01", "05-14", "05-25", "12-24", "12-25"]
     assert date(2026, 12, 31) not in NO  # New Year's Eve is a settlement day
     assert NO[date(2007, 5, 17)] == "Ascension Day and Constitution Day"
+
+
+def test_dk_is_sebs_lists():
+    assert _year(DK, 2024) == ["01-01", "03-28", "03-29", "04-01", "05-09", "05-10", "05-20", "06-05", "12-24", "12-25",
+                               "12-26", "12-31"]
+    assert _year(DK, 2026) == ["01-01", "04-02", "04-03", "04-06", "05-14", "05-15", "05-25", "06-05", "12-24", "12-25",
+                               "12-31"]
+
+
+def test_dk_great_prayer_day_to_2023():
+    assert DK[date(2023, 5, 5)] == "Great Prayer Day" and date(2024, 4, 26) not in DK
+    assert date(2026, 5, 1) not in DK  # May 1 isn't a bank holiday
 
 
 def test_mx_is_the_cnbvs_lists():

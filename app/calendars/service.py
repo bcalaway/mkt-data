@@ -292,6 +292,16 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "NBO closing days, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
+    # Copenhagen, for the krone (docs/phase-4.md, "Calendars"): the banks' closing days, cited rules.
+    "DK": CalendarSpec(
+        name="DK",
+        description="Danish krone settlement holidays (Copenhagen banks)",
+        timezone="Europe/Copenhagen",
+        sources=(
+            SourceSpec("DK-RULES", f"{rules.REPO_PREFIX}dk.json",
+                       "Danish bank holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
     # Mexico City, for the peso futures (docs/phase-4.md, "Calendars"): the CNBV's closing days, cited rules.
     "MX": CalendarSpec(
         name="MX",

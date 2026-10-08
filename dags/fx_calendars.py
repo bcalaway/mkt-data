@@ -1,7 +1,7 @@
 """mkt-data: the FX futures' delivery-country calendars (docs/phase-4.md, "Calendars").
 
 Weekly: for each calendar, mkt-data fetches its publisher's list where there is
-one (gov.uk's bank holidays for GB), reads its rules files (the cited rules
+one (gov.uk's bank holidays for GB, the Cabinet Office's national holidays for JP), reads its rules files (the cited rules
 for older years and the projection to 2100), keeps whatever changed raw, and
 updates the calendar's near-raw rows. A calendar that fails doesn't stop the
 others; the task fails at the end so Airflow retries. The work runs in the
@@ -21,7 +21,7 @@ from home_platform_jobs import AppJobError, call_app_job
 
 # calendar-svc's load is scheduled on this (as for the other calendars).
 CALENDAR_SOURCES = Asset("mkt_data_calendar_sources")
-CALENDARS = ("GB", "TARGET")
+CALENDARS = ("GB", "TARGET", "JP")
 
 
 def capture_all(call=None) -> dict:

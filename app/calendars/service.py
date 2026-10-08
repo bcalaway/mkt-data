@@ -36,7 +36,19 @@ import httpx2
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, govuk, near_raw, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
+from app.calendars import (
+    fed,
+    govuk,
+    jpcao,
+    near_raw,
+    nyfed,
+    nyse,
+    nyse_history,
+    rules,
+    sifma,
+    sifma_history,
+    text,
+)
 from app.calendars.parsed import ParsedCalendar, ParseError
 from app.models import Capture, Source, SourceCheck
 
@@ -200,6 +212,25 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("TARGET-RULES", f"{rules.REPO_PREFIX}target.json",
                        "ECB TARGET closing days, 1999-2100 (fixed since 2002; cited)", rules.parse),
+        ),
+    ),
+    # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
+    # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
+    "JP": CalendarSpec(
+        name="JP",
+        description="Japan bank holidays (Tokyo): national holidays and December 31-January 3",
+        timezone="Asia/Tokyo",
+        sources=(
+            SourceSpec("JP-CAO", jpcao.URL, "Cabinet Office, national holidays CSV (1955 to next year)", jpcao.parse),
+            SourceSpec(
+                "JP-BANK", f"{rules.REPO_PREFIX}jp_bank.json",
+                "Japan bank holidays December 31 and January 2-3, 1990-2100 (Banking Act order; adds dates only)",
+                rules.parse,
+            ),
+            SourceSpec(
+                "JP-PROJECTED", f"{rules.REPO_PREFIX}jp_projected.json",
+                "Japan national holidays projected to 2100 (years the CSV doesn't list)", rules.parse, projected=True,
+            ),
         ),
     ),
     "CME-FX": CalendarSpec(

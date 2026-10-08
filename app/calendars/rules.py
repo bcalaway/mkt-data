@@ -31,8 +31,14 @@ A file looks like this (every field but "calendar" is optional):
   "on_or_after" or "nearest": Canada's Victoria Day is the Monday on or
   before May 24), a day relative to Easter Sunday ("easter": -2 is Good
   Friday), or a table of dates by year ("dates": {"2022": "06-24"}, for a
-  holiday set year by year, such as New Zealand's Matariki), optionally
-  limited to years "from"/"to". "offset" shifts it by that many days (the day after
+  holiday set year by year, such as New Zealand's Matariki), or an equinox
+  ("equinox": "vernal" or "autumnal", Japan's: the day by the standard
+  formula for 1980-2099), optionally limited to years "from"/"to".
+- "between_holidays": {"name": ..., "from": year} closes a weekday that falls
+  between two holidays' own dates (Japan's citizens' holiday, since 1988).
+- "covers_years": false generates the rules over first_year..last_year but
+  claims no year complete, so they add dates beside a publisher's list without
+  standing in for it (Japan's bank holidays beside the Cabinet Office's list). "offset" shifts it by that many days (the day after
   Thanksgiving is the 4th Thursday of November, offset 1).
 - A holiday is a full close unless it says "status": "early_close" with a
   "close_time". Such a rule can be limited to some days of the week
@@ -90,6 +96,7 @@ def parse(content: bytes) -> ParsedCalendar:
     default = {"saturday": "none", "sunday": "monday"} | spec.get("observance", {})
 
     days: dict[date, Day] = {}
+    between = spec.get("between_holidays")
     for y in years:
         nominals = []
         for h in spec.get("holidays", []):
@@ -116,6 +123,12 @@ def parse(content: bytes) -> ParsedCalendar:
                     d += timedelta(days=1)
                 day = Day(d, day.status, day.holiday, day.close_time)
             days[day.day] = day
+        if between and y >= between.get("from", y):
+            own = {d for _, d in nominals}
+            for d in sorted(own):
+                mid = d + timedelta(days=1)
+                if mid.weekday() < 5 and mid not in own and mid + timedelta(days=1) in own and mid not in days:
+                    days[mid] = Day(mid, "closed", between["name"])
 
     seen = set()
     for x in spec.get("exceptions", []):
@@ -136,6 +149,8 @@ def parse(content: bytes) -> ParsedCalendar:
             raise ParseError(f"exception {d}: needs a holiday name")
         close = _time(x, d) if status == "early_close" else None
         days[d] = Day(d, status, x["holiday"], close)
+    if spec.get("covers_years") is False:
+        years = ()
     return ParsedCalendar(years, tuple(sorted(days.values(), key=lambda x: x.day)))
 
 
@@ -149,6 +164,8 @@ def _nominal(h: dict, year: int) -> date | None:
         raise ParseError(f"holiday without a name: {h}")
     if "easter" in h:
         return easter(year) + timedelta(days=h["easter"])
+    if "equinox" in h:
+        return equinox(year, h["equinox"])
     if "dates" in h:
         table = h["dates"]
         if not isinstance(table, dict):
@@ -185,6 +202,16 @@ def _nominal(h: dict, year: int) -> date | None:
         return d - timedelta(days=(d.weekday() - target) % 7)
     d = date(year, month, 1)
     return d + timedelta(days=(target - d.weekday()) % 7 + 7 * (n - 1))
+
+
+def equinox(year: int, which: str) -> date:
+    """Japan's vernal or autumnal equinox day by the standard formula (constants for 1980-2099 and 2100-2150; the
+    Cabinet Office confirms each year's on February 1 of the year before)."""
+    consts = {"vernal": (3, 20.8431, 21.8510), "autumnal": (9, 23.2488, 24.2488)}.get(which)
+    if consts is None or not 1980 <= year <= 2150:
+        raise ParseError(f"equinox: {which!r} for {year} isn't vernal/autumnal in 1980-2150")
+    month, c = consts[0], consts[1] if year < 2100 else consts[2]
+    return date(year, month, int(c + 0.242194 * (year - 1980) - (year - 1980) // 4))
 
 
 def easter(year: int) -> date:

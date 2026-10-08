@@ -45,6 +45,7 @@ CALENDAR_SCHEDULES = {
     "CME-FX": Schedule("mkt_data__cme_calendars", "Mondays 11:35 UTC", "35 11 * * 1", WEEKLY_LATE_HOURS),
     "GB": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "TARGET": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "JP": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
 }
 SOURCE_SCHEDULES = {
     "UST-PAR": Schedule("mkt_data__ust_par", "Weekdays 6:30 p.m. New York", "30 18 * * 1-5", WEEKDAYS_LATE_HOURS),

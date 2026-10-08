@@ -1,10 +1,10 @@
 # Phase 4: interest-rate futures
 
-**Status (2026-10-07): draft, waiting on Bill's decisions (below).** Phase 3 (Treasury securities by CUSIP) is complete except step 3's BLS history and step 7's last alert: see [phase-3.md](phase-3.md). Analytics are deferred to a much later build-out ([analytics-later.md](analytics-later.md)); this phase is data only.
+**Status (2026-10-07): planned; Bill's decisions are under "Decisions", with the extra products still to name.** Phase 3 (Treasury securities by CUSIP) is complete except step 3's BLS history and step 7's last alert: see [phase-3.md](phase-3.md). Analytics are deferred to a much later build-out ([analytics-later.md](analytics-later.md)); this phase is data only.
 
 **Goal:** CME's short-term interest-rate (STIR) and Treasury futures as real instruments in secmaster-svc: products, every listed contract with its dates, and for the Treasury futures each contract's **deliverable basket with conversion factors** (Bill, 2026-10-07). Then their daily settlements, volume and open interest in quote-svc, with the rates the STIR contracts settle on and the CFTC's weekly positioning, through the same layers as phases 2 and 3.
 
-**Scope (Bill, 2026-10-07):** interest-rate futures, no analytics. Not in this phase: cheapest-to-deliver, implied repo, gross and net basis, futures-implied rates or a SOFR curve from futures prices, options on futures, intraday data.
+**Scope (Bill, 2026-10-07):** interest-rate futures, no analytics, and no settlement prices this phase (Bill, 2026-10-07): contracts, dates, baskets, conversion factors, fixings and positioning. Not in this phase: cheapest-to-deliver, implied repo, gross and net basis, futures-implied rates or a SOFR curve from futures prices, options on futures, intraday data.
 
 ## What changes from phase 3
 
@@ -35,8 +35,8 @@ Per product: contract size, price quotation and tick (with the reduced ticks som
 
 - **Instruments:** types `fut_stir` and `fut_treasury` for each contract (one per product and contract month), generated from the seed's listing cycle as far back as each product's history and forward to everything currently listed.
 - **Dates per contract**, derived from the rulebook with the rule recorded (the "derived" provenance from phase 3): first and last trading day; for the STIR contracts, the reference period the settlement rate is averaged or compounded over and the final settlement date; for the Treasury futures, first intention (position) day, first notice day, first and last delivery day. These need CME's business days, so this phase adds a **`CME` calendar** in calendar-svc built from rules with cited exceptions (like NYSE's), with CME's holiday notices read by hand as the check (not scraped, under CME's website terms).
-- **Short names** (to decide): `ZN-2026-12`, `SR3-2027-03`, `ZQ-2026-11`: product, then contract month, readable and sortable. CME's own code (`ZNZ6`; the year digit repeats every decade, so `ZNZ26` too) is an identifier (scheme `CME`), with the feed's instrument id if we license one.
-- **Rolling aliases** like phase 3's on-the-run: `ZN-C1`, `ZN-C2` (front and second contract), with validity, so "the front 10-year future" on a past date resolves to that day's contract. When a Treasury contract stops being the front is a decision (below); a STIR contract is the front until its last trading day.
+- **Short names** (Bill, 2026-10-07): CME-style codes with a two-digit year, `ZNZ26`, `SR3H27`, `ZQX26`, so they don't repeat every decade. CME's own one-digit code (`ZNZ6`) is an identifier (scheme `CME`), valid only while that contract is listed.
+- **Rolling aliases** like phase 3's on-the-run: `ZN-C1`, `ZN-C2` (front and second contract), with validity, so "the front 10-year future" on a past date resolves to that day's contract. A Treasury contract stops being the front on its first intention day, when positions roll (Bill, 2026-10-07); a STIR contract is the front until its last trading day.
 - **Status:** listed, trading, in delivery (Treasury futures, between first intention day and last delivery day), expired.
 
 ## Deliverable baskets and conversion factors (`secmaster-svc`)
@@ -67,9 +67,9 @@ The CFTC's Traders in Financial Futures report (TFF; futures only, and futures a
 - Source `CFTC-TFF`, captured weekly, one capture per report date; near-raw observations keyed by contract market code and field.
 - The CFTC reports by product, not contract, so each product (ZN, SR3, …) also gets a `fut_product` instrument, with its CFTC code as an identifier, and the positions are quotes on it.
 
-## Settlements, volume and open interest
+## Settlements, volume and open interest (not this phase)
 
-The one part that needs money. Options, cheapest first:
+Not this phase (Bill, 2026-10-07). The options, kept for when we come back to it, cheapest first:
 
 1. **Databento, usage-based** (GLBX.MDP3, CME Globex MDP 3.0): its `statistics` schema carries CME's settlement price, cleared volume and open interest per contract per day, and `definition` carries every contract's specs and dates. History back to 2010. Pay per GB with no subscription, $125 of free credits for a new account (they expire after six months), and a cost estimate endpoint (`metadata.get_cost`) we call before every pull, refusing anything over a limit. These schemas are small (a few records per contract per day), so the backfill for ten products may fit in the free credits; step 1 prices it before buying anything. Their Standard plan ($199 a month) includes 16+ years of statistics and definitions with license fees included. **To confirm before buying:** what CME's license (through Databento) allows for internal, non-display use of historical settlements on a personal platform with one viewer.
 2. **CME DataMine** end-of-day files, licensed directly from CME (from about $105 a month): the official source, with a direct license from CME for internal use; daily files, history by purchase.
@@ -90,30 +90,30 @@ The patterns from phases 2 and 3: stale-capture and parse alerts for the new sou
 
 ## Steps
 
-1. **Raw capture first** (mkt-data): `NYFED-SOFR`, `NYFED-EFFR`, `NYFED-SOFR-AVG` and `CFTC-TFF` captured daily (weekly for CFTC) and kept raw; read the first captures on the hub, record each source's terms and history depth, export fixtures. If Bill picks a price source: price its backfill first (Databento's cost endpoint, or DataMine's quote), then capture a week raw.
+1. **Raw capture first** (mkt-data): `NYFED-SOFR`, `NYFED-EFFR`, `NYFED-SOFR-AVG` and `CFTC-TFF` captured daily (weekly for CFTC) and kept raw; read the first captures on the hub, record each source's terms and history depth, export fixtures. No price source this phase.
 2. **Products, the `CME` calendar and contracts** (calendar-svc, secmaster-svc): the seed file with every spec cited, the calendar from rules, contracts generated with their dates, short names, CME codes, rolling aliases; checked against CME's rulebook and listings on a handful of known contracts.
 3. **Baskets and conversion factors** (secmaster-svc): eligibility rules, `futures_deliverable` with history, conversion factors; checked against CME's lookup tables (Bill's one-off download as fixtures) for every currently listed Treasury contract.
 4. **Fixings** (mkt-data near-raw, secmaster-svc seed, quote-svc): SOFR, EFFR, the SOFR averages and index, backfilled to each source's start.
 5. **Positioning** (mkt-data, secmaster-svc product instruments, quote-svc): TFF backfilled from 2006.
-6. **Settlements, volume and open interest** (if decided): near-raw, quote-svc, backfill within the agreed budget.
-7. **Schedule and monitoring:** DAGs, Assets, metrics, alerts.
-8. **Screens and voice:** Futures screen, basket view, fixings and positioning charts, home-mcp tools.
+6. **Schedule and monitoring:** DAGs, Assets, metrics, alerts.
+7. **Screens and voice:** Futures screen, basket view, fixings and positioning charts, home-mcp tools.
 
-## Decisions (for Bill)
+## Decisions (Bill, 2026-10-07)
 
-1. **Prices:** Databento usage-based (start on the free credits, cost-checked before every pull), CME DataMine, or no prices this phase.
-2. **Short names:** `ZN-2026-12` (product and contract month), with CME's `ZNZ6` as an identifier.
-3. **Front-contract roll for Treasury futures:** the alias moves at first intention day (when positions roll, since longs avoid delivery), or at last trading day. STIR contracts roll at last trading day either way.
-4. **Products:** the ten above, or more (Eris swap futures, the 20-year bond, Treasury bill futures, euro or sterling STIR).
+- **Scope:** interest-rate futures data, no analytics; the bond futures' deliverable baskets included.
+- **Prices:** none this phase; settlements, volume and open interest later, from a licensed source.
+- **Short names:** `ZNZ26` (CME-style, two-digit year), with CME's `ZNZ6` as an identifier.
+- **Front-contract roll:** Treasury futures at first intention day; STIR at last trading day.
+- **Products:** the ten above and more; which ones is still open.
 
 ## Open questions
 
-- Databento's license for historical CME statistics on a personal platform (step 1, before any purchase).
-- Whether a contract's history before Databento's 2010 start matters (DataMine goes further back).
+- Which products beyond the ten (Bill, 2026-10-07: "add more").
 - The `CME` calendar's early closes and Good Friday sessions (CME has traded rates futures on some Good Fridays when payrolls were released).
 
 ## Later (not this phase)
 
+- Settlements, volume and open interest, from a licensed source (above); then Databento's license for historical CME statistics on a personal platform, and whether history before its 2010 start matters.
 - CTD, implied repo, basis, futures-implied rates and a SOFR curve from futures: the analytics build-out ([analytics-later.md](analytics-later.md)).
 - Options on futures, intraday data, other exchanges' rate futures.
 

@@ -24,14 +24,14 @@ A product seed file in secmaster-svc (like the CMT seed: the source of truth, ch
 | Three-month SOFR | SFR | SR3 | Compounded SOFR over the reference quarter (IMM date to IMM date) | Quarterly, plus serial months near the front |
 | 30-day Fed funds | FF | ZQ | Average EFFR over the contract month | Monthly |
 | 2-year T-note | TU | ZT | Physical delivery from its basket | March, June, September, December |
-| 3-year T-note | 3Y? | Z3N | Physical delivery | Quarterly |
+| 3-year T-note | 3Y | Z3N | Physical delivery | Quarterly |
 | 5-year T-note | FV | ZF | Physical delivery | Quarterly |
 | 10-year T-note | TY | ZN | Physical delivery | Quarterly |
 | Ultra 10-year T-note | UXY | TN | Physical delivery | Quarterly |
 | T-bond | US | ZB | Physical delivery | Quarterly |
 | Ultra T-bond | WN | UB | Physical delivery | Quarterly |
-| 20-year T-bond | ? | TWE | Physical delivery | Quarterly |
-| 13-week T-bill | ? | TBF3 | The 13-week bill auction rate | Monthly |
+| 20-year T-bond | TWEA? | TWE | Physical delivery | Quarterly |
+| 13-week T-bill | TZR | TBF3 | The 13-week bill auction rate | Monthly |
 
 **FX** (physically delivered currency; quarterly on the IMM cycle, plus serial months near the front for some)
 
@@ -49,7 +49,55 @@ A product seed file in secmaster-svc (like the CMT seed: the source of truth, ch
 Plus CME's smaller rates and FX contracts (cross rates, emerging-market currencies, E-micros) where they have a reasonable history; step 2 lists them.
 
 
-Roots marked ? (and every root, before anything is named) are confirmed through OpenFIGI in step 2. Per product: contract size, price quotation and tick (with the reduced ticks some contracts have), listing cycle (how many months are listed), trading hours, and the date rules below. Specs are effective-dated, because CME changes them: the notional coupon behind the conversion factors went from 8% to 6% with the March 2000 contracts, CME changed the 10-year's basket in 2022, and the Ultra 10-year and Ultra bond were launched later than the rest. The exact listing counts, dates and baskets are confirmed against CME's rulebook chapters in step 2, not taken from memory.
+3Y, TZR and TWEA are from the vendor-code tables on CME's product pages (2026-10-08); TWEA looks odd for a root and SER (one-month SOFR) has no source yet. Roots marked ? (and every root, before anything is named) are confirmed through OpenFIGI in step 2. Per product: contract size, price quotation and tick (with the reduced ticks some contracts have), listing cycle (how many months are listed), trading hours, and the date rules below. Specs are effective-dated, because CME changes them: the notional coupon behind the conversion factors went from 8% to 6% with the March 2000 contracts, CME changed the 10-year's basket in 2022, and the Ultra 10-year and Ultra bond were launched later than the rest. The exact listing counts, dates and baskets are confirmed against CME's rulebook chapters in step 2, not taken from memory.
+
+### Contract rules from CME's rulebook (read 2026-10-08)
+
+The rulebook chapters leave the listing schedule to the Exchange ("the number of contract expiration months open for trading ... shall be determined by the Exchange"); everything else the contracts need is in them. Dates count CME business days.
+
+| Product | Chapter | Unit | Tick (outright) | Last trading day | Delivery or final settlement |
+|---|---|---|---|---|---|
+| ZT 2-year | CBOT 21 | $200,000 face | 1/8 of 1/32 ($7.8125) | Last business day of the contract month | Delivery through the 3rd business day after the last business day of the month |
+| Z3N 3-year | CBOT 39 | $200,000 | 1/8 of 1/32 ($7.8125) | Last business day of the month | Through the 3rd business day after the month's last business day |
+| ZF 5-year | CBOT 20 | $100,000 | 1/4 of 1/32 ($7.8125) | Last business day of the month | Through the 3rd business day after the month's last business day |
+| ZN 10-year ("6½ to 8-Year") | CBOT 19 | $100,000 | 1/2 of 1/32 ($15.625) | No trading in the last 7 business days of the month (so the 8th business day before month end is the last; close at 12:00 noon) | Any business day of the month through its last business day |
+| TN Ultra 10-year | CBOT 26 | $100,000 | 1/2 of 1/32 | As ZN | As ZN |
+| TWE 20-year | CBOT 25 | $100,000 | 1/32 ($31.25) | As ZN | As ZN |
+| ZB T-bond | CBOT 18 | $100,000 | 1/32 ($31.25) | As ZN | As ZN |
+| UB Ultra bond | CBOT 40 | $100,000 | 1/32 ($31.25) | As ZN | As ZN |
+| ZQ 30-day Fed funds | CBOT 22 | $41.67 a basis point | 0.005 ($20.835); 0.0025 in some months | Last business day of the month | 100 minus the month's average daily EFFR (every calendar day; a day without a rate takes the previous published one), rounded to 0.1 bp |
+| SR1 one-month SOFR | CME 461 | $41.67 a bp | 0.005; 0.0025 in some months | Last business day of the month | 100 minus the month's average daily SOFR (every day; prior published value on days without one), rounded to 0.001 |
+| SR3 three-month SOFR | CME 460 | $25 a bp ($2,500 × index) | 0.005 ($12.50); 0.0025 within four months of expiry | Business day before the 3rd Wednesday of the contract month | 100 minus compounded SOFR over the reference quarter (3rd Wednesday of the 3rd month before, to the 3rd Wednesday of the contract month, excluded), SIFMA business days, rounded to 0.0001 |
+| TBF3 13-week bill | CME 457 | $25 a bp | 0.005; 0.0025 in the last month | 2:00 p.m. on the Monday of the expiry week (the next business day if Treasury holds no auction that Monday) | 100 minus that auction's 13-week high discount rate, rounded to 0.001 |
+| 6E euro | CME 261 | €125,000 | $0.00005 ($6.25) | 2nd business day before the 3rd Wednesday | Physical delivery on the 3rd Wednesday |
+| 6J yen | CME 253 | ¥12,500,000 | $0.0000005 ($6.25) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+| 6B pound | CME 251 | £62,500 | $0.0001 ($6.25) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+| 6A Australian dollar | CME 255 | A$100,000 | $0.00005 ($5.00) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+| 6C Canadian dollar | CME 252 | C$100,000 | $0.00005 ($5.00) | **1st** business day before the 3rd Wednesday | 3rd Wednesday |
+| 6S Swiss franc | CME 254 | CHF 125,000 | $0.00005 ($6.25) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+| 6M Mexican peso | CME 256 | MXN 500,000 | $0.00001 ($5.00) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+| 6N New Zealand dollar | CME 258 | NZ$100,000 | $0.00005 ($5.00) | 2nd business day before the 3rd Wednesday | 3rd Wednesday |
+
+FX business days: the last trading day moves earlier if it's a Chicago or New York bank holiday, and delivery moves later if the 3rd Wednesday isn't a business day in the delivery country or is a Chicago or New York bank holiday. So the FX contracts need each currency's bank holidays as well as the `CME` calendar (an open question below).
+
+**Deliverable grades** (all: fixed-principal, fixed semi-annual coupon notes or bonds; remaining term measured from the first day of the contract month; a new issue joins on its issue date; the Exchange may exclude a new issue):
+
+| Product | Original term | Remaining term | Conversion factor rounding |
+|---|---|---|---|
+| ZT | ≤ 5 years 3 months | ≥ 1 year 9 months and ≤ 2 years | Down to whole months |
+| Z3N | ≤ 7 years | ≥ 2 years 9 months and ≤ 3 years | Down to whole months |
+| ZF | ≤ 5 years 3 months | ≥ 4 years 2 months | Down to whole months |
+| ZN | ≤ 10 years | ≥ 6 years 6 months and < 8 years (the chapter's current text; the earlier basket, before CME's 2022 change, comes from the change's notice in step 2) | Down to quarters |
+| TN | ≤ 10 years | ≥ 9 years 5 months | Down to quarters |
+| TWE | (none stated) | ≥ 19 years 2 months and < 19 years 11 months | Down to quarters |
+| ZB | (none) | ≥ 15 years and < 25 years (a callable bond: not callable for at least 15 years and maturing in under 25) | Down to quarters, to first call if callable |
+| UB | (none) | ≥ 25 years | Down to quarters |
+
+Conversion factor: the price per one point of par at which a bond with the same coupon and the rounded time to maturity yields 6% (each chapter, B rule), from CME's published method.
+
+Sources: CBOT rulebook chapters [18](https://www.cmegroup.com/rulebook/CBOT/II/18.pdf), [19](https://www.cmegroup.com/rulebook/CBOT/II/19.pdf), [20](https://www.cmegroup.com/rulebook/CBOT/II/20.pdf), [21](https://www.cmegroup.com/rulebook/CBOT/II/21.pdf), [22](https://www.cmegroup.com/rulebook/CBOT/III/22.pdf), [25](https://www.cmegroup.com/rulebook/CBOT/III/25.pdf), [26](https://www.cmegroup.com/rulebook/CBOT/III/26.pdf), [39](https://www.cmegroup.com/rulebook/CBOT/III/39.pdf), [40](https://www.cmegroup.com/rulebook/CBOT/III/40.pdf); CME rulebook chapters [251](https://www.cmegroup.com/rulebook/CME/III/250/251/251.pdf), [252](https://www.cmegroup.com/rulebook/CME/III/250/252/252.pdf), [253](https://www.cmegroup.com/rulebook/CME/III/250/253/253.pdf), [254](https://www.cmegroup.com/rulebook/CME/III/250/254/254.pdf), [255](https://www.cmegroup.com/rulebook/CME/III/250/255/255.pdf), [256](https://www.cmegroup.com/rulebook/CME/III/250/256/256.pdf), [258](https://www.cmegroup.com/rulebook/CME/III/250/258/258.pdf), [261](https://www.cmegroup.com/rulebook/CME/III/250/261/261.pdf), [457](https://cmegroup.com/rulebook/CME/V/450/457.pdf), [460](https://www.cmegroup.com/rulebook/CME/V/450/460/460.pdf), [461](https://www.cmegroup.com/content/dam/cmegroup/rulebook/CME/IV/400/461.pdf).
+
+**Still to find for step 2:** each product's listing schedule (CME's spec pages say SR3 lists 39 consecutive quarterlies; the others' counts and serial months, and TBF3's expiry weeks, aren't in the chapters), the dates each rule took effect (the ZN basket change, the 6% coupon, each product's launch), and the Bloomberg roots through OpenFIGI.
 
 ## Contracts (`secmaster-svc`)
 
@@ -141,6 +189,7 @@ The patterns from phases 2 and 3: stale-capture and parse alerts for the new sou
 ## Open questions
 
 - CME's smaller rates and FX contracts: which have enough history to be worth listing (step 2).
+- The FX contracts' calendars: CME's rules move the last trading day for Chicago and New York bank holidays and the delivery day for the delivery country's; calendars for TARGET (euro), the UK, Japan, Australia, Canada, Switzerland, Mexico and New Zealand, or a narrower rule for the history we generate.
 - The `CME` calendar's early closes and Good Friday sessions (CME has traded rates futures on some Good Fridays when payrolls were released).
 
 ## Later (not this phase)

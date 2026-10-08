@@ -1,0 +1,104 @@
+{
+  "calendar": "JP",
+  "about": "Japan's national holidays projected to 2100 under the Act on National Holidays as it stands since 2020 (sixteen holidays; a Sunday holiday moves to the next day that isn't a holiday; a weekday between two holidays is a citizens' holiday), with the equinoxes by the standard formula. Fills only years the Cabinet Office's CSV doesn't list yet; the CSV wins wherever it covers a year.",
+  "first_year": 2020,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "monday",
+    "collision": "next"
+  },
+  "between_holidays": {
+    "name": "Citizens' Holiday",
+    "from": 1988
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Coming of Age Day",
+      "month": 1,
+      "weekday": "monday",
+      "n": 2
+    },
+    {
+      "name": "National Foundation Day",
+      "month": 2,
+      "day": 11
+    },
+    {
+      "name": "Emperor's Birthday",
+      "month": 2,
+      "day": 23
+    },
+    {
+      "name": "Vernal Equinox Day",
+      "equinox": "vernal"
+    },
+    {
+      "name": "Showa Day",
+      "month": 4,
+      "day": 29
+    },
+    {
+      "name": "Constitution Memorial Day",
+      "month": 5,
+      "day": 3
+    },
+    {
+      "name": "Greenery Day",
+      "month": 5,
+      "day": 4
+    },
+    {
+      "name": "Children's Day",
+      "month": 5,
+      "day": 5
+    },
+    {
+      "name": "Marine Day",
+      "month": 7,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Mountain Day",
+      "month": 8,
+      "day": 11
+    },
+    {
+      "name": "Respect for the Aged Day",
+      "month": 9,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Autumnal Equinox Day",
+      "equinox": "autumnal"
+    },
+    {
+      "name": "Sports Day",
+      "month": 10,
+      "weekday": "monday",
+      "n": 2
+    },
+    {
+      "name": "Culture Day",
+      "month": 11,
+      "day": 3
+    },
+    {
+      "name": "Labour Thanksgiving Day",
+      "month": 11,
+      "day": 23
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://elaws.e-gov.go.jp/document?lawid=323AC1000000178",
+    "https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html"
+  ]
+}

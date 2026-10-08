@@ -1,0 +1,32 @@
+{
+  "calendar": "JP",
+  "about": "Japan's bank holidays beyond the national holidays: December 31, January 2 and January 3 (the Banking Act's enforcement order, Article 5), on which Japanese banks and the BOJ-NET close. Generated for 1990-2100 but claims no year (covers_years false), so it adds these dates beside the Cabinet Office's list and the projection.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "covers_years": false,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none"
+  },
+  "holidays": [
+    {
+      "name": "Bank holiday (December 31)",
+      "month": 12,
+      "day": 31
+    },
+    {
+      "name": "Bank holiday (January 2)",
+      "month": 1,
+      "day": 2
+    },
+    {
+      "name": "Bank holiday (January 3)",
+      "month": 1,
+      "day": 3
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://elaws.e-gov.go.jp/document?lawid=357CO0000000040"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "calendar": "CA",
+  "about": "Canada's payments calendar (Payments Canada's Lynx and ACSS, and the banks): the national holidays the clearing systems close for, 1990-2100. A holiday on a Saturday or Sunday moves to the Monday (Canada Day 2023 to July 3, Truth and Reconciliation 2023 to October 2, Remembrance Day 2023 to November 13, New Year's Day 2023 to January 2); Christmas and Boxing Day on a weekend take the next free weekdays (2021: December 27 and 28). Regional holidays (Family Day, the Civic Holiday, Saint-Jean-Baptiste) and Easter Monday close nothing: payments are processed. The National Day for Truth and Reconciliation closes from 2021. One-off federal days that weren't payments holidays, such as the national day of mourning for Queen Elizabeth II (2022-09-19), stay open. The rules are checked against RBC's 2025, PNC's 2026 and BMO's 2023 published lists; years before 2021 are the rules unchecked against a published list. Payments Canada's own system closure schedule is the source to check further years against.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "monday",
+    "sunday": "monday",
+    "collision": "next"
+  },
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1},
+    {"name": "Good Friday", "easter": -2},
+    {"name": "Victoria Day", "month": 5, "day": 24, "weekday": "monday", "match": "on_or_before"},
+    {"name": "Canada Day", "month": 7, "day": 1},
+    {"name": "Labour Day", "month": 9, "weekday": "monday", "n": 1},
+    {"name": "National Day for Truth and Reconciliation", "month": 9, "day": 30, "from": 2021},
+    {"name": "Thanksgiving", "month": 10, "weekday": "monday", "n": 2},
+    {"name": "Remembrance Day", "month": 11, "day": 11},
+    {"name": "Christmas Day", "month": 12, "day": 25},
+    {"name": "Boxing Day", "month": 12, "day": 26}
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.bankofcanada.ca/?p=255070",
+    "https://www.pnc.com/content/dam/pnc-com/pdf/corporateandinstitutional/International/Canada/2026-pnc-canada-holiday-processing-calendar.pdf",
+    "https://www21.bmo.com/olbbwem/olbb-static-file/non-secure/Documents/Help%20Centre%20uploads/Holiday%20Schedule%20-%20Cross-Border%20(2023).PDF",
+    "https://www.cibcmellon.com/en/_locale-assets/pdf/straight-talk/2021/st20210706-2021-00085c-en.pdf",
+    "https://payments.ca/payments-canada-systems-and-operations-business-usual-september-19-2022"
+  ]
+}

@@ -242,6 +242,18 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "SIC banking holidays, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
+    # Sydney, for the Australian dollar futures (docs/phase-4.md, "Calendars"): NSW's public holidays and Bank Holiday.
+    # No capturable list covers them all (NSW's own is a web page, a year or two ahead), so the cited rules are the
+    # calendar, checked against ANZ's and NSW's published lists.
+    "AU": CalendarSpec(
+        name="AU",
+        description="Australian dollar settlement holidays (Sydney)",
+        timezone="Australia/Sydney",
+        sources=(
+            SourceSpec("AU-RULES", f"{rules.REPO_PREFIX}au.json",
+                       "Sydney (NSW) public and bank holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
     # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
     "JP": CalendarSpec(

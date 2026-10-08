@@ -1,0 +1,42 @@
+{
+  "calendar": "AU",
+  "about": "The Australian dollar's FX settlement calendar (Sydney): NSW public holidays and the NSW Bank Holiday, 1990-2100. ANZ: national holidays close the banks, and the NSW holidays (King's Birthday, the August Bank Holiday, Labour Day) are also non-business days for AUD FX. New Year's Day, Australia Day, Christmas and Boxing Day on a weekend move to the following Monday (Christmas and Boxing Day to the Monday and Tuesday); Good Friday and Easter Monday; Anzac Day stays on April 25 even on a weekend. The Bank Holiday (first Monday in August) isn't a declared public holiday but closes the banks (Retail Trading Act 2008, Part 3A). Anzac Day on Easter Monday is one day, and in 2011 the Tuesday was a substitute public holiday for Easter Monday (an exception here: whether that recurs in 2095 is left open). One-offs: the National Day of Mourning for Queen Elizabeth II (2022-09-22: Sydney and Melbourne banks closed, per ISDA) and the extra Anzac Day Mondays of 2026 and 2027 (Public Holidays Amendment (Anzac Day) Order 2026, those two years only; RITS Advice 02/2026: no CLS settlement). Before 1994 Australia Day was a long-weekend Monday, taken here as the Monday on or after January 26 (WA's 1992 statement: 1993's was February 1); unchecked for NSW. Checked against ANZ's 2024, 2025 and 2026 lists and NSW's 2026-2027 list; other years are the rules unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "next"
+  },
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1, "observance": {"saturday": "monday", "sunday": "monday"}},
+    {"name": "Australia Day", "month": 1, "day": 26, "weekday": "monday", "match": "on_or_after", "to": 1993},
+    {"name": "Australia Day", "month": 1, "day": 26, "from": 1994, "observance": {"saturday": "monday", "sunday": "monday"}},
+    {"name": "Good Friday", "easter": -2},
+    {"name": "Easter Monday", "easter": 1},
+    {"name": "Anzac Day", "month": 4, "day": 25, "observance": {"collision": "share"}},
+    {"name": "Queen's Birthday", "month": 6, "weekday": "monday", "n": 2, "to": 2022},
+    {"name": "King's Birthday", "month": 6, "weekday": "monday", "n": 2, "from": 2023},
+    {"name": "Bank Holiday", "month": 8, "weekday": "monday", "n": 1},
+    {"name": "Labour Day", "month": 10, "weekday": "monday", "n": 1},
+    {"name": "Christmas Day", "month": 12, "day": 25, "observance": {"saturday": "monday", "sunday": "monday"}},
+    {"name": "Boxing Day", "month": 12, "day": 26, "observance": {"saturday": "monday", "sunday": "monday"}}
+  ],
+  "exceptions": [
+    {"date": "2022-09-22", "status": "closed", "holiday": "National Day of Mourning (Queen Elizabeth II)", "citation": "https://www.isda.org/a/Yt3gE/ISDA-Australia-National-Day-of-Mourning-2022-FX.pdf"},
+    {"date": "2011-04-26", "status": "closed", "holiday": "Easter Monday (substitute: Easter Monday was Anzac Day)", "citation": "https://www.smartcompany.com.au/uncategorized/2011-public-holidays/"},
+    {"date": "2026-04-27", "status": "closed", "holiday": "Anzac Day (additional day)", "citation": "https://www.afxc.rba.gov.au/meetings/afxc/2026/afxc-minutes-2026-02-27.html"},
+    {"date": "2027-04-26", "status": "closed", "holiday": "Anzac Day (additional day)", "citation": "https://www.nsw.gov.au/living-in-nsw/public-holidays"}
+  ],
+  "citations": [
+    "https://www.anz.com/content/dam/anzcom/pdf/institutional/australian-public-holidays-2026.pdf",
+    "https://anz.com/content/dam/anzcom/pdf/institutional/australian-public-holidays-2025.pdf",
+    "https://www.ANZ.com/content/dam/anzcom/pdf/institutional/australian-public-holidays-2024.pdf",
+    "https://www.nsw.gov.au/living-in-nsw/public-holidays",
+    "https://www.afxc.rba.gov.au/meetings/afxc/2026/afxc-minutes-2026-02-27.html",
+    "https://www.isda.org/a/Yt3gE/ISDA-Australia-National-Day-of-Mourning-2022-FX.pdf",
+    "https://thenightly.com.au/australia/nsw/its-official-millions-in-nsw-to-get-additional-public-holiday-as-chris-minns-announces-amendement-c-21699166",
+    "https://www.smartcompany.com.au/uncategorized/2011-public-holidays/",
+    "https://www.wa.gov.au/government/media-statements/Lawrence%20Labor%20Government/Australia-Day-holiday-to-be-January-26-from-1994-19920526"
+  ]
+}

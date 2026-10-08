@@ -1,0 +1,28 @@
+{
+  "calendar": "CH",
+  "about": "Swiss franc payments calendar: SIC's banking holidays (Swiss Interbank Clearing, run by SIX from Zurich), 1990-2100. The list is 'determined by the competent banking committees in consultation with SIX': New Year's Day, Berchtold's Day (January 2), Good Friday, Easter Monday, Labour Day (May 1), Ascension Day, Whit Monday, Swiss National Day (August 1), Christmas Day and St. Stephen's Day. A holiday on a weekend isn't moved, and two on one day are one day (Ascension on May 1, 2008). Christmas Eve and New Year's Eve are clearing days. SIX's published list (SIX-SIC) covers next year and is checked against these rules; Swiss National Day closes from 1994, the first year it was a federal public holiday. Years before 2026 are the rules unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1},
+    {"name": "Berchtold's Day", "month": 1, "day": 2},
+    {"name": "Good Friday", "easter": -2},
+    {"name": "Easter Monday", "easter": 1},
+    {"name": "Labour Day", "month": 5, "day": 1},
+    {"name": "Ascension Day", "easter": 39},
+    {"name": "Whit Monday", "easter": 50},
+    {"name": "Swiss National Day", "month": 8, "day": 1, "from": 1994},
+    {"name": "Christmas Day", "month": 12, "day": 25},
+    {"name": "St. Stephen's Day", "month": 12, "day": 26}
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.six-group.com/dam/download/banking-services/interbank-clearing/en/payment_services/sic/banking-holidays.pdf",
+    "https://feiertagskalender.ch/banktage.php"
+  ]
+}

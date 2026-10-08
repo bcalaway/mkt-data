@@ -205,8 +205,8 @@ def _shift(kind: Kind, period: str, n: int) -> str:
     return f"{k // 12:04d}-{k % 12 + 1:02d}"
 
 
-def check_period(name: str, period: str, now: datetime | None = None) -> str:
-    src = SOURCES[name]
+def check_period(name: str, period: str, now: datetime | None = None, sources: dict | None = None) -> str:
+    src = (sources or SOURCES)[name]
     try:
         if src.kind == "day":
             norm = date.fromisoformat(period).isoformat()
@@ -258,16 +258,18 @@ def _apply(src: SecuritiesSource):
     return records.apply_period if src.shape == "records" else near_raw.apply_period
 
 
-def run_capture(s: Session, name: str, period: str, fetcher=None) -> dict:
+def run_capture(s: Session, name: str, period: str, fetcher=None, sources: dict | None = None) -> dict:
     """Fetch one period of one source, keep it raw if new, and apply its parse to near-raw. Commits.
 
     As for the CMT sources: the raw capture is committed before parsing, so a
     parse error never loses what was fetched; the error is recorded on the
     check and raised (422). An unchanged fetch re-applies the same capture,
-    which changes nothing.
+    which changes nothing. A source with no parser yet (`parse` None) is kept raw and stops there.
+
+    `sources` is the registry the source is in: these, or phase 4's (app/futures/sources.py).
     """
-    src = SOURCES[name]
-    period = check_period(name, period)
+    src = (sources or SOURCES)[name]
+    period = check_period(name, period, sources=sources)
     if fetcher is None and src.form:
         fetcher = post_fedinvest(period)
     elif fetcher is None and src.fetch:
@@ -276,6 +278,8 @@ def run_capture(s: Session, name: str, period: str, fetcher=None) -> dict:
     s.commit()
     out = {"source": name, "period": period, "capture_id": cap.id, "new_capture": is_new,
            "size_bytes": cap.size_bytes, "content_type": cap.content_type}
+    if src.spec.parse is None:
+        return out | {"parsed": False}
     try:
         result = _apply(src)(s, cap, src.spec.parse(cap.body))
     except ParseError as e:  # raised before any row changes (apply_period checks first)

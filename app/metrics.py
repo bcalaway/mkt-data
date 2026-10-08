@@ -21,6 +21,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db, source_status
 from app.calendars import service
+from app.futures import sources as futures
 from app.models import Capture, Observation, RecordComparison, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
@@ -85,6 +86,9 @@ def _collect(s, out: _Out) -> None:
     # The Treasury securities sources (phase 3), likewise.
     cal_of |= {name: src.calendar for name, src in securities.SOURCES.items()}
     kind_of |= {name: "published" for name in securities.SOURCES}
+    # Phase 4's fixings and positioning sources, likewise.
+    cal_of |= {name: src.calendar for name, src in futures.SOURCES.items()}
+    kind_of |= {name: "published" for name in futures.SOURCES}
 
     # Per source: last successful fetch, latest parse outcome, captures and bytes.
     last_ok = dict(s.execute(

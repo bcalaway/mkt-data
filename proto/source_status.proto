@@ -28,7 +28,7 @@ message ListSourceStatusRequest {}
 
 message SourceState {
   string name = 1;           // FED-K8, UST-PAR, TD-PRICES
-  string group = 2;          // calendars | rates | securities
+  string group = 2;          // calendars | rates | securities | futures
   string calendar = 3;       // the calendar it's captured for (calendars) or published on (the others)
   string kind = 4;           // published | rules | projected
   string period_kind = 5;    // day | month | year for sources fetched a period at a time; empty: one page

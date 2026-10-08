@@ -7,6 +7,7 @@ import pytest
 
 from app.calendars import govuk, rules
 from app.calendars.parsed import ParseError
+from tests.conftest import FIXTURES
 
 EVENTS_2021 = [  # gov.uk's England and Wales 2021, as published (2021-12-27/28 substitute days)
     ("New Year’s Day", "2021-01-01", ""), ("Good Friday", "2021-04-02", ""), ("Easter Monday", "2021-04-05", ""),
@@ -63,3 +64,19 @@ def test_rules_history():
     # Sunday Christmas, Monday Boxing Day: Boxing Day keeps its Monday, Christmas moves to the Tuesday.
     assert days[date(2016, 12, 26)] == "Boxing Day" and days[date(2016, 12, 27)] == "Christmas Day (observed)"
     assert sum(1 for d in days if d.year == 2003) == 8
+
+
+GOVUK = (FIXTURES / "govuk_bank_holidays_capture8319.json").read_bytes()  # the hub's first capture, 2026-10-08
+
+
+def test_the_real_govuk_list_and_the_rules_agree_but_for_its_one_offs():
+    p = govuk.parse(GOVUK)
+    assert p.years == tuple(range(2019, 2029)) and len(p.days) == 83
+    published = {d.day for d in p.days}
+    spec = json.loads(rules.read("repo:gb.json")) | {"first_year": 2019, "last_year": 2028, "exceptions": []}
+    ruled = {d.day for d in rules.parse(json.dumps(spec).encode()).days}
+    # gov.uk's own one-offs (the 2020 VE Day move, the 2022 jubilee and funeral, the 2023 coronation): every other
+    # day of its ten years, substitute days included, is exactly what the rules give.
+    assert sorted(published - ruled) == [date(2020, 5, 8), date(2022, 6, 2), date(2022, 6, 3), date(2022, 9, 19),
+                                         date(2023, 5, 8)]
+    assert sorted(ruled - published) == [date(2020, 5, 4), date(2022, 5, 30)]

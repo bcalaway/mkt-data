@@ -232,5 +232,6 @@ Two screens in mkt-ui about the platform itself rather than one data family. The
 ## Later (not this phase)
 
 - Yields, accrued interest and risk from prices; the curve fitter. **Deferred to a much later analytics build-out (Bill, 2026-10-07)**; notes in [analytics-later.md](analytics-later.md).
+- Interest-rate futures (STIR and Treasury futures, with deliverable baskets): **phase 4**, drafted in [phase-4.md](phase-4.md) (Bill, 2026-10-07).
 - Amount outstanding by holder, from the Monthly Statement of the Public Debt.
 - Carried over from phase 2: fixings (SOFR, EFFR), real yields, backup capture, the near-live macro dashboard, the shared chart layer, calendar closes as chart events.

@@ -214,6 +214,17 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "ECB TARGET closing days, 1999-2100 (fixed since 2002; cited)", rules.parse),
         ),
     ),
+    # Canada's payments calendar, for the Canadian dollar futures (docs/phase-4.md, "Calendars"): Payments Canada
+    # publishes no capturable list, so the rules file is the calendar, checked against banks' published lists.
+    "CA": CalendarSpec(
+        name="CA",
+        description="Canada payments holidays (Payments Canada, Toronto)",
+        timezone="America/Toronto",
+        sources=(
+            SourceSpec("CA-RULES", f"{rules.REPO_PREFIX}ca.json",
+                       "Canada's national payments holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
     # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
     "JP": CalendarSpec(

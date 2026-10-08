@@ -21,7 +21,7 @@ from home_platform_jobs import AppJobError, call_app_job
 
 # calendar-svc's load is scheduled on this (as for the other calendars).
 CALENDAR_SOURCES = Asset("mkt_data_calendar_sources")
-CALENDARS = ("GB", "TARGET", "JP")
+CALENDARS = ("GB", "TARGET", "JP", "CA")
 
 
 def capture_all(call=None) -> dict:

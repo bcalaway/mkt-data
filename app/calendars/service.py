@@ -254,6 +254,18 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "Sydney (NSW) public and bank holidays, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
+    # New Zealand, for the NZ dollar futures (docs/phase-4.md, "Calendars"): the national holidays ESAS closes for (the
+    # Auckland and Wellington anniversary days are settlement days). No capturable list, so the cited rules are the
+    # calendar.
+    "NZ": CalendarSpec(
+        name="NZ",
+        description="New Zealand dollar settlement holidays (national; ESAS)",
+        timezone="Pacific/Auckland",
+        sources=(
+            SourceSpec("NZ-RULES", f"{rules.REPO_PREFIX}nz.json",
+                       "New Zealand national public holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
     # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
     "JP": CalendarSpec(

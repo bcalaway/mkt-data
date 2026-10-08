@@ -1,0 +1,164 @@
+{
+  "calendar": "NZ",
+  "about": "The New Zealand dollar's settlement calendar: New Zealand's national public holidays, on which the banks, NZClear and the Reserve Bank's Exchange Settlement Account System (ESAS) close (ANZ), 1990-2100. Auckland's and Wellington's anniversary days are public holidays there but NZD settlement days (ANZ's 2023-2025 list; the NZFMA's business-day calendar treats them as good days since January 2026), so they aren't here. New Year's Day, January 2, Christmas and Boxing Day on a weekend move to the Monday (and Tuesday); Waitangi Day and Anzac Day do too from 2014 (Holidays (Full Recognition of Waitangi Day and ANZAC Day) Amendment Act 2013), not before. Anzac Day on Easter Monday (2011) is one day, with no extra day. Matariki is a Friday from 2022, on the dates in Schedule 1 of Te Kahui o Matariki Public Holiday Act 2022, which runs to 2052; later dates are set by Order in Council, so years after 2052 have none here yet. One-off: the Queen Elizabeth II Memorial Day (2022-09-26). Checked against ANZ's 2023-2025 list; other years are the rules unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "next"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday"
+      }
+    },
+    {
+      "name": "Day after New Year's Day",
+      "month": 1,
+      "day": 2,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday"
+      }
+    },
+    {
+      "name": "Waitangi Day",
+      "month": 2,
+      "day": 6,
+      "to": 2013
+    },
+    {
+      "name": "Waitangi Day",
+      "month": 2,
+      "day": 6,
+      "from": 2014,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday"
+      }
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Anzac Day",
+      "month": 4,
+      "day": 25,
+      "to": 2013,
+      "observance": {
+        "collision": "share"
+      }
+    },
+    {
+      "name": "Anzac Day",
+      "month": 4,
+      "day": 25,
+      "from": 2014,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday",
+        "collision": "share"
+      }
+    },
+    {
+      "name": "Queen's Birthday",
+      "month": 6,
+      "weekday": "monday",
+      "n": 1,
+      "to": 2022
+    },
+    {
+      "name": "King's Birthday",
+      "month": 6,
+      "weekday": "monday",
+      "n": 1,
+      "from": 2023
+    },
+    {
+      "name": "Matariki",
+      "dates": {
+        "2022": "06-24",
+        "2023": "07-14",
+        "2024": "06-28",
+        "2025": "06-20",
+        "2026": "07-10",
+        "2027": "06-25",
+        "2028": "07-14",
+        "2029": "07-06",
+        "2030": "06-21",
+        "2031": "07-11",
+        "2032": "07-02",
+        "2033": "06-24",
+        "2034": "07-07",
+        "2035": "06-29",
+        "2036": "07-18",
+        "2037": "07-10",
+        "2038": "06-25",
+        "2039": "07-15",
+        "2040": "07-06",
+        "2041": "07-19",
+        "2042": "07-11",
+        "2043": "07-03",
+        "2044": "06-24",
+        "2045": "07-07",
+        "2046": "06-29",
+        "2047": "07-19",
+        "2048": "07-03",
+        "2049": "06-25",
+        "2050": "07-15",
+        "2051": "06-30",
+        "2052": "06-21"
+      }
+    },
+    {
+      "name": "Labour Day",
+      "month": 10,
+      "weekday": "monday",
+      "n": 4
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday"
+      }
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26,
+      "observance": {
+        "saturday": "monday",
+        "sunday": "monday"
+      }
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "2022-09-26",
+      "status": "closed",
+      "holiday": "Queen Elizabeth II Memorial Day",
+      "citation": "https://www.isda.org/a/R03gE/ISDA-New-Zealand-Queen-Elizabeth-II-Memorial-Day-2022-FX.pdf"
+    }
+  ],
+  "citations": [
+    "https://www.ANZ.com/content/dam/anzcom/pdf/institutional/new-zealand-public-holidays-2023-2025.pdf",
+    "https://swapsmonitor.com/?p=1713",
+    "https://www.legislation.govt.nz/act/public/2022/14/en/latest/",
+    "https://www.legislation.govt.nz/act/public/2013/19/en/latest/",
+    "https://www.isda.org/a/R03gE/ISDA-New-Zealand-Queen-Elizabeth-II-Memorial-Day-2022-FX.pdf"
+  ]
+}

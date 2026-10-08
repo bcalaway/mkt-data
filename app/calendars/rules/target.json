@@ -1,0 +1,63 @@
+{
+  "calendar": "TARGET",
+  "about": "TARGET (now T2) closing days, the euro's settlement calendar, 1999-2100. Since 2002 the ECB has fixed them 'until further notice': New Year's Day, Good Friday, Easter Monday, 1 May, Christmas Day and 26 December, never moved for a weekend. In 1999 TARGET closed only at Christmas and New Year, plus 31 December 1999; 2000 had the standing set; 2001 added 31 December for the euro cash changeover. With no weekend observance and no change since 2002, the rules are the ECB's own calendar, so they run to 2100 with no projection.",
+  "first_year": 1999,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2,
+      "from": 2000
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1,
+      "from": 2000
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1,
+      "from": 2000
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "26 December",
+      "month": 12,
+      "day": 26,
+      "from": 2000
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "1999-12-31",
+      "status": "closed",
+      "holiday": "Millennium (TARGET closed)",
+      "citation": "https://www.ecb.europa.eu/press/pr/date/1999/html/pr990715_1.en.html"
+    },
+    {
+      "date": "2001-12-31",
+      "status": "closed",
+      "holiday": "Euro cash changeover (TARGET closed)",
+      "citation": "https://www.ecb.europa.eu/press/pr/date/2000/html/pr000525_2.en.html"
+    }
+  ],
+  "citations": [
+    "https://www.ecb.europa.eu/press/pr/date/1999/html/pr990715_1.en.html",
+    "https://www.ecb.europa.eu/press/pr/date/2000/html/pr000525_2.en.html",
+    "https://www.ecb.europa.eu/press/pr/date/2000/html/pr001214_4.en.html"
+  ]
+}

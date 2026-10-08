@@ -51,8 +51,10 @@ A file looks like this (every field but "calendar" is optional):
   to the next free weekday instead (the UK: Christmas on a Saturday is the
   Monday, Boxing Day on the Sunday then the Tuesday; and Boxing Day on a
   Monday stays, so Christmas on the Sunday before moves to the Tuesday).
-  Holidays on weekdays are placed first, then the moved ones. Without it, two
-  holidays on one day are an error.
+  Holidays on weekdays are placed first, then the moved ones. With
+  "collision": "share", two full closes on one day are that one day, named
+  "<first> and <second>" (Switzerland: Ascension on May 1 in 2008). Without
+  either, two holidays on one day are an error.
 - An exception sets one date: "closed", "early_close" (with "close_time")
   or "open" (removes a day the rules would close). Every exception needs a
   citation.
@@ -116,6 +118,10 @@ def parse(content: bytes) -> ParsedCalendar:
             if day is None:
                 continue
             if day.day in days and days[day.day] != day:
+                first = days[day.day]
+                if observance.get("collision") == "share" and first.status == day.status == "closed":
+                    days[day.day] = Day(day.day, "closed", f"{first.holiday} and {day.holiday}")
+                    continue
                 if observance.get("collision") != "next" or nominal.weekday() < 5:
                     raise ParseError(f"two holidays close {day.day}: {days[day.day].holiday}, {day.holiday}")
                 d = day.day

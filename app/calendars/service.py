@@ -92,6 +92,10 @@ class CalendarSpec:
         return [x.name for x in self.sources]
 
 
+SIX_SIC_URL = ("https://www.six-group.com/dam/download/banking-services/interbank-clearing/en/payment_services/sic/"
+               "banking-holidays.pdf")
+
+
 CALENDARS: dict[str, CalendarSpec] = {
     "FED": CalendarSpec(
         name="FED",
@@ -223,6 +227,18 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("CA-RULES", f"{rules.REPO_PREFIX}ca.json",
                        "Canada's national payments holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # Zurich: SIC's banking holidays, for the Swiss franc futures (docs/phase-4.md, "Calendars"). SIX's PDF lists next
+    # year; it's captured raw until its parser is written against a real capture. The cited rules run 1990-2100.
+    "CH": CalendarSpec(
+        name="CH",
+        description="Swiss franc payments holidays (SIC, Zurich)",
+        timezone="Europe/Zurich",
+        sources=(
+            SourceSpec("SIX-SIC", SIX_SIC_URL, "SIX, SIC banking holidays (PDF, next year)", None),
+            SourceSpec("CH-RULES", f"{rules.REPO_PREFIX}ch.json",
+                       "SIC banking holidays, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national

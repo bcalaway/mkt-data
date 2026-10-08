@@ -123,6 +123,15 @@ def test_without_collision_next_two_holidays_on_a_day_fail():
         _parse(spec)
 
 
+def test_collision_share_makes_two_holidays_one_day():
+    spec = {
+        "calendar": "X", "first_year": 2008, "last_year": 2008,
+        "observance": {"saturday": "none", "sunday": "none", "collision": "share"},
+        "holidays": [{"name": "Labour Day", "month": 5, "day": 1}, {"name": "Ascension Day", "easter": 39}],
+    }
+    assert [(d.day, d.holiday) for d in _parse(spec).days] == [(date(2008, 5, 1), "Labour Day and Ascension Day")]
+
+
 def test_weekday_relative_to_a_date_and_date_tables():
     spec = {
         "calendar": "X", "first_year": 2024, "last_year": 2026,

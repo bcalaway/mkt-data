@@ -19,7 +19,7 @@ from fastapi import APIRouter, Response
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 
-from app import db
+from app import db, source_status
 from app.calendars import service
 from app.models import Capture, Observation, RecordComparison, Source, SourceCheck
 from app.rates import sources as rates
@@ -119,6 +119,14 @@ def _collect(s, out: _Out) -> None:
     out.metric("mkt_data_source_parse_ok", "gauge", "1 if the source's latest parse worked, 0 if it failed.", parse_ok)
     out.metric("mkt_data_source_captures", "gauge", "Raw captures stored for the source.", captures)
     out.metric("mkt_data_source_capture_bytes", "gauge", "Raw bytes stored for the source.", size)
+
+    # Per source: how long without a successful fetch is late against its schedule (app/source_status.py), so the
+    # capture-stale alert holds each source to its own DAG instead of one threshold for all.
+    late_after = [({"calendar": cal_of[e.name], "source": e.name, "kind": kind_of[e.name]},
+                    source_status.schedule_for(e).late_after_hours * 3600)
+                  for e in source_status.catalog() if e.name in cal_of]
+    out.metric("mkt_data_source_late_after_seconds", "gauge",
+               "How long without a successful fetch the source is late, from its DAG's schedule.", late_after)
 
     # Per CMT source and key: the latest date with a current value, read from the source's newest month only
     # (an index range, not the whole history). A key the newest month lacks drops out.

@@ -22,7 +22,9 @@ from app.securities import sources as securities
 
 # How each group of sources is fetched: the DAG, when it runs, and how long without a successful fetch is late.
 # tests/test_source_status.py checks every DAG id and schedule here against dags/, so this can't drift from them.
-WEEKDAYS_LATE_HOURS = 96  # a weekday DAG: Friday evening to Tuesday evening covers a weekend and a Monday holiday
+# A weekday DAG: Thursday evening to the next Tuesday evening covers a weekend with a closed day on each side (FedInvest
+# isn't fetched on SIFMA-US holidays), so one missed weekday is caught within a day or two, never on a long weekend.
+WEEKDAYS_LATE_HOURS = 120
 WEEKLY_LATE_HOURS = 192  # a weekly DAG: 8 days (the capture-stale alert's threshold)
 
 

@@ -113,9 +113,9 @@ def test_late_against_the_schedule(migrated_db):
         _load(s)
         rows = {r["name"]: r for r in source_status.list_sources(s, NOW)}
         later = {r["name"]: r for r in source_status.list_sources(s, NOW + timedelta(days=5))}
-    # TD-PRICES last worked a day before NOW: on time; five days on, past its 96 hours.
+    # TD-PRICES last worked a day before NOW: on time; five days on (six since), past its 120 hours.
     assert not rows["TD-PRICES"]["late"] and later["TD-PRICES"]["late"]
-    assert rows["TD-PRICES"]["dag"] == "mkt_data__treasury_securities_capture" and rows["TD-PRICES"]["late_after_hours"] == 96
+    assert rows["TD-PRICES"]["dag"] == "mkt_data__treasury_securities_capture" and rows["TD-PRICES"]["late_after_hours"] == 120
     # FED-K8 last worked a day before NOW and is weekly: still on time five days on.
     assert not later["FED-K8"]["late"] and later["FED-K8"]["late_after_hours"] == 192
     assert not rows["UST-PAR"]["late"]  # never fetched: not late, never captured (the status says so)
@@ -146,3 +146,15 @@ def test_capture_text(migrated_db):
     assert whole["shown_of"] == whole["lines_total"] and whole["period"] == "2026" and whole["source"] == "BLS-CPI"
     assert found["matches"] == 1 and any('"M03"' in x["text"] for x in found["lines"]) and len(found["lines"]) == 3
     assert page2["offset"] == 5 and page2["lines"][0]["n"] == 6
+
+
+def test_the_late_threshold_is_a_metric(migrated_db):
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    with db.session() as s:
+        _load(s)
+    text = TestClient(app).get("/metrics").text
+    assert 'mkt_data_source_late_after_seconds{calendar="SIFMA-US",source="TD-PRICES",kind="published"} 432000' in text
+    assert 'mkt_data_source_late_after_seconds{calendar="FED",source="FED-K8",kind="published"} 691200' in text

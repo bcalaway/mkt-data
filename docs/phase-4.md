@@ -1,6 +1,6 @@
 # Phase 4: CME rates and FX futures
 
-**Status (2026-10-07): step 1 built, waiting on merge; Bill's decisions are under "Decisions".** Phase 3 (Treasury securities by CUSIP) is complete except step 3's BLS history and step 7's last alert: see [phase-3.md](phase-3.md). Analytics are deferred to a much later build-out ([analytics-later.md](analytics-later.md)); this phase is data only.
+**Status (2026-10-08): step 1 deployed (captures running daily); step 2's calendars all built and live (`CME-IR`, `CME-FX`, `GB`, `TARGET`, `JP`, `CA`, `CH`, `AU`, `NZ`, `SE`, `NO`, `DK`, `MX`, with SIX's and Norges Bank's lists parsed); products and contracts next. Bill's decisions are under "Decisions".** Phase 3 (Treasury securities by CUSIP) is complete except step 3's BLS history and step 7's last alert: see [phase-3.md](phase-3.md). Analytics are deferred to a much later build-out ([analytics-later.md](analytics-later.md)); this phase is data only.
 
 **Goal:** every interest-rate and FX future CME lists, as real instruments in secmaster-svc: products, every contract with its dates, and for the Treasury futures each contract's **deliverable basket with conversion factors** (Bill, 2026-10-07). With them, the fixings they settle on or track (SOFR, EFFR, and the Fed's and ECB's daily FX rates) and the CFTC's weekly positioning, through the same layers as phases 2 and 3.
 
@@ -214,7 +214,7 @@ The patterns from phases 2 and 3: stale-capture and parse alerts for the new sou
 - How far back to generate contracts: 1990 for everything (the calendars' start; the euro from 1999), or each product from its launch (FX futures from 1972).
 - Which city each FX calendar follows where a country has several (Sydney for Australia, Toronto for Canada, Zurich for Switzerland, New Zealand's national calendar, since ESAS settles on the anniversary days: settled in #129).
 - CME's smaller rates and FX contracts: which have enough history to be worth listing (step 2).
-- The FX contracts' calendars: CME's rules move the last trading day for Chicago and New York bank holidays and the delivery day for the delivery country's; calendars for TARGET (euro), the UK, Japan, Australia, Canada, Switzerland, Mexico and New Zealand, or a narrower rule for the history we generate.
+- ~~The FX contracts' calendars~~: settled. Every delivery country has one (above), 1990 on (1999 for TARGET), built in mkt-data #118–#131.
 - The `CME` calendar's early closes and Good Friday sessions (CME has traded rates futures on some Good Fridays when payrolls were released).
 
 ## Later (not this phase)

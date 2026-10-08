@@ -191,6 +191,17 @@ CALENDARS: dict[str, CalendarSpec] = {
             ),
         ),
     ),
+    # The euro's settlement calendar (docs/phase-4.md, "Calendars"): fixed by the ECB since 2002 "until further
+    # notice", so the rules file is the calendar itself, to 2100.
+    "TARGET": CalendarSpec(
+        name="TARGET",
+        description="TARGET/T2 closing days (euro settlement)",
+        timezone="Europe/Berlin",
+        sources=(
+            SourceSpec("TARGET-RULES", f"{rules.REPO_PREFIX}target.json",
+                       "ECB TARGET closing days, 1999-2100 (fixed since 2002; cited)", rules.parse),
+        ),
+    ),
     "CME-FX": CalendarSpec(
         name="CME-FX",
         description="CME Group FX futures: days with a trade date and settlement",

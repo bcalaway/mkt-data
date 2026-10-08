@@ -1,11 +1,13 @@
 """Calendar JP: the Cabinet Office's holidays CSV (app/calendars/jpcao.py), bank holidays and the projection."""
 
+import json
 from datetime import date
 
 import pytest
 
 from app.calendars import jpcao, rules
 from app.calendars.parsed import ParseError
+from tests.conftest import FIXTURES
 
 ROWS_2026 = [  # the Cabinet Office's 2026, as the law gives it (the real file's rows look like this)
     ("2026/1/1", "元日"), ("2026/1/12", "成人の日"), ("2026/2/11", "建国記念の日"), ("2026/2/23", "天皇誕生日"),
@@ -30,7 +32,7 @@ def test_parse_reads_shift_jis_and_drops_weekends():
 
 
 @pytest.mark.parametrize(("rows", "message"), [
-    (ROWS_2026[:5], "fewer than 10"),
+    (ROWS_2026[:5], "fewer than 9"),
     ([*ROWS_2026, ("2026/1/1", "元日")], "listed twice"),
     ([*ROWS_2026, ("2026-13-1", "x")], "can't read"),
 ])
@@ -55,3 +57,21 @@ def test_bank_holidays_add_dates_without_covering_years():
     p = rules.parse(rules.read("repo:jp_bank.json"))
     days = {d.day for d in p.days}
     assert p.years == () and {date(2025, 12, 31), date(2026, 1, 2)} <= days and date(2026, 1, 3) not in days
+
+
+CAO = (FIXTURES / "jp_cao_holidays_capture8323.csv").read_bytes()  # the hub's first capture, 2026-10-08
+
+
+def test_the_real_csv_and_the_projection_agree_but_for_the_olympics():
+    p = jpcao.parse(CAO)
+    assert p.years == tuple(range(1955, 2028)) and len(p.days) == 821
+    published = {d.day for d in p.days if d.day.year >= 2020}
+    spec = json.loads(rules.read("repo:jp_projected.json")) | {"first_year": 2020, "last_year": 2027}
+    projected = {d.day for d in rules.parse(json.dumps(spec).encode()).days}
+    # The Tokyo Olympics moved Marine Day, Sports Day and Mountain Day in 2020 and 2021 (special acts); every other
+    # day of 2020-2027 is exactly what the current law gives.
+    olympics = {date(2020, 7, 23), date(2020, 7, 24), date(2020, 8, 10), date(2021, 7, 22), date(2021, 7, 23),
+                date(2021, 8, 9)}
+    assert published - projected == olympics
+    assert projected - published == {date(2020, 7, 20), date(2020, 8, 11), date(2020, 10, 12), date(2021, 7, 19),
+                                      date(2021, 8, 11), date(2021, 10, 11)}

@@ -6,7 +6,7 @@ under a one-line header, in Shift_JIS (cp932). It includes substitute
 holidays (振替休日) and citizens' holidays (国民の休日) as their own dates, so
 every listed weekday is a closed day; Saturday and Sunday dates are left out
 (they close nothing). Covered years: the first listed to the last. A year with
-fewer than 10 holidays means the file changed shape, so it raises instead.
+fewer than 9 holidays (the 1950s had nine) means the file changed shape, so it raises instead.
 
 Bank holidays beyond the national ones (December 31 to January 3) come from
 the rules file jp_bank.json, not from here.
@@ -17,7 +17,7 @@ from datetime import date
 from app.calendars.parsed import Day, ParsedCalendar, ParseError
 
 URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv"
-MIN_PER_YEAR = 10
+MIN_PER_YEAR = 9  # 1955-1958 and 1960 had nine (the 1948 Act's list); 10 or more since
 
 
 def parse(content: bytes) -> ParsedCalendar:

@@ -31,10 +31,19 @@ def test_parse_reads_shift_jis_and_drops_weekends():
     assert date(2026, 5, 6) in days and date(2026, 9, 22) in days and len(days) == 17
 
 
+def test_names_are_english_and_a_holiday_is_named_from_its_neighbours():
+    names = {d.day: d.holiday for d in jpcao.parse(_csv(ROWS_2026)).days}
+    assert names[date(2026, 1, 1)] == "New Year's Day" and names[date(2026, 10, 12)] == "Sports Day"
+    assert names[date(2026, 5, 6)] == "Constitution Memorial Day (observed)"  # May 3, a Sunday
+    assert names[date(2026, 9, 22)] == "Citizens' Holiday"  # between Respect for the Aged Day and the equinox
+
+
 @pytest.mark.parametrize(("rows", "message"), [
     (ROWS_2026[:5], "fewer than 9"),
     ([*ROWS_2026, ("2026/1/1", "元日")], "listed twice"),
     ([*ROWS_2026, ("2026-13-1", "x")], "can't read"),
+    ([*ROWS_2026, ("2026/6/1", "新しい祝日")], "no English name"),
+    ([*ROWS_2026, ("2026/6/2", "休日")], "neither a substitute"),
 ])
 def test_parse_refuses_what_it_doesnt_understand(rows, message):
     with pytest.raises(ParseError, match=message):
@@ -65,6 +74,10 @@ CAO = (FIXTURES / "jp_cao_holidays_capture8323.csv").read_bytes()  # the hub's f
 def test_the_real_csv_and_the_projection_agree_but_for_the_olympics():
     p = jpcao.parse(CAO)
     assert p.years == tuple(range(1955, 2028)) and len(p.days) == 821
+    names = {d.day: d.holiday for d in p.days}
+    assert names[date(1989, 2, 24)] == "State Funeral of Emperor Showa"
+    assert names[date(2019, 5, 1)] == "Accession of the Emperor" and names[date(2019, 5, 2)] == "Citizens' Holiday"
+    assert names[date(1989, 1, 2)] == "New Year's Day (observed)"
     published = {d.day for d in p.days if d.day.year >= 2020}
     spec = json.loads(rules.read("repo:jp_projected.json")) | {"first_year": 2020, "last_year": 2027}
     projected = {d.day for d in rules.parse(json.dumps(spec).encode()).days}
@@ -73,5 +86,9 @@ def test_the_real_csv_and_the_projection_agree_but_for_the_olympics():
     olympics = {date(2020, 7, 23), date(2020, 7, 24), date(2020, 8, 10), date(2021, 7, 22), date(2021, 7, 23),
                 date(2021, 8, 9)}
     assert published - projected == olympics
+    # Named alike: every day of 2022-2027 has the projection's name.
+    names = {d.day: d.holiday for d in p.days if d.day.year >= 2022}
+    spec |= {"first_year": 2022}
+    assert names == {d.day: d.holiday for d in rules.parse(json.dumps(spec).encode()).days}
     assert projected - published == {date(2020, 7, 20), date(2020, 8, 11), date(2020, 10, 12), date(2021, 7, 19),
                                       date(2021, 8, 11), date(2021, 10, 11)}

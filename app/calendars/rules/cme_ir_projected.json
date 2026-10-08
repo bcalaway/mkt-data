@@ -1,0 +1,81 @@
+{
+  "calendar": "CME-IR",
+  "about": "CME-IR full closes projected to 2100 from cme_ir.json's holidays (no Good Friday openings: those are decided year by year).",
+  "first_year": 2027,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "friday",
+    "sunday": "monday"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1,
+      "observance": {
+        "saturday": "none"
+      },
+      "note": "A Saturday New Year's Day closes no Friday (exchange policy since 1959)."
+    },
+    {
+      "name": "Martin Luther King, Jr. Day",
+      "month": 1,
+      "weekday": "monday",
+      "n": 3,
+      "from": 1998
+    },
+    {
+      "name": "Washington's Birthday",
+      "month": 2,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Memorial Day",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Juneteenth National Independence Day",
+      "month": 6,
+      "day": 19,
+      "from": 2022
+    },
+    {
+      "name": "Independence Day",
+      "month": 7,
+      "day": 4
+    },
+    {
+      "name": "Labor Day",
+      "month": 9,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Thanksgiving Day",
+      "month": 11,
+      "weekday": "thursday",
+      "n": 4
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.cmegroup.com/notices/ser/2021/12/SER-8887.pdf",
+    "https://www.sec.gov/files/rules/sro/nyse/2021/34-93183.pdf",
+    "https://www.ltadvisors.net/Info/research/closings.pdf",
+    "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+    "https://ir.theice.com/press/news-details/2018/NYSE-Group-Announces-2019-2020-and-2021-Holiday-and-Early-Closings-Calendar/default.aspx",
+    "https://ir.theice.com/press/news-details/2022/NYSE-Group-Announces-2023-2024-and-2025-Holiday-and-Early-Closings-Calendar/default.aspx"
+  ]
+}

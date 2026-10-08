@@ -157,6 +157,39 @@ CALENDARS: dict[str, CalendarSpec] = {
             ),
         ),
     ),
+    # CME's business days (docs/phase-4.md, "Calendars"). No published source: CME's terms rule out capturing
+    # its holiday pages, so the rules files cite CME's notices, read by hand, and are extended a year at a time.
+    "CME-IR": CalendarSpec(
+        name="CME-IR",
+        description="CME Group U.S. interest rate futures: days with a trade date and settlement",
+        timezone="America/Chicago",
+        sources=(
+            SourceSpec(
+                "CME-IR-RULES", f"{rules.REPO_PREFIX}cme_ir.json",
+                "CME interest rate futures holidays and one-off closes, 1990-2026 (rules, cited from CME notices)",
+                rules.parse,
+            ),
+            SourceSpec(
+                "CME-IR-PROJECTED", f"{rules.REPO_PREFIX}cme_ir_projected.json",
+                "CME-IR full closes projected to 2100", rules.parse, projected=True,
+            ),
+        ),
+    ),
+    "CME-FX": CalendarSpec(
+        name="CME-FX",
+        description="CME Group FX futures: days with a trade date and settlement",
+        timezone="America/Chicago",
+        sources=(
+            SourceSpec(
+                "CME-FX-RULES", f"{rules.REPO_PREFIX}cme_fx.json",
+                "CME FX futures holidays and one-off closes, 1990-2026 (rules, cited from CME notices)", rules.parse,
+            ),
+            SourceSpec(
+                "CME-FX-PROJECTED", f"{rules.REPO_PREFIX}cme_fx_projected.json",
+                "CME-FX full closes projected to 2100", rules.parse, projected=True,
+            ),
+        ),
+    ),
 }
 
 

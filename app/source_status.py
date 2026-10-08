@@ -41,6 +41,8 @@ CALENDAR_SCHEDULES = {
     "FED": Schedule("mkt_data__fed_calendar", "Mondays 11:17 UTC", "17 11 * * 1", WEEKLY_LATE_HOURS),
     "SIFMA-US": Schedule("mkt_data__sifma_calendar", "Mondays 11:23 UTC", "23 11 * * 1", WEEKLY_LATE_HOURS),
     "NYSE": Schedule("mkt_data__nyse_calendar", "Mondays 11:29 UTC", "29 11 * * 1", WEEKLY_LATE_HOURS),
+    "CME-IR": Schedule("mkt_data__cme_calendars", "Mondays 11:35 UTC", "35 11 * * 1", WEEKLY_LATE_HOURS),
+    "CME-FX": Schedule("mkt_data__cme_calendars", "Mondays 11:35 UTC", "35 11 * * 1", WEEKLY_LATE_HOURS),
 }
 SOURCE_SCHEDULES = {
     "UST-PAR": Schedule("mkt_data__ust_par", "Weekdays 6:30 p.m. New York", "30 18 * * 1-5", WEEKDAYS_LATE_HOURS),

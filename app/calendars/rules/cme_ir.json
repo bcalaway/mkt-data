@@ -1,0 +1,163 @@
+{
+  "calendar": "CME-IR",
+  "about": "CME Group's business days for its U.S. interest rate futures (SOFR, Fed funds, CBOT Treasury futures, T-bill futures), 1990-2026: the days with a trade date and a settlement. The exchange holidays are NYSE's (Rule 7.2's list: the same federal holidays and Good Friday, Juneteenth from 2022, which CME observes from 2022 per SER-8887), and every exception is cited from CME's own notices. Columbus Day and Veterans Day are business days (the bond market's SIFMA closes, not CME's). Early closes and abbreviated sessions are business days and aren't stored. Read 2026-10-08.",
+  "first_year": 1990,
+  "last_year": 2026,
+  "observance": {
+    "saturday": "friday",
+    "sunday": "monday"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1,
+      "observance": {
+        "saturday": "none"
+      },
+      "note": "A Saturday New Year's Day closes no Friday (exchange policy since 1959)."
+    },
+    {
+      "name": "Martin Luther King, Jr. Day",
+      "month": 1,
+      "weekday": "monday",
+      "n": 3,
+      "from": 1998
+    },
+    {
+      "name": "Washington's Birthday",
+      "month": 2,
+      "weekday": "monday",
+      "n": 3
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Memorial Day",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Juneteenth National Independence Day",
+      "month": 6,
+      "day": 19,
+      "from": 2022
+    },
+    {
+      "name": "Independence Day",
+      "month": 7,
+      "day": 4
+    },
+    {
+      "name": "Labor Day",
+      "month": 9,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Thanksgiving Day",
+      "month": 11,
+      "weekday": "thursday",
+      "n": 4
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    }
+  ],
+  "citations": [
+    "https://www.cmegroup.com/notices/ser/2021/12/SER-8887.pdf",
+    "https://www.sec.gov/files/rules/sro/nyse/2021/34-93183.pdf",
+    "https://www.ltadvisors.net/Info/research/closings.pdf",
+    "https://s3.amazonaws.com/armstrongeconomics-wp/2013/07/NYSE-Closings.pdf",
+    "https://ir.theice.com/press/news-details/2018/NYSE-Group-Announces-2019-2020-and-2021-Holiday-and-Early-Closings-Calendar/default.aspx",
+    "https://ir.theice.com/press/news-details/2022/NYSE-Group-Announces-2023-2024-and-2025-Holiday-and-Early-Closings-Calendar/default.aspx"
+  ],
+  "exceptions": [
+    {
+      "date": "2001-09-11",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://mondovisione.com/media-and-resources/news/chicago-mercantile-exchange-inc-to-resume-trading-in-us-equity-index-products-wh-2011124/",
+      "note": "Trading suspended at 9:15 a.m. CST; no settlement that day. CME's release of 2001-09-13: floor and GLOBEX2 trading resumed at normal times on Thursday, Sept. 13 (equity index products excepted)."
+    },
+    {
+      "date": "2001-09-12",
+      "status": "closed",
+      "holiday": "September 11 attacks",
+      "citation": "https://mondovisione.com/media-and-resources/news/chicago-mercantile-exchange-inc-to-resume-trading-in-us-equity-index-products-wh-2011124/"
+    },
+    {
+      "date": "2007-04-06",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/media-room/press-releases/2007/3/28/cme_announces_goodfridayholidaytradinghours.html",
+      "note": "Abbreviated interest rate session, traded and settled: a business day. Also https://www.cmegroup.com/media-room/press-releases/2007/4/04/revised--cbot_goodfridayholidaytradingschedule.html."
+    },
+    {
+      "date": "2010-04-02",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/lookups/advisories/clearing/AIB10-02.html",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2012-04-06",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/lookups/advisories/clearing/AIB12-02.html",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2015-04-03",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/lookups/advisories/clearing/frb-15-03.html",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2021-04-02",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-good-friday-advisory.pdf",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2023-04-07",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/holiday-calendar/files/2023-good-friday-advisory.pdf",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2026-04-03",
+      "status": "open",
+      "holiday": "Good Friday (open for the payrolls report)",
+      "citation": "https://www.cmegroup.com/tools-information/holiday-calendar/files/2026/2026-good-friday-clearing-advisory.pdf",
+      "note": "Abbreviated interest rate session, traded and settled: a business day."
+    },
+    {
+      "date": "2012-10-29",
+      "status": "closed",
+      "holiday": "Hurricane Sandy",
+      "citation": "https://www.cmegroup.com/media-room/press-releases/2012/10/29/cme_group_to_reopenusequityindexandinterestratecomplexestonight.html",
+      "note": "Interest rate markets (Treasury, Eurodollar, Fed funds) closed; reopened at 5:00 p.m. CT for the trade date of Oct 30, which was a normal day."
+    },
+    {
+      "date": "2018-12-05",
+      "status": "closed",
+      "holiday": "National Day of Mourning (George H. W. Bush)",
+      "citation": "https://www.cmegroup.com/media-room/press-releases/2018/12/02/cme_group_u_s_equityinterestratemarketstoclosefornationaldayofmo.html",
+      "note": "U.S. interest rate futures and options closed; no Dec 5 trade date. FX stayed open (CME-FX)."
+    }
+  ],
+  "notes": {
+    "Business days on NYSE's one-off closes": "1994-04-27 (Nixon: CBOT held a regular session, https://www.deseret.com/1994/4/26/19105533/major-markets-will-close-to-honor-nixon/), 2004-06-11 (Reagan: CBOT financial futures closed early at 8:00 a.m. CT, https://mondovisione.com/news/cbot-announces-trading-schedule-for-june-11-2011124/), 2007-01-02 (Ford: interest rate markets open until noon CT, https://www.cmegroup.com/media-room/press-releases/2006/12/29/cme_announces_markethoursofoperationinhonorofnationaldayofmourni.html), 2025-01-09 (Carter: interest rates closed at 12:15 p.m. CT, https://www.cmegroup.com/media-room/press-releases/2025/12/30/cme_group_announcestradinghoursforusnationaldayofmourningtohonor.html). The rules don't close them, so no exception is needed.",
+    "Unconfirmed": "The payrolls Good Fridays of 1994-04-01, 1996-04-05 and 1999-04-02 are closed here (the rule): no CME or CBOT notice for those years has been found. SIFMA recommended a full close in 1996 and an early close in 1999.",
+    "MLK Day": "Taken from NYSE (from 1998); not yet checked against a CME or CBOT notice for 1998-2005."
+  }
+}

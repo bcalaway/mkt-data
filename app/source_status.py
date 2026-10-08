@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.calendars import service
 from app.calendars.service import SourceSpec
+from app.futures import sources as futures
 from app.models import Capture, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
@@ -47,12 +48,16 @@ SOURCE_SCHEDULES = {
 }
 SECURITIES_SCHEDULE = Schedule("mkt_data__treasury_securities_capture", "Weekdays 7:15 p.m. New York",
                                "15 19 * * 1-5", WEEKDAYS_LATE_HOURS)
+FUTURES_SCHEDULE = Schedule("mkt_data__futures_sources_capture", "Weekdays 7:45 p.m. New York",
+                            "45 19 * * 1-5", WEEKDAYS_LATE_HOURS)
+# Phase 4's DAG re-fetches the latest CFTC report every weekday, so the weekly report is held to the weekday limit.
+GROUP_SCHEDULES = {"securities": SECURITIES_SCHEDULE, "futures": FUTURES_SCHEDULE}
 
 
 def schedule_for(e: "Entry") -> Schedule:
     if e.group == "calendars":
         return CALENDAR_SCHEDULES[e.calendar]
-    return SOURCE_SCHEDULES.get(e.name, SECURITIES_SCHEDULE)
+    return SOURCE_SCHEDULES.get(e.name) or GROUP_SCHEDULES[e.group]
 
 
 def pulls_for(e: "Entry") -> str:
@@ -83,7 +88,7 @@ class UnknownSource(LookupError):
 @dataclass(frozen=True)
 class Entry:
     name: str
-    group: str  # calendars | rates | securities
+    group: str  # calendars | rates | securities | futures
     calendar: str
     kind: str  # published | rules | projected
     period_kind: str  # day | month | year; "" for a one-page source
@@ -91,7 +96,7 @@ class Entry:
 
 
 def catalog() -> list[Entry]:
-    """Every source, in the order the platform grew: calendars, then rates, then securities."""
+    """Every source, in the order the platform grew: calendars, rates, securities, then futures (phase 4)."""
     out: dict[str, Entry] = {}
     for cal in service.CALENDARS.values():
         for src in cal.sources:
@@ -100,6 +105,8 @@ def catalog() -> list[Entry]:
         out.setdefault(name, Entry(name, "rates", src.calendar, "published", "month", src.spec))
     for name, src in securities.SOURCES.items():
         out.setdefault(name, Entry(name, "securities", src.calendar, "published", src.kind, src.spec))
+    for name, src in futures.SOURCES.items():
+        out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec))
     return list(out.values())
 
 

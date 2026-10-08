@@ -25,6 +25,7 @@ from app import db
 from app.calendars import service
 from app.calendars.parsed import ParseError
 from app.config import settings
+from app.futures import sources as futures
 from app.models import Capture, Observation, Record, Source, SourceCheck, SourceDay, SourceYear
 from app.rates import sources as rates
 from app.securities import sources as securities
@@ -165,6 +166,29 @@ def rebuild_securities(source: str) -> dict:
         return securities.run_rebuild(s, key)
 
 
+@router.post("/futures/{source}/capture", dependencies=[Depends(require_token)])
+def capture_futures(source: str, period: str | None = None) -> dict:
+    """Fetch one period of a phase 4 source (fixings, CFTC positioning) and keep it raw if new (docs/phase-4.md, step 1).
+
+    `source` is one of app/futures/sources.py's. `period` is a month YYYY-MM, or for the CFTC sources a report date
+    YYYY-MM-DD; default: the current one, in New York. Nothing published yet for the period: HTTP 502 with
+    NOT_PUBLISHED in the detail, nothing stored.
+    """
+    key = source.upper()
+    if key not in futures.SOURCES:
+        raise HTTPException(404, f"unknown futures source {source!r}; known: {sorted(futures.SOURCES)}")
+    src = futures.SOURCES[key]
+    try:
+        with db.session() as s:
+            return futures.run_capture(s, key, period or securities.current_period(src.kind))
+    except securities.BadPeriod as e:
+        raise HTTPException(400, str(e)) from None
+    except service.SourceFetchError as e:
+        raise HTTPException(502, f"fetch failed: {e}") from None
+    except ParseError as e:
+        raise HTTPException(422, f"parse failed (raw capture kept): {e}") from None
+
+
 @router.post("/securities/compare", dependencies=[Depends(require_token)])
 def compare_securities() -> dict:
     """Cross-check TreasuryDirect's auction records against Fiscal Data's; kept for the metrics (docs/phase-3.md, step 5)."""
@@ -256,7 +280,7 @@ def list_checks(
 
 def _has_parser(source: str) -> bool:
     spec = service.SOURCES.get(source)
-    for registry in (rates.SOURCES, securities.SOURCES):
+    for registry in (rates.SOURCES, securities.SOURCES, futures.SOURCES):
         if spec is None and source in registry:
             spec = registry[source].spec
     return spec is not None and spec.parse is not None

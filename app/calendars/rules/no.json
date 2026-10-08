@@ -1,0 +1,70 @@
+{
+  "calendar": "NO",
+  "about": "The Norwegian krone's settlement calendar (Oslo): the days Norges Bank's settlement system (NBO) is closed, 1990-2100. NBO closes on weekends and on New Year's Day, Maundy Thursday, Good Friday, Easter Monday, May 1, Ascension Day, Constitution Day (May 17), Whit Monday, Christmas Eve, Christmas Day and Boxing Day; New Year's Eve is a settlement day. A holiday on a weekend isn't moved, and two on one day are one day (Ascension on Constitution Day, 2007). Norges Bank's settlement-days page (NO-NBO) lists the current year and is checked against these rules once it's parsed; SEB's 2024 and 2026 lists and Nord Pool's Norwegian non-banking days agree. Other years are the rules unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Maundy Thursday",
+      "easter": -3
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Ascension Day",
+      "easter": 39
+    },
+    {
+      "name": "Constitution Day",
+      "month": 5,
+      "day": 17
+    },
+    {
+      "name": "Whit Monday",
+      "easter": 50
+    },
+    {
+      "name": "Christmas Eve",
+      "month": 12,
+      "day": 24
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.norges-bank.no/en/topics/Norges-Banks-settlement-system/Settlement-days/",
+    "https://www.nordpoolgroup.com/4919c6/globalassets/download-center/settlement-collateral-and-fees/norwegian-banking-non-banking-days.pdf",
+    "https://webapp.sebgroup.com/mb/mblib.nsf/alldocsbyunid/AB836DAA908374D1C12586B2004C049C/$FILE/Nordic_and_Baltic_Bank_Holidays_2026.pdf",
+    "https://webapp.sebgroup.com/mb/mblib.nsf/dld/AB836DAA908374D1C12586B2004C049C/$file/Nordic_Baltic_Bank_Holidays_2024.pdf"
+  ]
+}

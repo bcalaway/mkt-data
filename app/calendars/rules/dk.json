@@ -1,0 +1,78 @@
+{
+  "calendar": "DK",
+  "about": "The Danish krone's settlement calendar (Copenhagen): the days Danish banks are closed, 1990-2100. New Year's Day, Maundy Thursday, Good Friday, Easter Monday, Great Prayer Day (the fourth Friday after Easter, to 2023: abolished as a public holiday from 2024), Ascension Day and the banks' holiday the day after it, Whit Monday, Constitution Day (June 5), Christmas Eve, Christmas Day, Boxing Day and New Year's Eve. May 1 isn't a bank holiday. A holiday on a weekend isn't moved, and two on one day are one day. Checked against SEB's 2024 and 2026 Nordic bank holiday lists; other years are the rules unchecked against a published list, including since when banks have closed on the day after Ascension.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Maundy Thursday",
+      "easter": -3
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Great Prayer Day",
+      "easter": 26,
+      "to": 2023
+    },
+    {
+      "name": "Ascension Day",
+      "easter": 39
+    },
+    {
+      "name": "Bank Holiday (day after Ascension)",
+      "easter": 40
+    },
+    {
+      "name": "Whit Monday",
+      "easter": 50
+    },
+    {
+      "name": "Constitution Day",
+      "month": 6,
+      "day": 5
+    },
+    {
+      "name": "Christmas Eve",
+      "month": 12,
+      "day": 24
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26
+    },
+    {
+      "name": "New Year's Eve",
+      "month": 12,
+      "day": 31
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://webapp.sebgroup.com/mb/mblib.nsf/alldocsbyunid/AB836DAA908374D1C12586B2004C049C/$FILE/Nordic_and_Baltic_Bank_Holidays_2026.pdf",
+    "https://webapp.sebgroup.com/mb/mblib.nsf/dld/AB836DAA908374D1C12586B2004C049C/$file/Nordic_Baltic_Bank_Holidays_2024.pdf",
+    "https://timeanddate.com/holidays/denmark/prayer-day"
+  ]
+}

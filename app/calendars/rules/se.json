@@ -1,0 +1,83 @@
+{
+  "calendar": "SE",
+  "about": "The Swedish krona's settlement calendar (Stockholm): the days Swedish banks are closed, 1990-2100. The public holidays (New Year's Day, Epiphany, Good Friday, Easter Monday, May 1, Ascension Day, National Day, Christmas Day, Boxing Day) and the eves banks also close for: Midsummer Eve (the Friday between June 19 and 25), Christmas Eve and New Year's Eve. National Day (June 6) replaced Whit Monday as a public holiday from 2005. A holiday on a weekend isn't moved, and two on one day are one day (Ascension on May 1, 2008). Checked against SEB's 2024 and 2026 Nordic bank holiday lists; other years are the rules unchecked against a published list, including whether banks closed on the eves before 2024.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Epiphany",
+      "month": 1,
+      "day": 6
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Ascension Day",
+      "easter": 39
+    },
+    {
+      "name": "Whit Monday",
+      "easter": 50,
+      "to": 2004
+    },
+    {
+      "name": "National Day",
+      "month": 6,
+      "day": 6,
+      "from": 2005
+    },
+    {
+      "name": "Midsummer Eve",
+      "month": 6,
+      "day": 19,
+      "weekday": "friday",
+      "match": "on_or_after"
+    },
+    {
+      "name": "Christmas Eve",
+      "month": 12,
+      "day": 24
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26
+    },
+    {
+      "name": "New Year's Eve",
+      "month": 12,
+      "day": 31
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://webapp.sebgroup.com/mb/mblib.nsf/alldocsbyunid/AB836DAA908374D1C12586B2004C049C/$FILE/Nordic_and_Baltic_Bank_Holidays_2026.pdf",
+    "https://webapp.sebgroup.com/mb/mblib.nsf/dld/AB836DAA908374D1C12586B2004C049C/$file/Nordic_Baltic_Bank_Holidays_2024.pdf"
+  ]
+}

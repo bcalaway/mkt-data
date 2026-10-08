@@ -97,6 +97,9 @@ SIX_SIC_URL = ("https://www.six-group.com/dam/download/banking-services/interban
                "banking-holidays.pdf")
 
 
+NO_NBO_URL = "https://www.norges-bank.no/en/topics/Norges-Banks-settlement-system/Settlement-days/"
+
+
 CALENDARS: dict[str, CalendarSpec] = {
     "FED": CalendarSpec(
         name="FED",
@@ -264,6 +267,49 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("NZ-RULES", f"{rules.REPO_PREFIX}nz.json",
                        "New Zealand national public holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # Stockholm, for the krona futures (docs/phase-4.md, "Calendars"): the banks' closing days, cited rules.
+    "SE": CalendarSpec(
+        name="SE",
+        description="Swedish krona settlement holidays (Stockholm banks)",
+        timezone="Europe/Stockholm",
+        sources=(
+            SourceSpec("SE-RULES", f"{rules.REPO_PREFIX}se.json",
+                       "Swedish bank holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # Oslo, for the krone futures (docs/phase-4.md, "Calendars"): Norges Bank's settlement days page (the current year,
+    # captured raw until its parser is written against a real capture) and the cited rules.
+    "NO": CalendarSpec(
+        name="NO",
+        description="Norwegian krone settlement holidays (NBO, Oslo)",
+        timezone="Europe/Oslo",
+        sources=(
+            SourceSpec("NO-NBO", NO_NBO_URL, "Norges Bank, NBO settlement days (web page, this year)", None,
+                       dedupe_on_text=True),
+            SourceSpec("NO-RULES", f"{rules.REPO_PREFIX}no.json",
+                       "NBO closing days, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # Copenhagen, for the krone (docs/phase-4.md, "Calendars"): the banks' closing days, cited rules.
+    "DK": CalendarSpec(
+        name="DK",
+        description="Danish krone settlement holidays (Copenhagen banks)",
+        timezone="Europe/Copenhagen",
+        sources=(
+            SourceSpec("DK-RULES", f"{rules.REPO_PREFIX}dk.json",
+                       "Danish bank holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # Mexico City, for the peso futures (docs/phase-4.md, "Calendars"): the CNBV's closing days, cited rules.
+    "MX": CalendarSpec(
+        name="MX",
+        description="Mexican peso settlement holidays (CNBV, Mexico City)",
+        timezone="America/Mexico_City",
+        sources=(
+            SourceSpec("MX-RULES", f"{rules.REPO_PREFIX}mx.json",
+                       "CNBV bank closing days, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national

@@ -36,7 +36,7 @@ import httpx2
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.calendars import fed, near_raw, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
+from app.calendars import fed, govuk, near_raw, nyfed, nyse, nyse_history, rules, sifma, sifma_history, text
 from app.calendars.parsed import ParsedCalendar, ParseError
 from app.models import Capture, Source, SourceCheck
 
@@ -172,6 +172,22 @@ CALENDARS: dict[str, CalendarSpec] = {
             SourceSpec(
                 "CME-IR-PROJECTED", f"{rules.REPO_PREFIX}cme_ir_projected.json",
                 "CME-IR full closes projected to 2100", rules.parse, projected=True,
+            ),
+        ),
+    ),
+    "GB": CalendarSpec(
+        name="GB",
+        description="England and Wales bank holidays (London): closed weekdays",
+        timezone="Europe/London",
+        sources=(
+            SourceSpec("GB-GOVUK", govuk.URL, "gov.uk, UK bank holidays (JSON, England and Wales; 2019 on)", govuk.parse),
+            SourceSpec(
+                "GB-RULES", f"{rules.REPO_PREFIX}gb.json",
+                "England and Wales bank holidays, 1990-2018 (rules and royal proclamations, cited)", rules.parse,
+            ),
+            SourceSpec(
+                "GB-PROJECTED", f"{rules.REPO_PREFIX}gb_projected.json",
+                "GB bank holidays projected to 2100 (years gov.uk doesn't list)", rules.parse, projected=True,
             ),
         ),
     ),

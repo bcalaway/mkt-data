@@ -1,0 +1,60 @@
+{
+  "calendar": "GB",
+  "about": "GB bank holidays projected to 2100 from gb.json's rules (no one-offs): fills only years gov.uk doesn't list yet.",
+  "first_year": 2019,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "monday",
+    "sunday": "monday",
+    "collision": "next"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Early May bank holiday",
+      "month": 5,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Spring bank holiday",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Summer bank holiday",
+      "month": 8,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "exceptions": [],
+  "citations": [
+    "https://www.gov.uk/bank-holidays.json",
+    "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom",
+    "https://www.legislation.gov.uk/ukpga/1971/80/schedule/1"
+  ]
+}

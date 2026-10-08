@@ -1,0 +1,121 @@
+{
+  "calendar": "GB",
+  "about": "England and Wales bank holidays (London), 1990-2018, before gov.uk's list starts (2019): the Banking and Financial Dealings Act 1971's holidays and the standing proclamations (early May bank holiday since 1978), a weekend holiday moved to the next free weekday (substitute days), and the one-off moves and extra days by royal proclamation, each cited. The same rules reproduce gov.uk's 2019-2028 list apart from its own one-offs (tests).",
+  "first_year": 1990,
+  "last_year": 2018,
+  "observance": {
+    "saturday": "monday",
+    "sunday": "monday",
+    "collision": "next"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Early May bank holiday",
+      "month": 5,
+      "weekday": "monday",
+      "n": 1
+    },
+    {
+      "name": "Spring bank holiday",
+      "month": 5,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Summer bank holiday",
+      "month": 8,
+      "weekday": "monday",
+      "n": -1
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Boxing Day",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "1995-05-01",
+      "status": "open",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom",
+      "note": "Early May bank holiday moved to May 8 for the 50th anniversary of VE Day."
+    },
+    {
+      "date": "1995-05-08",
+      "status": "closed",
+      "holiday": "Early May bank holiday (VE Day)",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "1999-12-31",
+      "status": "closed",
+      "holiday": "Millennium bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "2002-05-27",
+      "status": "open",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom",
+      "note": "Spring bank holiday moved to June 4 for the Golden Jubilee."
+    },
+    {
+      "date": "2002-06-03",
+      "status": "closed",
+      "holiday": "Golden Jubilee bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "2002-06-04",
+      "status": "closed",
+      "holiday": "Spring bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "2011-04-29",
+      "status": "closed",
+      "holiday": "Royal wedding bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "2012-05-28",
+      "status": "open",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom",
+      "note": "Spring bank holiday moved to June 4 for the Diamond Jubilee."
+    },
+    {
+      "date": "2012-06-04",
+      "status": "closed",
+      "holiday": "Spring bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    },
+    {
+      "date": "2012-06-05",
+      "status": "closed",
+      "holiday": "Diamond Jubilee bank holiday",
+      "citation": "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom"
+    }
+  ],
+  "citations": [
+    "https://www.gov.uk/bank-holidays.json",
+    "https://en.wikipedia.org/wiki/Public_holidays_in_the_United_Kingdom",
+    "https://www.legislation.gov.uk/ukpga/1971/80/schedule/1"
+  ]
+}

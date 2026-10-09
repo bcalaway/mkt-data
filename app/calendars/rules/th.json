@@ -1,0 +1,475 @@
+{
+  "calendar": "TH",
+  "about": "Thailand: the Bank of Thailand's financial-institution holidays (yearly notification under the Financial Institution Business Act), NOT the public-holiday list. Since 2007 BOT keeps Asarnha Bucha but not Buddhist Lent Day; it does not take the Royal Ploughing Ceremony or most cabinet 'special' days unless it adds them by separate notice; substitution days are listed one by one because BOT does not substitute consistently (e.g. none for Songkran 2023 or 2025). Branches in 5 southern provinces and Islamic Bank close extra days (not modelled). Fixed dates plus lunar tables plus explicit exceptions; checked against BOT or press reproductions of BOT lists for 2019-2027. Covers 2019-2027 (2027 notification No. 37/2569, 17 Aug 2026); 2010-2018 not verified.",
+  "first_year": 2019,
+  "last_year": 2027,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "none"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Makha Bucha Day",
+      "dates": {
+        "2019": "02-19",
+        "2020": "02-08",
+        "2021": "02-26",
+        "2022": "02-16",
+        "2023": "03-06",
+        "2024": "02-24",
+        "2025": "02-12",
+        "2026": "03-03",
+        "2027": "02-21"
+      }
+    },
+    {
+      "name": "Chakri Memorial Day",
+      "month": 4,
+      "day": 6
+    },
+    {
+      "name": "Songkran Festival",
+      "month": 4,
+      "day": 13
+    },
+    {
+      "name": "Songkran Festival",
+      "month": 4,
+      "day": 14
+    },
+    {
+      "name": "Songkran Festival",
+      "month": 4,
+      "day": 15
+    },
+    {
+      "name": "National Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Coronation Day",
+      "month": 5,
+      "day": 4,
+      "from": 2020
+    },
+    {
+      "name": "Visakha Bucha Day",
+      "dates": {
+        "2019": "05-18",
+        "2020": "05-06",
+        "2021": "05-26",
+        "2022": "05-15",
+        "2023": "06-03",
+        "2024": "05-22",
+        "2025": "05-11",
+        "2026": "05-31",
+        "2027": "05-20"
+      }
+    },
+    {
+      "name": "HM Queen Suthida's Birthday",
+      "month": 6,
+      "day": 3
+    },
+    {
+      "name": "Asarnha Bucha Day",
+      "dates": {
+        "2019": "07-16",
+        "2020": "07-05",
+        "2021": "07-24",
+        "2022": "07-13",
+        "2023": "08-01",
+        "2024": "07-20",
+        "2025": "07-10",
+        "2026": "07-29",
+        "2027": "07-18"
+      }
+    },
+    {
+      "name": "HM King Vajiralongkorn's Birthday",
+      "month": 7,
+      "day": 28
+    },
+    {
+      "name": "HM Queen Sirikit's Birthday / Mother's Day",
+      "month": 8,
+      "day": 12
+    },
+    {
+      "name": "King Bhumibol Memorial Day",
+      "month": 10,
+      "day": 13
+    },
+    {
+      "name": "Chulalongkorn Day",
+      "month": 10,
+      "day": 23
+    },
+    {
+      "name": "King Bhumibol's Birthday / National Day / Father's Day",
+      "month": 12,
+      "day": 5
+    },
+    {
+      "name": "Constitution Day",
+      "month": 12,
+      "day": 10
+    },
+    {
+      "name": "New Year's Eve",
+      "month": 12,
+      "day": 31
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "2019-04-08",
+      "status": "closed",
+      "holiday": "Substitution Chakri Day",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2019-04-16",
+      "status": "closed",
+      "holiday": "Substitution Songkran",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2019-05-06",
+      "status": "closed",
+      "holiday": "Special holiday (coronation)",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2019-05-20",
+      "status": "closed",
+      "holiday": "Substitution Visakha Bucha",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2019-07-29",
+      "status": "closed",
+      "holiday": "Substitution King's Birthday",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2019-10-14",
+      "status": "closed",
+      "holiday": "Substitution King Bhumibol Memorial Day",
+      "citation": "https://www.checkraka.com/money/article/118001"
+    },
+    {
+      "date": "2020-02-10",
+      "status": "closed",
+      "holiday": "Substitution Makha Bucha",
+      "citation": "https://www.checkraka.com/money/article/120121"
+    },
+    {
+      "date": "2020-04-13",
+      "status": "open",
+      "holiday": "Songkran cancelled (COVID-19)",
+      "citation": "https://www.bangkokbiznews.com/business/871349"
+    },
+    {
+      "date": "2020-04-14",
+      "status": "open",
+      "holiday": "Songkran cancelled (COVID-19)",
+      "citation": "https://www.bangkokbiznews.com/business/871349"
+    },
+    {
+      "date": "2020-04-15",
+      "status": "open",
+      "holiday": "Songkran cancelled (COVID-19)",
+      "citation": "https://www.bangkokbiznews.com/business/871349"
+    },
+    {
+      "date": "2020-07-06",
+      "status": "closed",
+      "holiday": "Substitution Asarnha Bucha",
+      "citation": "https://www.checkraka.com/money/article/120121"
+    },
+    {
+      "date": "2020-07-27",
+      "status": "closed",
+      "holiday": "Songkran substitution",
+      "citation": "https://www.posttoday.com/business/627440"
+    },
+    {
+      "date": "2020-12-07",
+      "status": "closed",
+      "holiday": "Substitution 5 December",
+      "citation": "https://www.checkraka.com/money/article/120121"
+    },
+    {
+      "date": "2020-12-11",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.posttoday.com/business/634200"
+    },
+    {
+      "date": "2021-02-12",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/th/news-and-media/news/news-20210106-1.html"
+    },
+    {
+      "date": "2021-05-03",
+      "status": "closed",
+      "holiday": "Substitution Labour Day",
+      "citation": "https://www.nationthailand.com/news/30394439"
+    },
+    {
+      "date": "2021-07-26",
+      "status": "closed",
+      "holiday": "Substitution Asarnha Bucha",
+      "citation": "https://www.nationthailand.com/news/30394439"
+    },
+    {
+      "date": "2021-09-24",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/th/news-and-media/news/news-20210106-1.html"
+    },
+    {
+      "date": "2021-10-22",
+      "status": "closed",
+      "holiday": "Chulalongkorn Day substitution (moved from 25 Oct)",
+      "citation": "https://www.bot.or.th/th/news-and-media/news/news-20210106-1.html"
+    },
+    {
+      "date": "2021-12-06",
+      "status": "closed",
+      "holiday": "Substitution 5 December",
+      "citation": "https://www.nationthailand.com/news/30394439"
+    },
+    {
+      "date": "2022-01-03",
+      "status": "closed",
+      "holiday": "Substitution New Year's Day",
+      "citation": "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069"
+    },
+    {
+      "date": "2022-05-02",
+      "status": "closed",
+      "holiday": "Substitution Labour Day",
+      "citation": "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069"
+    },
+    {
+      "date": "2022-05-16",
+      "status": "closed",
+      "holiday": "Substitution Visakha Bucha",
+      "citation": "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069"
+    },
+    {
+      "date": "2022-07-29",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/th/news-and-media/news/news-20211110-2.html"
+    },
+    {
+      "date": "2022-10-14",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/th/news-and-media/news/news-20211110-2.html"
+    },
+    {
+      "date": "2022-10-24",
+      "status": "closed",
+      "holiday": "Substitution Chulalongkorn Day",
+      "citation": "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069"
+    },
+    {
+      "date": "2022-12-12",
+      "status": "closed",
+      "holiday": "Substitution Constitution Day",
+      "citation": "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069"
+    },
+    {
+      "date": "2023-01-02",
+      "status": "closed",
+      "holiday": "Substitution New Year's Eve/Day",
+      "citation": "https://www.prachachat.net/finance/news-1193992"
+    },
+    {
+      "date": "2023-05-05",
+      "status": "closed",
+      "holiday": "Special holiday (coronation)",
+      "citation": "https://www.prachachat.net/finance/news-1193992"
+    },
+    {
+      "date": "2023-06-05",
+      "status": "closed",
+      "holiday": "Substitution Visakha Bucha/Queen's Birthday",
+      "citation": "https://www.prachachat.net/finance/news-1193992"
+    },
+    {
+      "date": "2023-08-14",
+      "status": "closed",
+      "holiday": "Substitution Mother's Day",
+      "citation": "https://www.prachachat.net/finance/news-1193992"
+    },
+    {
+      "date": "2023-12-11",
+      "status": "closed",
+      "holiday": "Substitution Constitution Day",
+      "citation": "https://www.prachachat.net/finance/news-1193992"
+    },
+    {
+      "date": "2023-12-29",
+      "status": "closed",
+      "holiday": "New Year's Eve substitution moved from 2 Jan 2024",
+      "citation": "https://www.bot.or.th/en/news-and-media/news/news-20231102.html"
+    },
+    {
+      "date": "2024-02-26",
+      "status": "closed",
+      "holiday": "Substitution Makha Bucha",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-04-08",
+      "status": "closed",
+      "holiday": "Substitution Chakri Day",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-04-12",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/en/news-and-media/news/news-20240221.html"
+    },
+    {
+      "date": "2024-04-16",
+      "status": "closed",
+      "holiday": "Substitution Songkran",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-05-06",
+      "status": "closed",
+      "holiday": "Substitution Coronation Day",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-07-22",
+      "status": "closed",
+      "holiday": "Substitution Asarnha Bucha",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-07-29",
+      "status": "closed",
+      "holiday": "Substitution King's Birthday",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2024-10-14",
+      "status": "closed",
+      "holiday": "Substitution King Bhumibol Memorial Day",
+      "citation": "https://www.bangkokbiznews.com/news/news-update/1114690"
+    },
+    {
+      "date": "2025-04-07",
+      "status": "closed",
+      "holiday": "Substitution Chakri Day",
+      "citation": "https://www.thebangkokinsight.com/news/politics-general/general/1370840/"
+    },
+    {
+      "date": "2025-05-05",
+      "status": "closed",
+      "holiday": "Substitution Coronation Day",
+      "citation": "https://www.thebangkokinsight.com/news/politics-general/general/1370840/"
+    },
+    {
+      "date": "2025-05-12",
+      "status": "closed",
+      "holiday": "Substitution Visakha Bucha",
+      "citation": "https://www.thebangkokinsight.com/news/politics-general/general/1370840/"
+    },
+    {
+      "date": "2025-06-02",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/en/news-and-media/news/news-20241127.html"
+    },
+    {
+      "date": "2025-08-11",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/en/news-and-media/news/news-20241127.html"
+    },
+    {
+      "date": "2026-01-02",
+      "status": "closed",
+      "holiday": "Special holiday",
+      "citation": "https://www.bot.or.th/en/news-and-media/news/news-20241127.html"
+    },
+    {
+      "date": "2026-06-01",
+      "status": "closed",
+      "holiday": "Substitution Visakha Bucha",
+      "citation": "https://www.bangkokbank.com/en/About-Us/Bank-Holidays"
+    },
+    {
+      "date": "2026-10-16",
+      "status": "closed",
+      "holiday": "Special holiday, Bangkok only (IMF-WBG meetings)",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690116.pdf"
+    },
+    {
+      "date": "2026-12-07",
+      "status": "closed",
+      "holiday": "Substitution 5 December",
+      "citation": "https://www.bangkokbank.com/en/About-Us/Bank-Holidays"
+    },
+    {
+      "date": "2027-02-22",
+      "status": "closed",
+      "holiday": "Substitution Makha Bucha",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf"
+    },
+    {
+      "date": "2027-05-03",
+      "status": "closed",
+      "holiday": "Substitution Labour Day",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf"
+    },
+    {
+      "date": "2027-07-19",
+      "status": "closed",
+      "holiday": "Substitution Asarnha Bucha",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf"
+    },
+    {
+      "date": "2027-10-25",
+      "status": "closed",
+      "holiday": "Substitution Chulalongkorn Day",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf"
+    },
+    {
+      "date": "2027-12-06",
+      "status": "closed",
+      "holiday": "Substitution 5 December",
+      "citation": "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf"
+    }
+  ],
+  "citations": [
+    "https://www.bangkokbank.com/en/About-Us/Bank-Holidays",
+    "https://www.bangkokbiznews.com/news/news-update/1114690",
+    "https://www.bot.or.th/content/dam/bot/fipcs/documents/FPG/2569/EngPDF/25690175.pdf",
+    "https://www.bot.or.th/en/financial-institutions-holiday.html",
+    "https://www.checkraka.com/money/article/118001",
+    "https://www.checkraka.com/money/article/120121",
+    "https://www.nationthailand.com/news/30394439",
+    "https://www.prachachat.net/finance/news-1193992",
+    "https://www.thairath.co.th/money/personal_finance/finance_banking/2239069",
+    "https://www.thebangkokinsight.com/news/politics-general/general/1370840/"
+  ]
+}

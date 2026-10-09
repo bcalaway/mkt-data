@@ -1,0 +1,343 @@
+{
+  "calendar": "TR",
+  "about": "Istanbul bank / CBRT EFT closures. Law 2429 fixed holidays; May 1 from 2009 (Law 5892); Jul 15 from 2017 (Law 6752); Ramazan Bayramı (3 days) and Kurban Bayramı (4 days) on the Diyanet calendar, with the eve (arife) and Oct 28 holidays from 13:00 (banks and EFT run in the morning: early_close, counted open, but Borsa Istanbul/Takasbank do not settle on these half days). No weekend substitution. Government 9-day 'extensions' are administrative leave (idari izin) for public servants only: banks, EFT and Borsa Istanbul operate, so they are not closures. Islamic dates from the Diyanet-derived table in python-holidays, checked against Borsa Istanbul's 2026 holiday announcement and published 2024-2026 dates. Kurban 2006-12-31..2007-01-03 spans years, so its weekdays (2007-01-01 to 03) are exceptions. Coverage 2005-2027.",
+  "first_year": 2005,
+  "last_year": 2027,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "National Sovereignty and Children's Day",
+      "month": 4,
+      "day": 23
+    },
+    {
+      "name": "Labour and Solidarity Day",
+      "month": 5,
+      "day": 1,
+      "from": 2009
+    },
+    {
+      "name": "Commemoration of Atatürk, Youth and Sports Day",
+      "month": 5,
+      "day": 19
+    },
+    {
+      "name": "Democracy and National Unity Day",
+      "month": 7,
+      "day": 15,
+      "from": 2017
+    },
+    {
+      "name": "Victory Day",
+      "month": 8,
+      "day": 30
+    },
+    {
+      "name": "Republic Day eve (holiday from 13:00)",
+      "month": 10,
+      "day": 28,
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Republic Day",
+      "month": 10,
+      "day": 29
+    },
+    {
+      "name": "Ramazan Bayramı eve (arife, holiday from 13:00)",
+      "dates": {
+        "2005": "11-02",
+        "2006": "10-22",
+        "2007": "10-11",
+        "2008": "09-29",
+        "2009": "09-19",
+        "2010": "09-08",
+        "2011": "08-29",
+        "2012": "08-18",
+        "2013": "08-07",
+        "2014": "07-27",
+        "2015": "07-16",
+        "2016": "07-04",
+        "2017": "06-24",
+        "2018": "06-14",
+        "2019": "06-03",
+        "2020": "05-23",
+        "2021": "05-12",
+        "2022": "05-01",
+        "2023": "04-20",
+        "2024": "04-09",
+        "2025": "03-29",
+        "2026": "03-19",
+        "2027": "03-08"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Ramazan Bayramı day 1",
+      "dates": {
+        "2005": "11-03",
+        "2006": "10-23",
+        "2007": "10-12",
+        "2008": "09-30",
+        "2009": "09-20",
+        "2010": "09-09",
+        "2011": "08-30",
+        "2012": "08-19",
+        "2013": "08-08",
+        "2014": "07-28",
+        "2015": "07-17",
+        "2016": "07-05",
+        "2017": "06-25",
+        "2018": "06-15",
+        "2019": "06-04",
+        "2020": "05-24",
+        "2021": "05-13",
+        "2022": "05-02",
+        "2023": "04-21",
+        "2024": "04-10",
+        "2025": "03-30",
+        "2026": "03-20",
+        "2027": "03-09"
+      }
+    },
+    {
+      "name": "Ramazan Bayramı day 2",
+      "dates": {
+        "2005": "11-04",
+        "2006": "10-24",
+        "2007": "10-13",
+        "2008": "10-01",
+        "2009": "09-21",
+        "2010": "09-10",
+        "2011": "08-31",
+        "2012": "08-20",
+        "2013": "08-09",
+        "2014": "07-29",
+        "2015": "07-18",
+        "2016": "07-06",
+        "2017": "06-26",
+        "2018": "06-16",
+        "2019": "06-05",
+        "2020": "05-25",
+        "2021": "05-14",
+        "2022": "05-03",
+        "2023": "04-22",
+        "2024": "04-11",
+        "2025": "03-31",
+        "2026": "03-21",
+        "2027": "03-10"
+      }
+    },
+    {
+      "name": "Ramazan Bayramı day 3",
+      "dates": {
+        "2005": "11-05",
+        "2006": "10-25",
+        "2007": "10-14",
+        "2008": "10-02",
+        "2009": "09-22",
+        "2010": "09-11",
+        "2011": "09-01",
+        "2012": "08-21",
+        "2013": "08-10",
+        "2014": "07-30",
+        "2015": "07-19",
+        "2016": "07-07",
+        "2017": "06-27",
+        "2018": "06-17",
+        "2019": "06-06",
+        "2020": "05-26",
+        "2021": "05-15",
+        "2022": "05-04",
+        "2023": "04-23",
+        "2024": "04-12",
+        "2025": "04-01",
+        "2026": "03-22",
+        "2027": "03-11"
+      }
+    },
+    {
+      "name": "Kurban Bayramı eve (arife, holiday from 13:00)",
+      "dates": {
+        "2005": "01-19",
+        "2006": "01-09",
+        "2007": "12-19",
+        "2008": "12-07",
+        "2009": "11-26",
+        "2010": "11-15",
+        "2011": "11-05",
+        "2012": "10-24",
+        "2013": "10-14",
+        "2014": "10-03",
+        "2015": "09-23",
+        "2016": "09-11",
+        "2017": "08-31",
+        "2018": "08-20",
+        "2019": "08-10",
+        "2020": "07-30",
+        "2021": "07-19",
+        "2022": "07-08",
+        "2023": "06-27",
+        "2024": "06-15",
+        "2025": "06-05",
+        "2026": "05-26",
+        "2027": "05-15"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Kurban Bayramı day 1",
+      "dates": {
+        "2005": "01-20",
+        "2006": "01-10",
+        "2007": "12-20",
+        "2008": "12-08",
+        "2009": "11-27",
+        "2010": "11-16",
+        "2011": "11-06",
+        "2012": "10-25",
+        "2013": "10-15",
+        "2014": "10-04",
+        "2015": "09-24",
+        "2016": "09-12",
+        "2017": "09-01",
+        "2018": "08-21",
+        "2019": "08-11",
+        "2020": "07-31",
+        "2021": "07-20",
+        "2022": "07-09",
+        "2023": "06-28",
+        "2024": "06-16",
+        "2025": "06-06",
+        "2026": "05-27",
+        "2027": "05-16"
+      }
+    },
+    {
+      "name": "Kurban Bayramı day 2",
+      "dates": {
+        "2005": "01-21",
+        "2006": "01-11",
+        "2007": "12-21",
+        "2008": "12-09",
+        "2009": "11-28",
+        "2010": "11-17",
+        "2011": "11-07",
+        "2012": "10-26",
+        "2013": "10-16",
+        "2014": "10-05",
+        "2015": "09-25",
+        "2016": "09-13",
+        "2017": "09-02",
+        "2018": "08-22",
+        "2019": "08-12",
+        "2020": "08-01",
+        "2021": "07-21",
+        "2022": "07-10",
+        "2023": "06-29",
+        "2024": "06-17",
+        "2025": "06-07",
+        "2026": "05-28",
+        "2027": "05-17"
+      }
+    },
+    {
+      "name": "Kurban Bayramı day 3",
+      "dates": {
+        "2005": "01-22",
+        "2006": "01-12",
+        "2007": "12-22",
+        "2008": "12-10",
+        "2009": "11-29",
+        "2010": "11-18",
+        "2011": "11-08",
+        "2012": "10-27",
+        "2013": "10-17",
+        "2014": "10-06",
+        "2015": "09-26",
+        "2016": "09-14",
+        "2017": "09-03",
+        "2018": "08-23",
+        "2019": "08-13",
+        "2020": "08-02",
+        "2021": "07-22",
+        "2022": "07-11",
+        "2023": "06-30",
+        "2024": "06-18",
+        "2025": "06-08",
+        "2026": "05-29",
+        "2027": "05-18"
+      }
+    },
+    {
+      "name": "Kurban Bayramı day 4",
+      "dates": {
+        "2005": "01-23",
+        "2006": "01-13",
+        "2007": "12-23",
+        "2008": "12-11",
+        "2009": "11-30",
+        "2010": "11-19",
+        "2011": "11-09",
+        "2012": "10-28",
+        "2013": "10-18",
+        "2014": "10-07",
+        "2015": "09-27",
+        "2016": "09-15",
+        "2017": "09-04",
+        "2018": "08-24",
+        "2019": "08-14",
+        "2020": "08-03",
+        "2021": "07-23",
+        "2022": "07-12",
+        "2023": "07-01",
+        "2024": "06-19",
+        "2025": "06-09",
+        "2026": "05-30",
+        "2027": "05-19"
+      }
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "2007-01-01",
+      "status": "closed",
+      "holiday": "Kurban Bayramı day 2",
+      "citation": "https://github.com/vacanza/holidays/blob/main/holidays/countries/turkey.py"
+    },
+    {
+      "date": "2007-01-02",
+      "status": "closed",
+      "holiday": "Kurban Bayramı day 3",
+      "citation": "https://github.com/vacanza/holidays/blob/main/holidays/countries/turkey.py"
+    },
+    {
+      "date": "2007-01-03",
+      "status": "closed",
+      "holiday": "Kurban Bayramı day 4",
+      "citation": "https://github.com/vacanza/holidays/blob/main/holidays/countries/turkey.py"
+    }
+  ],
+  "citations": [
+    "https://www.mevzuat.gov.tr/MevzuatMetin/1.5.2429.pdf",
+    "https://www.alomaliye.com/2009/04/27/ulusal-bayram-ve-genel-tatiller-hakkinda-kanunda-degisiklik/",
+    "https://www.alomaliye.com/2016/10/29/6752-sayili-kanun/amp/",
+    "https://web.archive.org/web/20250415045516/https://vakithesaplama.diyanet.gov.tr/hicriden_miladiye.php",
+    "https://github.com/vacanza/holidays/blob/main/holidays/countries/turkey.py",
+    "https://borsaistanbul.com/files/41625-sayili-duyurumuz-hk.-turkce-04122025.pdf",
+    "https://www.haberturk.com/bugun-bankalar-acik-mi-kapali-mi-25-mayis-pazartesi-bankalar-calisiyor-mu-eft-ve-havale-yapilir-mi-3887045",
+    "https://www.officeholidays.com/countries/turkey/2024"
+  ]
+}

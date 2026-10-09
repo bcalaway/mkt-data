@@ -1,0 +1,286 @@
+{
+  "calendar": "CL",
+  "about": "Santiago bank/LBTR closures (Banco Central de Chile LBTR in CLP; dólar observado). National legal holidays (Law 2.977 and amendments) plus the Dec 31 bank holiday (Ley General de Bancos art. 38: removed by the Fintec Law 21.521 but kept in practice per CMF, restored by Law 21.791 of 17 Dec 2025). Law 19.668 (2000) moves San Pedro y San Pablo, Encuentro de Dos Mundos and (to 2006) Corpus Christi: Tue-Thu to that week's Monday, Fri to the next Monday, weekend days stay; Law 20.148 replaced Corpus Christi with Jul 16 from 2007; Law 20.299 adds Oct 31 from 2008 (Tue->previous Fri, Wed->next Fri); Laws 20.215 and 20.983 add Sep 17/Sep 20 and Jan 2 bridge days; Law 21.357 adds the solstice indigenous day from 2021. Moving holidays are given as computed date tables. Checked against the 2026 published list (24horas) and the 2024 list; Santiago-only 2018-01-16 papal-visit holiday included. Elections are Sundays (Law 20.354) and never close a weekday 2005-2026. Coverage 2005-2026; 2027 entries are rule-based only.",
+  "first_year": 2005,
+  "last_year": 2026,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Holy Saturday",
+      "easter": -1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Navy Day",
+      "month": 5,
+      "day": 21
+    },
+    {
+      "name": "Corpus Christi (Monday, Law 19.668)",
+      "dates": {
+        "2005": "05-23",
+        "2006": "06-12"
+      },
+      "to": 2006
+    },
+    {
+      "name": "National Indigenous Peoples Day (solstice, Law 21.357)",
+      "dates": {
+        "2021": "06-21",
+        "2022": "06-21",
+        "2023": "06-21",
+        "2024": "06-20",
+        "2025": "06-20",
+        "2026": "06-21",
+        "2027": "06-21"
+      },
+      "from": 2021
+    },
+    {
+      "name": "Saints Peter and Paul (Law 19.668 move)",
+      "dates": {
+        "2005": "06-27",
+        "2006": "06-26",
+        "2007": "07-02",
+        "2008": "06-29",
+        "2009": "06-29",
+        "2010": "06-28",
+        "2011": "06-27",
+        "2012": "07-02",
+        "2013": "06-29",
+        "2014": "06-29",
+        "2015": "06-29",
+        "2016": "06-27",
+        "2017": "06-26",
+        "2018": "07-02",
+        "2019": "06-29",
+        "2020": "06-29",
+        "2021": "06-28",
+        "2022": "06-27",
+        "2023": "06-26",
+        "2024": "06-29",
+        "2025": "06-29",
+        "2026": "06-29",
+        "2027": "06-28"
+      }
+    },
+    {
+      "name": "Our Lady of Mount Carmel",
+      "month": 7,
+      "day": 16,
+      "from": 2007
+    },
+    {
+      "name": "Assumption",
+      "month": 8,
+      "day": 15
+    },
+    {
+      "name": "Independence Day",
+      "month": 9,
+      "day": 18
+    },
+    {
+      "name": "Army Day",
+      "month": 9,
+      "day": 19
+    },
+    {
+      "name": "Meeting of Two Worlds (Law 19.668 move)",
+      "dates": {
+        "2005": "10-10",
+        "2006": "10-09",
+        "2007": "10-15",
+        "2008": "10-12",
+        "2009": "10-12",
+        "2010": "10-11",
+        "2011": "10-10",
+        "2012": "10-15",
+        "2013": "10-12",
+        "2014": "10-12",
+        "2015": "10-12",
+        "2016": "10-10",
+        "2017": "10-09",
+        "2018": "10-15",
+        "2019": "10-12",
+        "2020": "10-12",
+        "2021": "10-11",
+        "2022": "10-10",
+        "2023": "10-09",
+        "2024": "10-12",
+        "2025": "10-12",
+        "2026": "10-12",
+        "2027": "10-11"
+      }
+    },
+    {
+      "name": "Evangelical and Protestant Churches Day (Law 20.299 move)",
+      "dates": {
+        "2008": "10-31",
+        "2009": "10-31",
+        "2010": "10-31",
+        "2011": "10-31",
+        "2012": "11-02",
+        "2013": "10-31",
+        "2014": "10-31",
+        "2015": "10-31",
+        "2016": "10-31",
+        "2017": "10-27",
+        "2018": "11-02",
+        "2019": "10-31",
+        "2020": "10-31",
+        "2021": "10-31",
+        "2022": "10-31",
+        "2023": "10-27",
+        "2024": "10-31",
+        "2025": "10-31",
+        "2026": "10-31",
+        "2027": "10-31"
+      },
+      "from": 2008
+    },
+    {
+      "name": "All Saints' Day",
+      "month": 11,
+      "day": 1
+    },
+    {
+      "name": "Immaculate Conception",
+      "month": 12,
+      "day": 8
+    },
+    {
+      "name": "Christmas",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Bank holiday (Ley General de Bancos art. 38; Law 21.791)",
+      "month": 12,
+      "day": 31
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "2007-09-17",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Mon before Sep 18, Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2010-09-17",
+      "status": "closed",
+      "holiday": "Bicentennial (Law 20.450)",
+      "citation": "https://web.archive.org/web/20250812023308/https://www.bcn.cl/leychile/navegar?idLey=20450"
+    },
+    {
+      "date": "2010-09-20",
+      "status": "closed",
+      "holiday": "Bicentennial (Law 20.450)",
+      "citation": "https://web.archive.org/web/20250812023308/https://www.bcn.cl/leychile/navegar?idLey=20450"
+    },
+    {
+      "date": "2012-09-17",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2013-09-20",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Fri after Sep 19, Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2017-01-02",
+      "status": "closed",
+      "holiday": "Jan 2 after Sunday New Year (Law 20.983)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20983"
+    },
+    {
+      "date": "2017-04-19",
+      "status": "closed",
+      "holiday": "National census (Law 17.374)",
+      "citation": "https://web.archive.org/web/20250812022623/https://www.bcn.cl/leychile/navegar?idNorma=28960&idVersion=2002-02-01"
+    },
+    {
+      "date": "2018-01-16",
+      "status": "closed",
+      "holiday": "Papal visit, Región Metropolitana only (Law 21.065); BCCh and LBTR closed",
+      "citation": "https://www.latercera.com/pulso/entidades-financieras-anuncian-feriado-bursatil-martes-16-enero/"
+    },
+    {
+      "date": "2018-09-17",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2019-09-20",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2021-09-17",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Fri before Sat Sep 18, Law 20.983)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20983"
+    },
+    {
+      "date": "2022-09-16",
+      "status": "closed",
+      "holiday": "Fiestas Patrias one-off law (2022)",
+      "citation": "https://www.meganoticias.cl/nacional/386580-aprueban-feriado-16-de-septiembre-fiestas-patrias-17-08-2022.html"
+    },
+    {
+      "date": "2023-01-02",
+      "status": "closed",
+      "holiday": "Jan 2 after Sunday New Year (Law 20.983)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20983"
+    },
+    {
+      "date": "2024-09-20",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Law 20.215)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20215"
+    },
+    {
+      "date": "2027-09-17",
+      "status": "closed",
+      "holiday": "Fiestas Patrias (Law 20.983)",
+      "citation": "https://www.bcn.cl/leychile/navegar?idLey=20983"
+    }
+  ],
+  "citations": [
+    "https://www.cmfchile.cl/portal/prensa/615/w3-article-102258.html",
+    "https://www.diariooficial.interior.gob.cl/publicaciones/2025/12/17/44326/01/2742215.pdf",
+    "https://chocale.cl/2024/12/feriado-bancario-2024-atencion-sucursales-bancos-31-de-diciembre/",
+    "https://es.wikipedia.org/wiki/Anexo:D%C3%ADas_feriados_en_Chile",
+    "https://www.bcn.cl/leychile/navegar?idLey=19668",
+    "https://www.bcn.cl/leychile/navegar?idLey=20148",
+    "https://www.bcn.cl/leychile/navegar?idLey=20299",
+    "https://www.bcn.cl/leychile/navegar?idLey=21357",
+    "https://www.24horas.cl/te-sirve/feriados-2026-revisa-el-calendario-completo-para-el-proximo-ano",
+    "https://www.chilevision.cl/noticias/lista-completa-de-feriados-2024-revisa-cuando-cae-el-primer-fin-de",
+    "https://dt.gob.cl/legislacion/1624/w3-article-114342.html",
+    "https://github.com/vacanza/holidays/blob/main/holidays/countries/chile.py"
+  ]
+}

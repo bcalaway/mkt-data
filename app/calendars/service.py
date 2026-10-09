@@ -437,6 +437,24 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "Indonesian national holidays and cuti bersama BI-RTGS closes for, 2010-2027 (dated tables; cited)", rules.parse),
         ),
     ),
+    "IN": CalendarSpec(
+        name="IN",
+        description="Indian rupee settlement holidays (RTGS and CCIL, Mumbai)",
+        timezone="Asia/Kolkata",
+        sources=(
+            SourceSpec("IN-RULES", f"{rules.REPO_PREFIX}in.json",
+                       "Mumbai bank and FX settlement holidays, 2017-2026 (dated tables; cited)", rules.parse),
+        ),
+    ),
+    "KR": CalendarSpec(
+        name="KR",
+        description="Korean won settlement holidays (BOK-Wire+, Seoul)",
+        timezone="Asia/Seoul",
+        sources=(
+            SourceSpec("KR-RULES", f"{rules.REPO_PREFIX}kr.json",
+                       "Korean public holidays, substitutes and designated days, 2010-2027 (rules and dated tables; cited)", rules.parse),
+        ),
+    ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
     # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
     "JP": CalendarSpec(

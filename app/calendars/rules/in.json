@@ -1,0 +1,419 @@
+{
+  "calendar": "IN",
+  "about": "Indian rupee settlement calendar: weekdays when Mumbai banks (RBI's NI Act holidays for Mumbai) and onshore FX settlement (CCIL forex segments, RBI's forex/money/G-sec markets) are closed. The annual lists are the exchanges' currency-derivatives settlement and trading holiday lists, which follow Mumbai's RBI/FEDAI holidays: NSE Clearing's CDS settlement holiday circulars (2018, 2020, 2025, 2026), NSE's currency-derivatives trading holiday circulars (2017, 2019, 2023, 2024; Diwali Laxmi Pujan counts as a holiday despite Muhurat trading), MSEI's currency-derivatives list for 2021 and NSE's currency-derivatives holiday page for 2022. April 1 (annual closing of bank accounts) is a full closure: NSE CDS lists it as a settlement holiday and CCIL lists it as a bank holiday (2024, 2025). Holiday dates don't move (a holiday on a weekend is lost), and two holidays on one day are one closure. Exceptions are RBI press releases and CCIL notices for holidays Maharashtra moved or added at short notice (Bakri Id 2023, Id-e-Milad 2023/2024/2025, 7 Feb 2022, 22 Jan 2024), and Mumbai election days (2017, 2019, 2024, Jan 2026); the 2019 and May/Nov 2024 election closures are cited to NSE/MSEI currency-derivatives circulars, not to an RBI release. Checked 2024-2026 against CCIL's holiday lists and 2025-2026 against NSE Clearing's CDS settlement lists. RBI's holiday matrix (rbi.org.in, form-driven) couldn't be read year by year here, so no year rests on it directly; no year rests on the vacanza library. Covers 2017-2026; 2014-2016 are left out because no exchange or CCIL list for those years could be fetched (2027 isn't published yet).",
+  "first_year": 2017,
+  "last_year": 2026,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "Republic Day",
+      "month": 1,
+      "day": 26
+    },
+    {
+      "name": "Chhatrapati Shivaji Maharaj Jayanti",
+      "month": 2,
+      "day": 19
+    },
+    {
+      "name": "Mahashivratri",
+      "dates": {
+        "2017": "02-24",
+        "2018": "02-13",
+        "2019": "03-04",
+        "2020": "02-21",
+        "2021": "03-11",
+        "2022": "03-01",
+        "2023": "02-18",
+        "2024": "03-08",
+        "2025": "02-26",
+        "2026": "02-15"
+      }
+    },
+    {
+      "name": "Holi",
+      "dates": {
+        "2017": "03-13",
+        "2018": "03-02",
+        "2019": "03-21",
+        "2020": "03-10",
+        "2021": "03-29",
+        "2022": "03-18",
+        "2023": "03-07",
+        "2024": "03-25",
+        "2025": "03-14",
+        "2026": "03-03"
+      }
+    },
+    {
+      "name": "Gudhi Padwa",
+      "dates": {
+        "2017": "03-28",
+        "2018": "03-18",
+        "2019": "04-06",
+        "2020": "03-25",
+        "2021": "04-13",
+        "2022": "04-02",
+        "2023": "03-22",
+        "2024": "04-09",
+        "2025": "03-30",
+        "2026": "03-19"
+      }
+    },
+    {
+      "name": "Annual Bank Closing",
+      "month": 4,
+      "day": 1
+    },
+    {
+      "name": "Ram Navami",
+      "dates": {
+        "2017": "04-04",
+        "2018": "03-25",
+        "2019": "04-13",
+        "2020": "04-02",
+        "2021": "04-21",
+        "2022": "04-10",
+        "2023": "03-30",
+        "2024": "04-17",
+        "2025": "04-06",
+        "2026": "03-26"
+      }
+    },
+    {
+      "name": "Mahavir Jayanti",
+      "dates": {
+        "2017": "04-09",
+        "2018": "03-29",
+        "2019": "04-17",
+        "2020": "04-06",
+        "2021": "04-25",
+        "2022": "04-14",
+        "2023": "04-04",
+        "2024": "04-21",
+        "2025": "04-10",
+        "2026": "03-31"
+      }
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Dr. Babasaheb Ambedkar Jayanti",
+      "month": 4,
+      "day": 14
+    },
+    {
+      "name": "Maharashtra Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Buddha Pournima",
+      "dates": {
+        "2017": "05-10",
+        "2018": "04-30",
+        "2019": "05-18",
+        "2020": "05-07",
+        "2021": "05-26",
+        "2022": "05-16",
+        "2023": "05-05",
+        "2024": "05-23",
+        "2025": "05-12",
+        "2026": "05-01"
+      }
+    },
+    {
+      "name": "Ramzan Id (Id-ul-Fitr)",
+      "dates": {
+        "2017": "06-26",
+        "2018": "06-16",
+        "2019": "06-05",
+        "2020": "05-25",
+        "2021": "05-13",
+        "2022": "05-03",
+        "2023": "04-22",
+        "2024": "04-11",
+        "2025": "03-31",
+        "2026": "03-21"
+      }
+    },
+    {
+      "name": "Bakri Id (Id-uz-Zuha)",
+      "dates": {
+        "2017": "09-02",
+        "2018": "08-22",
+        "2019": "08-12",
+        "2020": "08-01",
+        "2021": "07-21",
+        "2022": "07-10",
+        "2023": "06-28",
+        "2024": "06-17",
+        "2025": "06-07",
+        "2026": "05-28"
+      }
+    },
+    {
+      "name": "Muharram",
+      "dates": {
+        "2017": "10-01",
+        "2018": "09-20",
+        "2019": "09-10",
+        "2021": "08-19",
+        "2022": "08-09",
+        "2023": "07-29",
+        "2024": "07-17",
+        "2025": "07-06",
+        "2026": "06-26"
+      }
+    },
+    {
+      "name": "Independence Day",
+      "month": 8,
+      "day": 15
+    },
+    {
+      "name": "Parsi New Year (Shahenshahi)",
+      "dates": {
+        "2017": "08-17",
+        "2018": "08-17",
+        "2019": "08-17",
+        "2021": "08-16",
+        "2022": "08-16",
+        "2023": "08-16",
+        "2024": "08-15",
+        "2025": "08-15",
+        "2026": "08-15"
+      }
+    },
+    {
+      "name": "Ganesh Chaturthi",
+      "dates": {
+        "2017": "08-25",
+        "2018": "09-13",
+        "2019": "09-02",
+        "2020": "08-22",
+        "2021": "09-10",
+        "2022": "08-31",
+        "2023": "09-19",
+        "2024": "09-07",
+        "2025": "08-27",
+        "2026": "09-14"
+      }
+    },
+    {
+      "name": "Id-e-Milad",
+      "dates": {
+        "2017": "12-01",
+        "2018": "11-21",
+        "2019": "11-10",
+        "2020": "10-30",
+        "2021": "10-19",
+        "2022": "10-09",
+        "2023": "09-28",
+        "2024": "09-16",
+        "2025": "09-05",
+        "2026": "08-26"
+      }
+    },
+    {
+      "name": "Mahatma Gandhi Jayanti",
+      "month": 10,
+      "day": 2
+    },
+    {
+      "name": "Dasara",
+      "dates": {
+        "2017": "09-30",
+        "2018": "10-18",
+        "2019": "10-08",
+        "2021": "10-15",
+        "2022": "10-05",
+        "2023": "10-24",
+        "2024": "10-12",
+        "2025": "10-02",
+        "2026": "10-20"
+      }
+    },
+    {
+      "name": "Diwali (Laxmi Pujan)",
+      "dates": {
+        "2017": "10-19",
+        "2018": "11-07",
+        "2019": "10-27",
+        "2020": "11-14",
+        "2021": "11-04",
+        "2022": "10-24",
+        "2023": "11-12",
+        "2024": "11-01",
+        "2025": "10-21",
+        "2026": "11-08"
+      }
+    },
+    {
+      "name": "Diwali (Bali Pratipada)",
+      "dates": {
+        "2017": "10-20",
+        "2018": "11-08",
+        "2019": "10-28",
+        "2020": "11-16",
+        "2021": "11-05",
+        "2022": "10-26",
+        "2023": "11-14",
+        "2024": "11-02",
+        "2025": "10-22",
+        "2026": "11-10"
+      }
+    },
+    {
+      "name": "Guru Nanak Jayanti",
+      "dates": {
+        "2017": "11-04",
+        "2018": "11-23",
+        "2019": "11-12",
+        "2020": "11-30",
+        "2021": "11-19",
+        "2022": "11-08",
+        "2023": "11-27",
+        "2024": "11-15",
+        "2025": "11-05",
+        "2026": "11-24"
+      }
+    },
+    {
+      "name": "Christmas",
+      "month": 12,
+      "day": 25
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "2017-02-21",
+      "status": "closed",
+      "holiday": "Municipal Corporation elections, Mumbai (NI Act holiday, RTGS non-working)",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=39593"
+    },
+    {
+      "date": "2019-04-29",
+      "status": "closed",
+      "holiday": "Lok Sabha elections in Mumbai",
+      "citation": "https://nsearchives.nseindia.com/content/circulars/CD40538.pdf"
+    },
+    {
+      "date": "2019-10-21",
+      "status": "closed",
+      "holiday": "Maharashtra Legislative Assembly elections",
+      "citation": "https://www.msei.in/SX-Content/Circulars/2019/October/Circular-8198.pdf"
+    },
+    {
+      "date": "2022-02-07",
+      "status": "closed",
+      "holiday": "Public holiday declared by Maharashtra (death of Lata Mangeshkar)",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=53229"
+    },
+    {
+      "date": "2023-06-28",
+      "status": "open",
+      "holiday": "Bakri Id holiday moved to June 29 by Maharashtra",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=55931"
+    },
+    {
+      "date": "2023-06-29",
+      "status": "closed",
+      "holiday": "Bakri Id (Id-uz-Zuha), moved from June 28",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=55931"
+    },
+    {
+      "date": "2023-09-28",
+      "status": "open",
+      "holiday": "Id-e-Milad holiday cancelled; RBI kept markets open Sep 28 and 29",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=56455"
+    },
+    {
+      "date": "2024-01-22",
+      "status": "closed",
+      "holiday": "Public holiday declared by Maharashtra (Ram temple consecration)",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=57166"
+    },
+    {
+      "date": "2024-05-20",
+      "status": "closed",
+      "holiday": "Lok Sabha elections in Mumbai",
+      "citation": "https://nsearchives.nseindia.com/content/circulars/CD61643.pdf"
+    },
+    {
+      "date": "2024-09-16",
+      "status": "open",
+      "holiday": "Id-e-Milad holiday moved to September 18",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58712"
+    },
+    {
+      "date": "2024-09-18",
+      "status": "closed",
+      "holiday": "Id-e-Milad, moved from September 16",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58712"
+    },
+    {
+      "date": "2024-11-20",
+      "status": "closed",
+      "holiday": "Maharashtra Legislative Assembly elections",
+      "citation": "https://nsearchives.nseindia.com/content/circulars/CD65066.pdf"
+    },
+    {
+      "date": "2025-09-05",
+      "status": "open",
+      "holiday": "Id-e-Milad holiday moved to September 8 in Mumbai",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=61158"
+    },
+    {
+      "date": "2025-09-08",
+      "status": "closed",
+      "holiday": "Id-e-Milad, moved from September 5",
+      "citation": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=61158"
+    },
+    {
+      "date": "2026-01-15",
+      "status": "closed",
+      "holiday": "Municipal Corporation elections, Maharashtra (NI Act holiday)",
+      "citation": "https://www.ccilindia.com/documents/d/ccil/unscheduled-holiday-notification-january-15-2026-pdf"
+    }
+  ],
+  "citations": [
+    "https://www.rbi.org.in/Scripts/HolidayMatrixDisplay.aspx",
+    "https://www.ccilindia.com/documents/d/ccil/holiday-list-2026",
+    "https://www.ccilindia.com/documents/d/ccil/ccil_holday_list_2025",
+    "https://www.ccilindia.com/documents/d/ccil/holiday_list_2024",
+    "https://nsearchives.nseindia.com/content/circulars/CD71921.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD71962.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD65908.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD65903.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD59917.pdf",
+    "https://archives.nseindia.com/content/circulars/CD54832.pdf",
+    "https://www.nseindia.com/products/content/derivatives/curr_der/mrkt_timing_holidays.htm",
+    "https://www.msei.in/SX-Content/Circulars/2020/December/Circular-9886.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD43017.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD39780.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD36647.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD36627.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD33804.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD70038.pdf",
+    "https://www.ccilindia.com/documents/d/ccil/changeinpublicholidayundernegotiableinstrumentsactto18september2024-pdf",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=39593",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=53229",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=55931",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=56455",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=57166",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58712",
+    "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=61158",
+    "https://nsearchives.nseindia.com/content/circulars/CD40538.pdf",
+    "https://www.msei.in/SX-Content/Circulars/2019/October/Circular-8198.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD61643.pdf",
+    "https://nsearchives.nseindia.com/content/circulars/CD65066.pdf",
+    "https://www.ccilindia.com/documents/d/ccil/unscheduled-holiday-notification-january-15-2026-pdf"
+  ]
+}

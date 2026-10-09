@@ -30,7 +30,9 @@ def test_sources_are_listed_before_anything_is_captured(migrated_db):
         listed = {r["name"]: r for r in api.list_sources(s)}
         assert api.list_periods(s, "UST-PAR") == []
         assert api.get_period(s, "UST-PAR", "2026-09") == []
-    assert set(listed) == {"UST-PAR", "H15-TCM", "TD-PRICES", "BLS-CPI"}
+    assert set(listed) == {"UST-PAR", "H15-TCM", "TD-PRICES", "BLS-CPI", "NYFED-SOFR", "NYFED-EFFR", "FRB-H10",
+                           "FRB-H10-RATES", "ECB-EXR"}  # phase 4's fixings; not the SOFR averages or the CFTC
+    assert listed["ECB-EXR"]["calendar"] == "TARGET" and listed["NYFED-SOFR"]["first_period"] == "2018-04"
     assert listed["TD-PRICES"]["first_period"] == "2000-01-03" and listed["BLS-CPI"]["calendar"] == "FED"
     assert listed["UST-PAR"]["calendar"] == "SIFMA-US" and listed["UST-PAR"]["first_period"] == "1990-01"
     assert listed["UST-PAR"]["periods"] == 0

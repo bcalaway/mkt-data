@@ -63,6 +63,12 @@ def test_sofr_keeps_every_number_as_printed():
     assert {o.source_key for o in obs} == {"SOFR"} and len(obs) == 12
 
 
+def test_a_value_marked_na_is_skipped():
+    body = (b'{"refRates": [{"effectiveDate": "2019-05-31", "type": "SOFR", "percentRate": 2.35, '
+            b'"percentPercentile1": "NA", "volumeInBillions": 1066}]}')
+    assert {o.field for o in p.parse_sofr(body)} == {"percentRate", "volumeInBillions"}
+
+
 def test_effr_has_the_target_range():
     got = {o.field: o.value for o in p.parse_effr(EFFR)}
     assert got["targetRateFrom"] == Decimal("3.75") and got["targetRateTo"] == Decimal("4.0")

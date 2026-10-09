@@ -29,6 +29,7 @@ from app.calendars.parsed import ParseError
 from app.rates.parsers import Obs
 
 NYFED_SKIP = {"effectiveDate", "type", "revisionIndicator", "footnoteId", "footnote"}
+NYFED_NA = {"NA", "N/A"}
 DDP_SERIES = re.compile(r"^[A-Z0-9$_.]+$")
 
 
@@ -64,8 +65,8 @@ def parse_nyfed(content: bytes, kind: str) -> list[Obs]:
             raise ParseError(f"expected {kind} records, got {str(r)[:80]}")
         day = _date(r.get("effectiveDate", ""), kind)
         for field, v in r.items():
-            if field in NYFED_SKIP or v is None or v == "":
-                continue
+            if field in NYFED_SKIP or v is None or v == "" or v in NYFED_NA:
+                continue  # "NA": not available that day (SOFR's 1st percentile on 2019-05-31, 2021-08-05)
             if not isinstance(v, Decimal):
                 raise ParseError(f"{day} {field}: {v!r} isn't a number")
             unit = "USD billions" if field.startswith("volume") else "percent"

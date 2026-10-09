@@ -11,8 +11,8 @@ ever loading a capture's body.
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import case, func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, exists, func, not_, or_, select
+from sqlalchemy.orm import Session, aliased
 
 from app.calendars import service
 from app.calendars.service import SourceSpec
@@ -106,6 +106,7 @@ class Entry:
     kind: str  # published | rules | projected
     period_kind: str  # day | month | year; "" for a one-page source
     spec: SourceSpec
+    first_period: str = ""  # the earliest period the source serves; "" for a one-page source
 
 
 def catalog() -> list[Entry]:
@@ -115,12 +116,31 @@ def catalog() -> list[Entry]:
         for src in cal.sources:
             out.setdefault(src.name, Entry(src.name, "calendars", cal.name, service.source_kind(src), "", src))
     for name, src in rates.SOURCES.items():
-        out.setdefault(name, Entry(name, "rates", src.calendar, "published", "month", src.spec))
+        out.setdefault(name, Entry(name, "rates", src.calendar, "published", "month", src.spec, src.first_period))
     for name, src in securities.SOURCES.items():
-        out.setdefault(name, Entry(name, "securities", src.calendar, "published", src.kind, src.spec))
+        out.setdefault(name, Entry(name, "securities", src.calendar, "published", src.kind, src.spec,
+                                   src.first_period))
     for name, src in futures.SOURCES.items():
-        out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec))
+        out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec,
+                                   src.first_period))
     return list(out.values())
+
+
+def is_error(c):
+    """A check that failed: a fetch error (but not a period that isn't published yet, which is expected) or a
+    parse error."""
+    return or_(and_(c.outcome == "error", not_(func.coalesce(c.detail, "").contains("NOT_PUBLISHED"))),
+               c.parse_outcome == "error")
+
+
+def unfixed_error(c):
+    """A failed check that no later check has fixed: no later check of the same source and period (both without a
+    period, for a source fetched whole) worked. A backfill's failure that a re-run fetched, or a parse error a
+    later reparse got through, doesn't count (Bill, 2026-10-09: show only errors that haven't been fixed)."""
+    later = aliased(SourceCheck)
+    same_period = or_(later.period == c.period, and_(later.period.is_(None), c.period.is_(None)))
+    fixed = exists().where(later.source_id == c.source_id, same_period, later.id > c.id, not_(is_error(later)))
+    return and_(is_error(c), not_(fixed))
 
 
 def _aware(t: datetime) -> datetime:
@@ -149,10 +169,20 @@ def _states(s: Session, entries: list[Entry], now: datetime) -> list[dict]:
     newest = select(func.max(SourceCheck.id)).where(SourceCheck.source_id.in_(ids)).group_by(SourceCheck.source_id)
     last = {c.source_id: c for c in s.scalars(select(SourceCheck).where(SourceCheck.id.in_(newest)))}
     since = now - timedelta(days=RECENT_DAYS)
-    error = or_(SourceCheck.outcome == "error", SourceCheck.parse_outcome == "error")
-    recent = {sid: (n, int(e or 0)) for sid, n, e in s.execute(
-        select(SourceCheck.source_id, func.count(), func.sum(case((error, 1), else_=0)))
-        .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since).group_by(SourceCheck.source_id))}
+    checks_n = dict(s.execute(
+        select(SourceCheck.source_id, func.count())
+        .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since).group_by(SourceCheck.source_id)).all())
+    # A period before the source's first can't be fetched, so its old failure is moot (FRB-H10's probe asked for
+    # 2000-2005 before its first period was found to be 2006-01).
+    first = {rows[e.name][0]: e.first_period for e in entries if e.name in rows and e.first_period}
+    unfixed: dict[int, int] = {}
+    for sid, period in s.execute(
+            select(SourceCheck.source_id, SourceCheck.period)
+            .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since, unfixed_error(SourceCheck))):
+        if period and sid in first and period < first[sid]:
+            continue
+        unfixed[sid] = unfixed.get(sid, 0) + 1
+    recent = {sid: (n, unfixed.get(sid, 0)) for sid, n in checks_n.items()}
     out = []
     for e in entries:
         sched = schedule_for(e)

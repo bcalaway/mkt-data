@@ -158,3 +158,34 @@ def test_the_late_threshold_is_a_metric(migrated_db):
     text = TestClient(app).get("/metrics").text
     assert 'mkt_data_source_late_after_seconds{calendar="SIFMA-US",source="TD-PRICES",kind="published"} 432000' in text
     assert 'mkt_data_source_late_after_seconds{calendar="FED",source="FED-K8",kind="published"} 691200' in text
+
+
+def test_only_unfixed_errors_count(migrated_db):
+    """Bill, 2026-10-09: the Sources screen shows only errors no later check has fixed."""
+    with db.session() as s:
+        _load(s)
+        h10 = _source(s, "FRB-H10")
+        week = NOW - timedelta(days=2)
+        # A backfill that failed for June, then a re-run that fetched it: fixed.
+        _check(s, h10, week, "error", parse=None, detail="empty response, 3 tries", period="2024-06")
+        cap = _capture(s, h10, week + timedelta(hours=1), "2024-06")
+        _check(s, h10, week + timedelta(hours=1), "new", cap, period="2024-06")
+        # Another month that failed and hasn't been fetched since: not fixed, though other months worked later.
+        _check(s, h10, week, "error", parse=None, detail="empty response, 3 tries", period="2023-06")
+        cap = _capture(s, h10, week + timedelta(hours=2), "2023-07")
+        _check(s, h10, week + timedelta(hours=2), "new", cap, period="2023-07")
+        # A month before the source's first can't be fetched: its old failure doesn't count.
+        _check(s, h10, week, "error", parse=None, detail="empty response, 3 tries", period="2000-06")
+        # A month not published yet is expected, not an error.
+        _check(s, h10, week, "error", parse=None, detail="NOT_PUBLISHED: no rates for these dates yet",
+               period="2026-11")
+        # A parse error a later reparse got through: fixed.
+        jp = _source(s, "JP-CAO")
+        cap = _capture(s, jp, week)
+        _check(s, jp, week, "new", cap, parse="error", parse_detail="1955 has 9 national holidays")
+        _check(s, jp, week + timedelta(hours=1), "reparse", cap, parse="ok")
+        s.commit()
+        rows = {r["name"]: r for r in source_status.list_sources(s, NOW)}
+    assert (rows["FRB-H10"]["checks_7d"], rows["FRB-H10"]["errors_7d"]) == (6, 1)
+    assert rows["JP-CAO"]["errors_7d"] == 0
+    assert rows["TD-PRICES"]["errors_7d"] == 1  # the latest check failed: nothing has fixed it

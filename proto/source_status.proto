@@ -45,7 +45,7 @@ message SourceState {
   string last_parse_outcome = 16; // ok | error | empty (a fetch error, or no parser)
   string last_error = 17;         // the last check's fetch or parse error; empty if it worked
   int32 checks_7d = 18;           // fetch attempts and reparses in the last 7 days
-  int32 errors_7d = 19;           // of those, fetch or parse errors
+  int32 errors_7d = 19;           // of those, fetch or parse errors no later check of that period has fixed
   int32 periods = 20;             // distinct periods captured (0 for a one-page source)
   string first_period = 21;
   string last_period = 22;

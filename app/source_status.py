@@ -106,6 +106,7 @@ class Entry:
     kind: str  # published | rules | projected
     period_kind: str  # day | month | year; "" for a one-page source
     spec: SourceSpec
+    first_period: str = ""  # the earliest period the source serves; "" for a one-page source
 
 
 def catalog() -> list[Entry]:
@@ -115,11 +116,13 @@ def catalog() -> list[Entry]:
         for src in cal.sources:
             out.setdefault(src.name, Entry(src.name, "calendars", cal.name, service.source_kind(src), "", src))
     for name, src in rates.SOURCES.items():
-        out.setdefault(name, Entry(name, "rates", src.calendar, "published", "month", src.spec))
+        out.setdefault(name, Entry(name, "rates", src.calendar, "published", "month", src.spec, src.first_period))
     for name, src in securities.SOURCES.items():
-        out.setdefault(name, Entry(name, "securities", src.calendar, "published", src.kind, src.spec))
+        out.setdefault(name, Entry(name, "securities", src.calendar, "published", src.kind, src.spec,
+                                   src.first_period))
     for name, src in futures.SOURCES.items():
-        out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec))
+        out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec,
+                                   src.first_period))
     return list(out.values())
 
 
@@ -169,10 +172,16 @@ def _states(s: Session, entries: list[Entry], now: datetime) -> list[dict]:
     checks_n = dict(s.execute(
         select(SourceCheck.source_id, func.count())
         .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since).group_by(SourceCheck.source_id)).all())
-    unfixed = dict(s.execute(
-        select(SourceCheck.source_id, func.count())
-        .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since, unfixed_error(SourceCheck))
-        .group_by(SourceCheck.source_id)).all())
+    # A period before the source's first can't be fetched, so its old failure is moot (FRB-H10's probe asked for
+    # 2000-2005 before its first period was found to be 2006-01).
+    first = {rows[e.name][0]: e.first_period for e in entries if e.name in rows and e.first_period}
+    unfixed: dict[int, int] = {}
+    for sid, period in s.execute(
+            select(SourceCheck.source_id, SourceCheck.period)
+            .where(SourceCheck.source_id.in_(ids), SourceCheck.checked_at >= since, unfixed_error(SourceCheck))):
+        if period and sid in first and period < first[sid]:
+            continue
+        unfixed[sid] = unfixed.get(sid, 0) + 1
     recent = {sid: (n, unfixed.get(sid, 0)) for sid, n in checks_n.items()}
     out = []
     for e in entries:

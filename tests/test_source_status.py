@@ -174,6 +174,8 @@ def test_only_unfixed_errors_count(migrated_db):
         _check(s, h10, week, "error", parse=None, detail="empty response, 3 tries", period="2023-06")
         cap = _capture(s, h10, week + timedelta(hours=2), "2023-07")
         _check(s, h10, week + timedelta(hours=2), "new", cap, period="2023-07")
+        # A month before the source's first can't be fetched: its old failure doesn't count.
+        _check(s, h10, week, "error", parse=None, detail="empty response, 3 tries", period="2000-06")
         # A month not published yet is expected, not an error.
         _check(s, h10, week, "error", parse=None, detail="NOT_PUBLISHED: no rates for these dates yet",
                period="2026-11")
@@ -184,6 +186,6 @@ def test_only_unfixed_errors_count(migrated_db):
         _check(s, jp, week + timedelta(hours=1), "reparse", cap, parse="ok")
         s.commit()
         rows = {r["name"]: r for r in source_status.list_sources(s, NOW)}
-    assert (rows["FRB-H10"]["checks_7d"], rows["FRB-H10"]["errors_7d"]) == (5, 1)
+    assert (rows["FRB-H10"]["checks_7d"], rows["FRB-H10"]["errors_7d"]) == (6, 1)
     assert rows["JP-CAO"]["errors_7d"] == 0
     assert rows["TD-PRICES"]["errors_7d"] == 1  # the latest check failed: nothing has fixed it

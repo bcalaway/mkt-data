@@ -1,0 +1,246 @@
+{
+  "calendar": "TR",
+  "about": "TR projected 2028-2035 from the vacanza holidays library: Turkey's public holidays and bayrams, with the half days (bayram eves, October 28) as 13:00 early closes; Islamic dates as the library computes them. Fills only years the published rules file doesn't cover; that file wins wherever it covers a year, and each year's real list replaces the projection when it's published. Over 2005-2027 the library gives 218 of the 218 published weekday closures (0 missed, 0 extra).",
+  "first_year": 2028,
+  "last_year": 2035,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "Eid al-Fitr (from 1pm)",
+      "dates": {
+        "2028": "02-25",
+        "2029": "02-13",
+        "2031": "01-23",
+        "2032": "01-13"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Eid al-Fitr",
+      "dates": {
+        "2028": "02-28",
+        "2029": "02-14",
+        "2030": "02-04",
+        "2031": "01-24",
+        "2032": "01-14"
+      }
+    },
+    {
+      "name": "Eid al-Fitr",
+      "dates": {
+        "2029": "02-15",
+        "2030": "02-05",
+        "2032": "01-15"
+      }
+    },
+    {
+      "name": "Eid al-Fitr",
+      "dates": {
+        "2029": "02-16",
+        "2030": "02-06",
+        "2032": "01-16"
+      }
+    },
+    {
+      "name": "Labour and Solidarity Day",
+      "dates": {
+        "2028": "05-01",
+        "2029": "05-01",
+        "2030": "05-01",
+        "2031": "05-01",
+        "2034": "05-01",
+        "2035": "05-01"
+      }
+    },
+    {
+      "name": "Eid al-Adha (from 1pm)",
+      "dates": {
+        "2028": "05-04",
+        "2030": "04-12",
+        "2031": "04-01"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Eid al-Adha",
+      "dates": {
+        "2028": "05-05",
+        "2029": "04-24",
+        "2030": "04-15",
+        "2031": "04-02",
+        "2032": "03-22"
+      }
+    },
+    {
+      "name": "Eid al-Adha",
+      "dates": {
+        "2028": "05-08",
+        "2029": "04-25",
+        "2030": "04-16",
+        "2031": "04-03",
+        "2032": "03-23"
+      }
+    },
+    {
+      "name": "Eid al-Adha",
+      "dates": {
+        "2029": "04-26",
+        "2031": "04-04",
+        "2032": "03-24"
+      }
+    },
+    {
+      "name": "Eid al-Adha",
+      "dates": {
+        "2029": "04-27",
+        "2032": "03-25"
+      }
+    },
+    {
+      "name": "Commemoration of Atatürk, Youth and Sports Day",
+      "dates": {
+        "2028": "05-19",
+        "2031": "05-19",
+        "2032": "05-19",
+        "2033": "05-19",
+        "2034": "05-19"
+      }
+    },
+    {
+      "name": "Victory Day",
+      "dates": {
+        "2028": "08-30",
+        "2029": "08-30",
+        "2030": "08-30",
+        "2032": "08-30",
+        "2033": "08-30",
+        "2034": "08-30",
+        "2035": "08-30"
+      }
+    },
+    {
+      "name": "New Year's Day",
+      "dates": {
+        "2029": "01-01",
+        "2030": "01-01",
+        "2031": "01-01",
+        "2032": "01-01",
+        "2035": "01-01"
+      }
+    },
+    {
+      "name": "National Sovereignty and Children's Day",
+      "dates": {
+        "2029": "04-23",
+        "2030": "04-23",
+        "2031": "04-23",
+        "2032": "04-23",
+        "2035": "04-23"
+      }
+    },
+    {
+      "name": "Republic Day",
+      "dates": {
+        "2029": "10-29",
+        "2030": "10-29",
+        "2031": "10-29",
+        "2032": "10-29",
+        "2035": "10-29"
+      }
+    },
+    {
+      "name": "Democracy and National Unity Day",
+      "dates": {
+        "2030": "07-15",
+        "2031": "07-15",
+        "2032": "07-15",
+        "2033": "07-15"
+      }
+    },
+    {
+      "name": "Republic Day (from 1pm)",
+      "dates": {
+        "2030": "10-28",
+        "2031": "10-28",
+        "2032": "10-28",
+        "2033": "10-28"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Eid al-Fitr (estimated)",
+      "dates": {
+        "2033": "01-03",
+        "2034": "12-12",
+        "2035": "12-03"
+      }
+    },
+    {
+      "name": "Eid al-Fitr (estimated)",
+      "dates": {
+        "2033": "01-04",
+        "2034": "12-13"
+      }
+    },
+    {
+      "name": "Eid al-Fitr (estimated)",
+      "dates": {
+        "2033": "12-23",
+        "2034": "12-14"
+      }
+    },
+    {
+      "name": "Eid al-Adha (from 1pm) (estimated)",
+      "dates": {
+        "2033": "03-10",
+        "2034": "02-28"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    },
+    {
+      "name": "Eid al-Adha (estimated)",
+      "dates": {
+        "2033": "03-11",
+        "2034": "03-01",
+        "2035": "02-19"
+      }
+    },
+    {
+      "name": "Eid al-Adha (estimated)",
+      "dates": {
+        "2033": "03-14",
+        "2034": "03-02",
+        "2035": "02-20"
+      }
+    },
+    {
+      "name": "Eid al-Adha (estimated)",
+      "dates": {
+        "2034": "03-03",
+        "2035": "02-21"
+      }
+    },
+    {
+      "name": "Eid al-Fitr (from 1pm) (estimated)",
+      "dates": {
+        "2033": "12-22",
+        "2034": "12-11",
+        "2035": "11-30"
+      },
+      "status": "early_close",
+      "close_time": "13:00"
+    }
+  ],
+  "citations": [
+    "https://www.mevzuat.gov.tr/mevzuat?MevzuatNo=2429&MevzuatTur=1&MevzuatTertip=5",
+    "https://github.com/vacanza/holidays (v0.107)"
+  ]
+}

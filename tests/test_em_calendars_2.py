@@ -29,9 +29,10 @@ def test_years(name, first, last):
     assert _parsed(name).years == tuple(range(first, last + 1))
 
 
+@pytest.mark.projections
 def test_registered():
     for c in NAMES:
-        assert service.CALENDARS[c.upper()].source_names == [f"{c.upper()}-RULES"]
+        assert service.CALENDARS[c.upper()].source_names == [f"{c.upper()}-RULES", f"{c.upper()}-PROJECTED"]
 
 
 def test_cl():

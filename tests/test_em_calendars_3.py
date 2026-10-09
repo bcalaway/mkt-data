@@ -2,6 +2,8 @@
 
 from datetime import date
 
+import pytest
+
 from app.calendars import rules, service
 
 
@@ -13,11 +15,12 @@ def _weekdays(name: str, y: int) -> list[str]:
     return [f"{d.day:%m-%d}" for d in _parsed(name).days if d.day.year == y and d.day.weekday() < 5]
 
 
+@pytest.mark.projections
 def test_years_and_registration():
     assert _parsed("in").years == tuple(range(2017, 2027))
     assert _parsed("kr").years == tuple(range(2010, 2028))
     for c in ("IN", "KR"):
-        assert service.CALENDARS[c].source_names == [f"{c}-RULES"]
+        assert service.CALENDARS[c].source_names == [f"{c}-RULES", f"{c}-PROJECTED"]
 
 
 def test_in_is_nse_clearings_settlement_holidays():

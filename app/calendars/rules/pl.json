@@ -1,0 +1,90 @@
+{
+  "calendar": "PL",
+  "about": "The Polish zloty's settlement calendar (Warsaw banks; the NBP's SORBNET), 1990-2100: the statutory days off of the Act of 18 January 1951 (art. 1): New Year's Day, Epiphany (from 2011), Easter Sunday and Monday, May 1, Constitution Day (May 3), Pentecost Sunday, Corpus Christi, the Assumption (August 15), All Saints' Day, Independence Day (November 11), Christmas Eve (from 2025, by the 2024 amendment, Dz.U. 2024 poz. 1965), Christmas Day and the second day of Christmas. A holiday on a weekend isn't moved (banks stay open the next weekday: NBP fixed on every weekday of November 3-10, 2025 after November 1 fell on a Saturday). November 12, 2018, a one-off statutory day off, was a settlement day: NBP fixed and SORBNET2 counted it, so it isn't closed. Checked against the NBP's Table A fixings: weekdays less these closures equal the year's table count for 2002, 2010, 2011, 2018, 2024 and 2025, and 2026's to September 30, and the 2024 and 2025 holiday windows date by date. Before 2002 the rules are unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Epiphany",
+      "month": 1,
+      "day": 6,
+      "from": 2011
+    },
+    {
+      "name": "Easter Sunday",
+      "easter": 0
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Constitution Day",
+      "month": 5,
+      "day": 3
+    },
+    {
+      "name": "Pentecost Sunday",
+      "easter": 49
+    },
+    {
+      "name": "Corpus Christi",
+      "easter": 60
+    },
+    {
+      "name": "Assumption",
+      "month": 8,
+      "day": 15
+    },
+    {
+      "name": "All Saints' Day",
+      "month": 11,
+      "day": 1
+    },
+    {
+      "name": "Independence Day",
+      "month": 11,
+      "day": 11
+    },
+    {
+      "name": "Christmas Eve",
+      "month": 12,
+      "day": 24,
+      "from": 2025
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Second Day of Christmas",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "citations": [
+    "https://api.sejm.gov.pl/eli/acts/DU/2025/296/text.pdf",
+    "https://api.sejm.gov.pl/eli/acts/DU/2024/1965/text.html",
+    "https://pl.wikipedia.org/wiki/Dni_wolne_od_pracy_w_Polsce",
+    "https://static.nbp.pl/systemy/sorbnet2/informacja-na-temat-podstawowych-zasad-uczestnictwa-w-systemie-SORBNET2.pdf",
+    "https://eli.gov.pl/eli/DU/2018/2117/ogl/pol/pdf",
+    "https://nbp.pl/wp-content/uploads/2022/09/2018_4.pdf",
+    "https://api.nbp.pl/api/exchangerates/tables/a/2025-11-03/2025-11-14/?format=json"
+  ]
+}

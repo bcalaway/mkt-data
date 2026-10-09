@@ -1,0 +1,602 @@
+{
+  "calendar": "HU",
+  "about": "The Hungarian forint's settlement calendar (Budapest banks; the MNB's VIBER), 1990-2100: the Labour Code's public holidays (s102(1)): New Year's Day, March 15, Good Friday (from 2017), Easter Sunday and Monday, May 1, Whit Sunday, Whit Monday (from 1993), August 20, October 23 (from 1991), All Saints' Day (from 2000), Christmas Day and the second day of Christmas; plus each year's bridge days, the weekday rest days a ministry decree swaps with a working Saturday (dated exceptions, each citing its decree; the working Saturdays don't matter, weekends being closed). Banks close on the bridge days (the MNB doesn't fix; Citi's 2025 notice). A holiday on a weekend isn't moved. Four closures come only from gaps in the MNB's fixings, their legal basis not found (December 24, 1991; August 19 and December 24, 1996; December 31, 1999). Checked against the MNB's EUR fixings: the weekdays it didn't fix are exactly these closures for 2024 and 2025, 2026's count to September 30 matches, and every holiday and bridge window from 1992 to 2009 was spot-checked against its USD fixings. Future years have no bridge days until each year's decree is published (2027's isn't yet), and 1990-1991 is unchecked (the MNB fixed every calendar day then).",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "1848 Revolution Day",
+      "month": 3,
+      "day": 15
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2,
+      "from": 2017
+    },
+    {
+      "name": "Easter Sunday",
+      "easter": 0
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Whit Sunday",
+      "easter": 49
+    },
+    {
+      "name": "Whit Monday",
+      "easter": 50,
+      "from": 1993
+    },
+    {
+      "name": "State Foundation Day",
+      "month": 8,
+      "day": 20
+    },
+    {
+      "name": "1956 Revolution Day",
+      "month": 10,
+      "day": 23,
+      "from": 1991
+    },
+    {
+      "name": "All Saints' Day",
+      "month": 11,
+      "day": 1,
+      "from": 2000
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Second Day of Christmas",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "1991-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1991-08-17 worked)",
+      "citation": "https://archive.org/details/7-1990-xii-27-mum-rendelet"
+    },
+    {
+      "date": "1991-12-24",
+      "status": "closed",
+      "holiday": "Christmas Eve (no MNB fixing; legal basis not found)",
+      "citation": "https://www.mnb.hu/arfolyam-tablazat?deviza=rbCurrencySelect&devizaSelected=USD&datefrom=1991.01.01.&datetill=1991.12.31.&order=1"
+    },
+    {
+      "date": "1992-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1992-08-29 worked)",
+      "citation": "https://web.archive.org/web/20250526085935/https://jogkodex.hu/jsz/1992_3_mum_rendelet_5937748"
+    },
+    {
+      "date": "1992-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1992-12-19 worked)",
+      "citation": "https://web.archive.org/web/20250526085935/https://jogkodex.hu/jsz/1992_3_mum_rendelet_5937748"
+    },
+    {
+      "date": "1993-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1993-12-18 worked)",
+      "citation": "https://web.archive.org/web/20250526090343/https://jogkodex.hu/jsz/1992_7_mum_rendelet_7815697"
+    },
+    {
+      "date": "1994-03-14",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1994-03-12 worked)",
+      "citation": "https://web.archive.org/web/20250526090541/https://jogkodex.hu/jsz/1993_3_mum_rendelet_3120363"
+    },
+    {
+      "date": "1996-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (no MNB fixing; 1996 decree not found)",
+      "citation": "https://www.mnb.hu/arfolyam-tablazat?deviza=rbCurrencySelect&devizaSelected=USD&datefrom=1996.01.01.&datetill=1996.12.31.&order=1"
+    },
+    {
+      "date": "1996-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (no MNB fixing; 1996 decree not found)",
+      "citation": "https://www.mnb.hu/arfolyam-tablazat?deviza=rbCurrencySelect&devizaSelected=USD&datefrom=1996.01.01.&datetill=1996.12.31.&order=1"
+    },
+    {
+      "date": "1997-05-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1997-04-26 worked)",
+      "citation": "https://web.archive.org/web/20250526090817/https://jogkodex.hu/jsz/1996_11_mum_rendelet_3554324"
+    },
+    {
+      "date": "1997-10-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1997-10-18 worked)",
+      "citation": "https://web.archive.org/web/20250526090817/https://jogkodex.hu/jsz/1996_11_mum_rendelet_3554324"
+    },
+    {
+      "date": "1997-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1997-12-20 worked)",
+      "citation": "https://web.archive.org/web/20250526090817/https://jogkodex.hu/jsz/1996_11_mum_rendelet_3554324"
+    },
+    {
+      "date": "1998-01-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1998-01-10 worked)",
+      "citation": "https://web.archive.org/web/20250526091318/https://jogkodex.hu/jsz/1997_18_mum_rendelet_7493439"
+    },
+    {
+      "date": "1998-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1998-08-15 worked)",
+      "citation": "https://web.archive.org/web/20250526091318/https://jogkodex.hu/jsz/1997_18_mum_rendelet_7493439"
+    },
+    {
+      "date": "1998-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1998-12-19 worked)",
+      "citation": "https://web.archive.org/web/20250526091318/https://jogkodex.hu/jsz/1997_18_mum_rendelet_7493439"
+    },
+    {
+      "date": "1999-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 1999-12-18 worked)",
+      "citation": "https://web.archive.org/web/20250526093916/https://jogkodex.hu/jsz/1998_3_szcsm_rendelet_7336830"
+    },
+    {
+      "date": "1999-12-31",
+      "status": "closed",
+      "holiday": "Y2K closure (no MNB fixing; legal basis not found)",
+      "citation": "https://www.mnb.hu/arfolyam-tablazat?deviza=rbCurrencySelect&devizaSelected=USD&datefrom=1999.01.01.&datetill=1999.12.31.&order=1"
+    },
+    {
+      "date": "2001-03-16",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-03-10 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2001-04-30",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-04-28 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2001-10-22",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-10-20 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2001-11-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-10-27 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2001-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-12-22 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2001-12-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2001-12-29 worked)",
+      "citation": "https://archive.org/details/43-2000-xii-18-gm-rendelet"
+    },
+    {
+      "date": "2002-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2002-08-10 worked)",
+      "citation": "https://web.archive.org/web/20250526071659/https://jogkodex.hu/jsz/2001_25_gm_rendelet_9200619"
+    },
+    {
+      "date": "2002-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2002-12-28 worked)",
+      "citation": "https://web.archive.org/web/20250526071659/https://jogkodex.hu/jsz/2001_25_gm_rendelet_9200619"
+    },
+    {
+      "date": "2003-05-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2003-04-26 worked)",
+      "citation": "https://web.archive.org/web/20250526071517/https://jogkodex.hu/jsz/2002_2_fmm_rendelet_1831209"
+    },
+    {
+      "date": "2003-10-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2003-10-18 worked)",
+      "citation": "https://web.archive.org/web/20250526071517/https://jogkodex.hu/jsz/2002_2_fmm_rendelet_1831209"
+    },
+    {
+      "date": "2003-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2003-12-13 worked)",
+      "citation": "https://web.archive.org/web/20250526071517/https://jogkodex.hu/jsz/2002_2_fmm_rendelet_1831209"
+    },
+    {
+      "date": "2004-01-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2004-01-10 worked)",
+      "citation": "https://web.archive.org/web/20250526071310/https://jogkodex.hu/jsz/2003_9_fmm_rendelet_8666269"
+    },
+    {
+      "date": "2004-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2004-12-18 worked)",
+      "citation": "https://web.archive.org/web/20250526071310/https://jogkodex.hu/jsz/2003_9_fmm_rendelet_8666269"
+    },
+    {
+      "date": "2005-03-14",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2005-03-19 worked)",
+      "citation": "https://web.archive.org/web/20250526071135/https://jogkodex.hu/jsz/2004_25_fmm_rendelet_4309634"
+    },
+    {
+      "date": "2005-10-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2005-11-05 worked)",
+      "citation": "https://web.archive.org/web/20250526071135/https://jogkodex.hu/jsz/2004_25_fmm_rendelet_4309634"
+    },
+    {
+      "date": "2007-03-16",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-03-10 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2007-04-30",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-04-21 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2007-10-22",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-10-20 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2007-11-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-10-27 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2007-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-12-22 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2007-12-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2007-12-29 worked)",
+      "citation": "https://web.archive.org/web/20250526064108/https://jogkodex.hu/jsz/2006_4_szmm_rendelet_8628960"
+    },
+    {
+      "date": "2008-05-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2008-04-26 worked)",
+      "citation": "https://web.archive.org/web/20250526051643/https://jogkodex.hu/jsz/2007_27_szmm_rendelet_3904252"
+    },
+    {
+      "date": "2008-10-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2008-10-18 worked)",
+      "citation": "https://web.archive.org/web/20250526051643/https://jogkodex.hu/jsz/2007_27_szmm_rendelet_3904252"
+    },
+    {
+      "date": "2008-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2008-12-20 worked)",
+      "citation": "https://web.archive.org/web/20250526051643/https://jogkodex.hu/jsz/2007_27_szmm_rendelet_3904252"
+    },
+    {
+      "date": "2009-01-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2009-03-28 worked)",
+      "citation": "https://web.archive.org/web/20250526051816/https://jogkodex.hu/jsz/2008_16_szmm_rendelet_7668376"
+    },
+    {
+      "date": "2009-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2009-08-29 worked)",
+      "citation": "https://web.archive.org/web/20250526051816/https://jogkodex.hu/jsz/2008_16_szmm_rendelet_7668376"
+    },
+    {
+      "date": "2009-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2009-12-19 worked)",
+      "citation": "https://web.archive.org/web/20250526051816/https://jogkodex.hu/jsz/2008_16_szmm_rendelet_7668376"
+    },
+    {
+      "date": "2010-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2010-12-11 worked)",
+      "citation": "https://njt.hu/jogszabaly/2009-20-20-1X"
+    },
+    {
+      "date": "2011-03-14",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2011-03-19 worked)",
+      "citation": "https://njt.hu/jogszabaly/2010-7-20-2X"
+    },
+    {
+      "date": "2011-10-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2011-11-05 worked)",
+      "citation": "https://njt.hu/jogszabaly/2010-7-20-2X"
+    },
+    {
+      "date": "2012-03-16",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-03-24 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2012-04-30",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-04-21 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2012-10-22",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-10-27 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2012-11-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-11-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2012-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-12-15 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2012-12-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2012-12-01 worked)",
+      "citation": "https://njt.hu/jogszabaly/2011-39-20-2X"
+    },
+    {
+      "date": "2013-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2013-08-24 worked)",
+      "citation": "https://njt.hu/jogszabaly/2012-28-20-2X"
+    },
+    {
+      "date": "2013-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2013-12-07 worked)",
+      "citation": "https://njt.hu/jogszabaly/2012-28-20-2X"
+    },
+    {
+      "date": "2013-12-27",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2013-12-21 worked)",
+      "citation": "https://njt.hu/jogszabaly/2012-28-20-2X"
+    },
+    {
+      "date": "2014-05-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2014-05-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2013-33-20-2X"
+    },
+    {
+      "date": "2014-10-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2014-10-18 worked)",
+      "citation": "https://njt.hu/jogszabaly/2013-33-20-2X"
+    },
+    {
+      "date": "2014-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2014-12-13 worked)",
+      "citation": "https://njt.hu/jogszabaly/2013-33-20-2X"
+    },
+    {
+      "date": "2015-01-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2015-01-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2014-28-20-2X"
+    },
+    {
+      "date": "2015-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2015-08-08 worked)",
+      "citation": "https://njt.hu/jogszabaly/2014-28-20-2X"
+    },
+    {
+      "date": "2015-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2015-12-12 worked)",
+      "citation": "https://njt.hu/jogszabaly/2014-28-20-2X"
+    },
+    {
+      "date": "2016-03-14",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2016-03-05 worked)",
+      "citation": "https://njt.hu/jogszabaly/2015-18-20-2X"
+    },
+    {
+      "date": "2016-10-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2016-10-15 worked)",
+      "citation": "https://njt.hu/jogszabaly/2015-18-20-2X"
+    },
+    {
+      "date": "2018-03-16",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-03-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2018-04-30",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-04-21 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2018-10-22",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-10-13 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2018-11-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-11-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2018-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-12-01 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2018-12-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2018-12-15 worked)",
+      "citation": "https://njt.hu/jogszabaly/2017-61-B0-15"
+    },
+    {
+      "date": "2019-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2019-08-10 worked)",
+      "citation": "https://njt.hu/jogszabaly/2018-6-20-53"
+    },
+    {
+      "date": "2019-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2019-12-07 worked)",
+      "citation": "https://njt.hu/jogszabaly/2018-6-20-53"
+    },
+    {
+      "date": "2019-12-27",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2019-12-14 worked)",
+      "citation": "https://njt.hu/jogszabaly/2018-6-20-53"
+    },
+    {
+      "date": "2020-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2020-08-29 worked)",
+      "citation": "https://njt.hu/jogszabaly/2019-7-20-53"
+    },
+    {
+      "date": "2020-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2020-12-12 worked)",
+      "citation": "https://njt.hu/jogszabaly/2019-7-20-53"
+    },
+    {
+      "date": "2021-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2021-12-11 worked)",
+      "citation": "https://njt.hu/jogszabaly/2020-14-20-7Q"
+    },
+    {
+      "date": "2022-03-14",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2022-03-26 worked)",
+      "citation": "https://njt.hu/jogszabaly/2021-23-20-7Q"
+    },
+    {
+      "date": "2022-10-31",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2022-10-15 worked)",
+      "citation": "https://njt.hu/jogszabaly/2021-23-20-7Q"
+    },
+    {
+      "date": "2024-08-19",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2024-08-03 worked)",
+      "citation": "https://njt.hu/jogszabaly/2023-15-20-8P"
+    },
+    {
+      "date": "2024-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2024-12-07 worked)",
+      "citation": "https://njt.hu/jogszabaly/2023-15-20-8P"
+    },
+    {
+      "date": "2024-12-27",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2024-12-14 worked)",
+      "citation": "https://njt.hu/jogszabaly/2023-15-20-8P"
+    },
+    {
+      "date": "2025-05-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2025-05-17 worked)",
+      "citation": "https://njt.hu/jogszabaly/2024-11-20-2X"
+    },
+    {
+      "date": "2025-10-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2025-10-18 worked)",
+      "citation": "https://njt.hu/jogszabaly/2024-11-20-2X"
+    },
+    {
+      "date": "2025-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2025-12-13 worked)",
+      "citation": "https://www.citi.com/icg/sa/emea/hungary/assets/docs/HIRDETMENY_2025_ev_vegi_nyitvatartasrol.pdf"
+    },
+    {
+      "date": "2026-01-02",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2026-01-10 worked)",
+      "citation": "https://njt.jog.gov.hu/jogszabaly/2025-10-20-2X"
+    },
+    {
+      "date": "2026-08-21",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2026-08-08 worked)",
+      "citation": "https://njt.jog.gov.hu/jogszabaly/2025-10-20-2X"
+    },
+    {
+      "date": "2026-12-24",
+      "status": "closed",
+      "holiday": "Bridge day (Saturday 2026-12-12 worked)",
+      "citation": "https://njt.jog.gov.hu/jogszabaly/2025-10-20-2X"
+    }
+  ],
+  "citations": [
+    "https://www.parlament.hu/irom42/06649/06649.pdf",
+    "https://en.wikipedia.org/wiki/Public_holidays_in_Hungary",
+    "https://njt.jog.gov.hu/jogszabaly/2025-10-20-2X",
+    "https://www.citi.com/icg/sa/emea/hungary/assets/docs/HIRDETMENY_2025_ev_vegi_nyitvatartasrol.pdf",
+    "https://www.mnb.hu/letoltes/uzleti-feltetelek-viberiso-20251027-vegl-korr.pdf"
+  ]
+}

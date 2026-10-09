@@ -53,6 +53,11 @@ CALENDAR_SCHEDULES = {
     "NO": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "DK": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "MX": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "BR": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "ZA": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "PL": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "CZ": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "HU": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "JP": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
 }
 SOURCE_SCHEDULES = {

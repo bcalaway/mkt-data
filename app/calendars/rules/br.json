@@ -1,0 +1,34 @@
+{
+  "calendar": "BR",
+  "about": "The Brazilian real's settlement calendar: Brazil's national holidays, on which the banks and the Central Bank's PTAX fixing are closed, 1990-2100. New Year's Day (Confraternização Universal); Carnival Monday and Tuesday (48 and 47 days before Easter); Good Friday (Paixão de Cristo); Tiradentes (April 21); Labour Day (May 1); Corpus Christi (60 days after Easter); Independence Day (September 7); Our Lady of Aparecida (October 12); All Souls' Day (Finados, November 2); Proclamation of the Republic (November 15); the National Day of Zumbi and Black Consciousness (November 20, a national holiday from 2024 by Law 14.759 of 2023-12-21); Christmas (December 25). A holiday on a weekend isn't moved, and two on one day are one day. Checked against ANBIMA's national holiday tables for 2001, 2023, 2024 and 2026 (anbima.com.br/feriados, read 2026-10-09); ANBIMA's spreadsheet of every year 2001-2099 is captured raw as BR-ANBIMA. Years before 2001 are the rules unchecked against a published list.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {"name": "New Year's Day", "month": 1, "day": 1},
+    {"name": "Carnival Monday", "easter": -48},
+    {"name": "Carnival Tuesday", "easter": -47},
+    {"name": "Good Friday", "easter": -2},
+    {"name": "Tiradentes", "month": 4, "day": 21},
+    {"name": "Labour Day", "month": 5, "day": 1},
+    {"name": "Corpus Christi", "easter": 60},
+    {"name": "Independence Day", "month": 9, "day": 7},
+    {"name": "Our Lady of Aparecida", "month": 10, "day": 12},
+    {"name": "All Souls' Day", "month": 11, "day": 2},
+    {"name": "Proclamation of the Republic", "month": 11, "day": 15},
+    {"name": "Black Consciousness Day", "month": 11, "day": 20, "from": 2024},
+    {"name": "Christmas Day", "month": 12, "day": 25}
+  ],
+  "citations": [
+    "https://www.anbima.com.br/feriados/feriados.asp",
+    "https://www.anbima.com.br/feriados/fer_nacionais/2001.asp",
+    "https://www.anbima.com.br/feriados/fer_nacionais/2023.asp",
+    "https://www.anbima.com.br/feriados/fer_nacionais/2024.asp",
+    "https://www.anbima.com.br/feriados/fer_nacionais/2026.asp",
+    "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2023/lei/L14759.htm"
+  ]
+}

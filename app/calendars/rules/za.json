@@ -1,0 +1,201 @@
+{
+  "calendar": "ZA",
+  "about": "The South African rand's settlement calendar (Johannesburg banks; the Reserve Bank's SAMOS), 1995-2100: the public holidays of the Public Holidays Act 36 of 1994 (Schedule 1): New Year's Day, Human Rights Day (March 21), Good Friday, Family Day (Easter Monday), Freedom Day (April 27), Workers' Day (May 1), Youth Day (June 16), National Women's Day (August 9), Heritage Day (September 24), the Day of Reconciliation (December 16), Christmas Day and the Day of Goodwill (December 26). A holiday on a Sunday makes the following Monday a holiday (s2(1)); nothing moves off a Saturday, and when Christmas is on a Sunday the Act gives no further day (the Monday is already the Day of Goodwill): December 27 in 2011, 2016 and 2022 was declared separately (s2A) and is an exception, and 2005 had no declaration. Every election day and other day declared under s2A is a dated exception; future ones are added as they're gazetted. The Reserve Bank's December notices show SAMOS closes only on public holidays. Checked against the 2024 and 2026 published lists (gov.za, with 2024's election day and 2026's local elections from their declarations). Before 1995 isn't covered.",
+  "first_year": 1995,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "monday",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Human Rights Day",
+      "month": 3,
+      "day": 21
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2
+    },
+    {
+      "name": "Family Day",
+      "easter": 1
+    },
+    {
+      "name": "Freedom Day",
+      "month": 4,
+      "day": 27
+    },
+    {
+      "name": "Workers' Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Youth Day",
+      "month": 6,
+      "day": 16
+    },
+    {
+      "name": "National Women's Day",
+      "month": 8,
+      "day": 9
+    },
+    {
+      "name": "Heritage Day",
+      "month": 9,
+      "day": 24
+    },
+    {
+      "name": "Day of Reconciliation",
+      "month": 12,
+      "day": 16
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "Day of Goodwill",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "exceptions": [
+    {
+      "date": "1995-11-01",
+      "status": "closed",
+      "holiday": "Local government elections (all provinces but KwaZulu-Natal)",
+      "citation": "https://www.polity.org.za/polity/govdocs/pr/1995/pr1025d.html"
+    },
+    {
+      "date": "1999-06-02",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://www.polity.org.za/polity/govdocs/proclamations/1999/proc99-058.html"
+    },
+    {
+      "date": "1999-12-31",
+      "status": "closed",
+      "holiday": "Declared holiday (Y2K)",
+      "citation": "https://www.polity.org.za/polity/govdocs/proclamations/1999/proc99-054.html"
+    },
+    {
+      "date": "2000-01-03",
+      "status": "closed",
+      "holiday": "Declared holiday (Y2K: January 2, 2000 declared, a Sunday)",
+      "citation": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/media-releases/1999/4437"
+    },
+    {
+      "date": "2000-12-05",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.polity.org.za/polity/govdocs/proclamations/2000/proc072.html"
+    },
+    {
+      "date": "2004-04-14",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://www.gov.za/documents/public-holidays-act-declaration-14-april-2004-public-holiday"
+    },
+    {
+      "date": "2006-03-01",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.gov.za/af/news/1-march-declared-public-holiday-local-government-elections-27-jan-2006"
+    },
+    {
+      "date": "2008-05-02",
+      "status": "closed",
+      "holiday": "Declared holiday (Human Rights Day fell on Good Friday)",
+      "citation": "https://www.gov.za/documents/public-holidays-act-declaration-2-may-2008-public-holiday"
+    },
+    {
+      "date": "2009-04-22",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://www.sanews.gov.za/node/16055"
+    },
+    {
+      "date": "2011-05-18",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.sanews.gov.za/node/15773"
+    },
+    {
+      "date": "2011-12-27",
+      "status": "closed",
+      "holiday": "Declared holiday (Christmas on a Sunday)",
+      "citation": "https://www.resbank.co.za/en/home/publications/publication-detail-pages/media-releases/2011/4910"
+    },
+    {
+      "date": "2014-05-07",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://www.gov.za/ss/documents/notices/public-holidays-act-declaration-seventh-day-may-2014-public-holiday-25-feb-2014"
+    },
+    {
+      "date": "2016-08-03",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.gov.za/speeches/president-jacob-zuma-declares-3-august-2016-public-holiday-24-jun-2016-0000"
+    },
+    {
+      "date": "2016-12-27",
+      "status": "closed",
+      "holiday": "Declared holiday (Christmas on a Sunday)",
+      "citation": "https://www.gov.za/documents/public-holidays-act-declaration-27-december-public-holiday-14-oct-2016-0000"
+    },
+    {
+      "date": "2019-05-08",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://sanews.gov.za/node/43062"
+    },
+    {
+      "date": "2021-11-01",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.acts.co.za/public-holidays-act-1994/pn38_declaration_of_the_first_.php"
+    },
+    {
+      "date": "2022-12-27",
+      "status": "closed",
+      "holiday": "Declared holiday (Christmas on a Sunday)",
+      "citation": "https://www.gov.za/speeches/president-cyril-ramaphosa-declares-27-december-public-holiday-8-dec-2022-0000"
+    },
+    {
+      "date": "2023-12-15",
+      "status": "closed",
+      "holiday": "Declared holiday (Rugby World Cup win)",
+      "citation": "https://sanews.gov.za/node/66156"
+    },
+    {
+      "date": "2024-05-29",
+      "status": "closed",
+      "holiday": "National and provincial elections",
+      "citation": "https://www.gov.za/news/media-statements/president-cyril-ramaphosa-proclaims-election-date-and-public-holiday-23-feb"
+    },
+    {
+      "date": "2026-11-04",
+      "status": "closed",
+      "holiday": "Local government elections",
+      "citation": "https://www.sanews.gov.za/node/84344"
+    }
+  ],
+  "citations": [
+    "https://www.gov.za/sites/default/files/gcis_document/201409/act36of1994.pdf",
+    "https://www.gov.za/about-sa/public-holidays",
+    "https://www.sanews.gov.za/node/2360",
+    "https://resbank.co.za/content/dam/sarb/publications/media-releases/2022/202223-holidays-fmd/Public%20and%20non%20trading%20days%20in%20December%202022%20and%20January%202023.pdf",
+    "https://resbank.co.za/content/dam/sarb/publications/media-releases/2023/fmd-2224-holidays/Public%20and%20non-trading%20days%20in%20December%202023%20and%20January%202024.pdf",
+    "https://www.resbank.co.za/content/dam/sarb/publications/media-releases/2025/fmd-releases/market-holidays.pdf"
+  ]
+}

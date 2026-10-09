@@ -1,0 +1,95 @@
+{
+  "calendar": "CZ",
+  "about": "The Czech koruna's settlement calendar (Prague banks; the CNB's CERTIS), 1990-2100: the public holidays and days of rest, under the 1990-91 laws and then Act 245/2000 (from August 9, 2000): New Year's Day, Good Friday (from 2016, Act 359/2015), Easter Monday, May 1, Liberation Day (May 9 to 1991, May 8 from 1992, Act 218/1991), Saints Cyril and Methodius (July 5), Jan Hus Day (July 6), Statehood Day (September 28, from 2000), Independence Day (October 28), Freedom and Democracy Day (November 17, from 2000), Christmas Eve, Christmas Day and St Stephen's Day. A holiday on a weekend isn't moved. CERTIS works every day that isn't a weekend or a holiday (its rules, annex 3), so December 31 is open. Checked against the CNB's fixing numbers: weekdays less these closures equal the year-end fixing number for 1992, 1993, 1996, 1999, 2000, 2010, 2016, 2024 and 2025, and 2026's to September 30, and 2024 and 2025 date by date. 1990-1991 is checked only against the laws.",
+  "first_year": 1990,
+  "last_year": 2100,
+  "observance": {
+    "saturday": "none",
+    "sunday": "none",
+    "collision": "share"
+  },
+  "holidays": [
+    {
+      "name": "New Year's Day",
+      "month": 1,
+      "day": 1
+    },
+    {
+      "name": "Good Friday",
+      "easter": -2,
+      "from": 2016
+    },
+    {
+      "name": "Easter Monday",
+      "easter": 1
+    },
+    {
+      "name": "Labour Day",
+      "month": 5,
+      "day": 1
+    },
+    {
+      "name": "Liberation Day",
+      "month": 5,
+      "day": 9,
+      "to": 1991
+    },
+    {
+      "name": "Liberation Day",
+      "month": 5,
+      "day": 8,
+      "from": 1992
+    },
+    {
+      "name": "Saints Cyril and Methodius",
+      "month": 7,
+      "day": 5
+    },
+    {
+      "name": "Jan Hus Day",
+      "month": 7,
+      "day": 6
+    },
+    {
+      "name": "Statehood Day",
+      "month": 9,
+      "day": 28,
+      "from": 2000
+    },
+    {
+      "name": "Independence Day",
+      "month": 10,
+      "day": 28
+    },
+    {
+      "name": "Freedom and Democracy Day",
+      "month": 11,
+      "day": 17,
+      "from": 2000
+    },
+    {
+      "name": "Christmas Eve",
+      "month": 12,
+      "day": 24
+    },
+    {
+      "name": "Christmas Day",
+      "month": 12,
+      "day": 25
+    },
+    {
+      "name": "St Stephen's Day",
+      "month": 12,
+      "day": 26
+    }
+  ],
+  "citations": [
+    "https://ppropo.mpsv.cz/zakon_245_2000",
+    "https://www.psp.cz/cgi-bin/win/sqw/sbirka.sqw?O=3&T=449",
+    "https://www.praceamzda.cz/clanky/3972/novy-svatek-v-roce-2016",
+    "https://www.epravo.cz/top/zakony/sbirka-zakonu/sb/1990/167",
+    "https://static.slov-lex.sk/static/SK/ZZ/1990/204/vyhlasene_znenie.html",
+    "https://www.epravo.cz/top/zakony/sbirka-zakonu/sb/1991/218",
+    "https://www.cnb.cz/export/sites/cnb/en/payments/.galleries/certis/download/CERTIS_rules_annex_03.pdf"
+  ]
+}

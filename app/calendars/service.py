@@ -99,6 +99,7 @@ SIX_SIC_URL = ("https://www.six-group.com/dam/download/banking-services/interban
 
 
 NO_NBO_URL = "https://www.norges-bank.no/en/topics/Norges-Banks-settlement-system/Settlement-days/"
+BR_ANBIMA_URL = "https://www.anbima.com.br/feriados/arqs/feriados_nacionais.xls"
 
 
 CALENDARS: dict[str, CalendarSpec] = {
@@ -311,6 +312,55 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("MX-RULES", f"{rules.REPO_PREFIX}mx.json",
                        "CNBV bank closing days, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    # The emerging-market FX futures' calendars (docs/phase-4.md, step 2d): cited rules, as for the G10.
+    # Brazil: the national holidays, with ANBIMA's spreadsheet of every year 2001-2099 captured raw (its parser
+    # follows against a real capture).
+    "BR": CalendarSpec(
+        name="BR",
+        description="Brazilian real settlement holidays (national holidays; ANBIMA)",
+        timezone="America/Sao_Paulo",
+        sources=(
+            SourceSpec("BR-ANBIMA", BR_ANBIMA_URL, "ANBIMA, national holidays 2001-2099 (spreadsheet)", None),
+            SourceSpec("BR-RULES", f"{rules.REPO_PREFIX}br.json",
+                       "Brazilian national holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    "ZA": CalendarSpec(
+        name="ZA",
+        description="South African rand settlement holidays (SAMOS, Johannesburg)",
+        timezone="Africa/Johannesburg",
+        sources=(
+            SourceSpec("ZA-RULES", f"{rules.REPO_PREFIX}za.json",
+                       "South African public holidays, 1995-2100 (rules and declared days; cited)", rules.parse),
+        ),
+    ),
+    "PL": CalendarSpec(
+        name="PL",
+        description="Polish zloty settlement holidays (SORBNET, Warsaw)",
+        timezone="Europe/Warsaw",
+        sources=(
+            SourceSpec("PL-RULES", f"{rules.REPO_PREFIX}pl.json",
+                       "Polish statutory days off, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    "CZ": CalendarSpec(
+        name="CZ",
+        description="Czech koruna settlement holidays (CERTIS, Prague)",
+        timezone="Europe/Prague",
+        sources=(
+            SourceSpec("CZ-RULES", f"{rules.REPO_PREFIX}cz.json",
+                       "Czech public holidays, 1990-2100 (rules; cited)", rules.parse),
+        ),
+    ),
+    "HU": CalendarSpec(
+        name="HU",
+        description="Hungarian forint settlement holidays (VIBER, Budapest)",
+        timezone="Europe/Budapest",
+        sources=(
+            SourceSpec("HU-RULES", f"{rules.REPO_PREFIX}hu.json",
+                       "Hungarian public holidays and decreed bridge days, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national

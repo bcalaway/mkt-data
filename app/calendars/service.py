@@ -363,6 +363,80 @@ CALENDARS: dict[str, CalendarSpec] = {
                        "Hungarian public holidays and decreed bridge days, 1990-2100 (rules; cited)", rules.parse),
         ),
     ),
+    # The second batch (docs/phase-4.md, step 2d): lunar and announced holidays, so each file covers only the years
+    # published and is extended as each year's list comes out.
+    "CL": CalendarSpec(
+        name="CL",
+        description="Chilean peso settlement holidays (LBTR, Santiago)",
+        timezone="America/Santiago",
+        sources=(
+            SourceSpec("CL-RULES", f"{rules.REPO_PREFIX}cl.json",
+                       "Chilean legal and bank holidays, 2005-2026 (rules and dated tables; cited)", rules.parse),
+        ),
+    ),
+    "IL": CalendarSpec(
+        name="IL",
+        description="Israeli shekel settlement holidays (Zahav, Tel Aviv)",
+        timezone="Asia/Jerusalem",
+        sources=(
+            SourceSpec("IL-RULES", f"{rules.REPO_PREFIX}il.json",
+                       "Bank of Israel Zahav non-business days, 2005-2027 (Hebrew-calendar tables; cited)", rules.parse),
+        ),
+    ),
+    "TR": CalendarSpec(
+        name="TR",
+        description="Turkish lira settlement holidays (EFT, Istanbul)",
+        timezone="Europe/Istanbul",
+        sources=(
+            SourceSpec("TR-RULES", f"{rules.REPO_PREFIX}tr.json",
+                       "Turkish public holidays and bayram half days, 2005-2027 (rules and dated tables; cited)", rules.parse),
+        ),
+    ),
+    "HK": CalendarSpec(
+        name="HK",
+        description="Hong Kong dollar settlement holidays (CHATS, Hong Kong)",
+        timezone="Asia/Hong_Kong",
+        sources=(
+            SourceSpec("HK-RULES", f"{rules.REPO_PREFIX}hk.json",
+                       "Hong Kong general holidays as gazetted, 2008-2027 (dated tables; cited)", rules.parse),
+        ),
+    ),
+    "CN": CalendarSpec(
+        name="CN",
+        description="Onshore renminbi settlement holidays (CNAPS, Beijing)",
+        timezone="Asia/Shanghai",
+        sources=(
+            SourceSpec("CN-RULES", f"{rules.REPO_PREFIX}cn.json",
+                       "State Council holiday notices' weekdays off, 2008-2026 (dated tables; cited)", rules.parse),
+        ),
+    ),
+    "SG": CalendarSpec(
+        name="SG",
+        description="Singapore dollar settlement holidays (MEPS+, Singapore)",
+        timezone="Asia/Singapore",
+        sources=(
+            SourceSpec("SG-RULES", f"{rules.REPO_PREFIX}sg.json",
+                       "Singapore public holidays, 2010-2027 (rules and dated tables; cited)", rules.parse),
+        ),
+    ),
+    "TH": CalendarSpec(
+        name="TH",
+        description="Thai baht settlement holidays (BAHTNET, Bangkok)",
+        timezone="Asia/Bangkok",
+        sources=(
+            SourceSpec("TH-RULES", f"{rules.REPO_PREFIX}th.json",
+                       "Bank of Thailand financial institution holidays, 2019-2027 (dated tables; cited)", rules.parse),
+        ),
+    ),
+    "ID": CalendarSpec(
+        name="ID",
+        description="Indonesian rupiah settlement holidays (BI-RTGS, Jakarta)",
+        timezone="Asia/Jakarta",
+        sources=(
+            SourceSpec("ID-RULES", f"{rules.REPO_PREFIX}id.json",
+                       "Indonesian national holidays and cuti bersama BI-RTGS closes for, 2010-2027 (dated tables; cited)", rules.parse),
+        ),
+    ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national
     # holidays (1955 to next year), the banks' December 31-January 3 beside them, and a projection.
     "JP": CalendarSpec(

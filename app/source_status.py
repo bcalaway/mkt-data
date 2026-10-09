@@ -58,6 +58,14 @@ CALENDAR_SCHEDULES = {
     "PL": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "CZ": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "HU": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "CL": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "IL": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "TR": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "HK": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "CN": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "SG": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "TH": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "ID": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "JP": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
 }
 SOURCE_SCHEDULES = {

@@ -52,7 +52,9 @@ def test_urls_by_period():
     assert tff.startswith("https://publicreporting.cftc.gov/resource/gpe5-46if.csv?")
     assert "report_date_as_yyyy_mm_dd%3D%272026-09-29T00%3A00%3A00.000%27" in tff
     assert "/yw9f-hn96.csv?" in fut.SOURCES["CFTC-TFF-COMBINED"].url("2026-09-29")
-    assert all(src.spec.parse is None and src.spec.pulls for src in fut.SOURCES.values())
+    parsed = {n for n, src in fut.SOURCES.items() if src.spec.parse is not None}
+    assert parsed == {"NYFED-SOFR", "NYFED-EFFR", "FRB-H10", "FRB-H10-RATES", "ECB-EXR"}  # step 4; no averages
+    assert all(src.spec.pulls for src in fut.SOURCES.values())
     assert not set(fut.SOURCES) & set(sec.SOURCES)
 
 
@@ -75,18 +77,19 @@ def test_periods_are_checked():
 
 
 def test_capture_keeps_raw_without_parsing(migrated_db, monkeypatch):
+    # The SOFR Averages stay raw (averaging is for the analytics phase).
     seen = []
     monkeypatch.setattr(service, "fetch", _fetcher(SOFR, seen=seen))
     with db.session() as s:
-        r = fut.run_capture(s, "NYFED-SOFR", "2026-10")
+        r = fut.run_capture(s, "NYFED-SOFR-AVG", "2026-10")
     assert r["new_capture"] and r["parsed"] is False and seen[0].endswith("startDate=2026-10-01&endDate=2026-10-31")
     with db.session() as s:
-        assert not fut.run_capture(s, "NYFED-SOFR", "2026-10")["new_capture"]  # the same bytes: unchanged
+        assert not fut.run_capture(s, "NYFED-SOFR-AVG", "2026-10")["new_capture"]  # the same bytes: unchanged
         checks = s.scalars(select(SourceCheck).order_by(SourceCheck.id)).all()
         assert [c.outcome for c in checks] == ["new", "unchanged"] and {c.parse_outcome for c in checks} == {None}
         cap = s.scalars(select(Capture)).one()
         assert cap.period == "2026-10" and cap.body == SOFR
-        state = next(x for x in source_status.list_sources(s) if x["name"] == "NYFED-SOFR")
+        state = next(x for x in source_status.list_sources(s) if x["name"] == "NYFED-SOFR-AVG")
         assert (state["group"], state["parsed"], state["captures"], state["dag"]) == (
             "futures", False, 1, "mkt_data__futures_sources_capture")
 

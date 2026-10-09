@@ -1,4 +1,4 @@
-"""Phase 4's sources (docs/phase-4.md, step 1): captured raw, no parsers yet.
+"""Phase 4's sources (docs/phase-4.md, steps 1 and 4): captured raw; the fixings parsed (app/futures/parsers.py).
 
 The fixings CME's rates and FX futures settle on or track, and the CFTC's
 weekly positioning. As in phases 2 and 3, the raw history starts before any
@@ -40,6 +40,7 @@ import time
 
 from app.calendars import service
 from app.calendars.service import SourceFetchError, SourceSpec
+from app.futures import parsers
 from app.securities import sources as base
 from app.securities.sources import SecuritiesSource
 
@@ -123,39 +124,41 @@ def fetch_cftc(url: str) -> tuple[int, str | None, bytes]:
     return status, ctype, body
 
 
-def _source(name, url, description, pulls, kind, calendar, first_period, fetch) -> SecuritiesSource:
-    spec = SourceSpec(name, url, description, None, pulls=pulls)
+def _source(name, url, description, pulls, kind, calendar, first_period, fetch, parse=None) -> SecuritiesSource:
+    spec = SourceSpec(name, url, description, parse, pulls=pulls)
     return SecuritiesSource(spec, kind=kind, shape="observations", calendar=calendar, first_period=first_period,
                             fetch=fetch)
 
 
 KEPT_RAW = "Kept raw for now (phase 4, step 1): quote-svc reads it once it has a parser."
+PARSED = "Parsed to near-raw observations as published (phase 4, step 4); quote-svc builds the fixings from them."
 
 SOURCES: dict[str, SecuritiesSource] = {
     "NYFED-SOFR": _source(
         "NYFED-SOFR", NYFED_SOFR_URL, "New York Fed reference rates API, SOFR (JSON, by month)",
         f"SOFR each business day, with its percentiles and volume: what one- and three-month SOFR futures settle on. "
-        f"{KEPT_RAW}", "month", "SIFMA-US", "2018-04", fetch_nyfed),
+        f"{PARSED}", "month", "SIFMA-US", "2018-04", fetch_nyfed, parsers.parse_sofr),
     "NYFED-EFFR": _source(
         "NYFED-EFFR", NYFED_EFFR_URL, "New York Fed reference rates API, EFFR (JSON, by month)",
         f"The effective Fed funds rate each business day, with its percentiles, volume and the FOMC's target range: "
-        f"what Fed funds futures settle on. {KEPT_RAW}", "month", "FED", "2000-01", fetch_nyfed),
+        f"what Fed funds futures settle on. {PARSED}", "month", "FED", "2000-01", fetch_nyfed, parsers.parse_effr),
     "NYFED-SOFR-AVG": _source(
         "NYFED-SOFR-AVG", NYFED_SOFR_AVG_URL, "New York Fed reference rates API, SOFR Averages and Index (JSON, by month)",
-        f"The 30-, 90- and 180-day SOFR Averages and the SOFR Index each business day. {KEPT_RAW}",
+        "The 30-, 90- and 180-day SOFR Averages and the SOFR Index each business day. Kept raw, nothing reads it "
+        "yet: averaging is analytics, for a later phase (Bill, 2026-10-09), when quote-svc may read it.",
         "month", "SIFMA-US", "2020-03", fetch_nyfed),
     "FRB-H10": _source(
         "FRB-H10", FRB_H10_URL, "Federal Reserve H.10, nominal dollar indexes, daily (CSV, by month)",
         f"The Fed's daily nominal dollar indexes: broad, advanced foreign economies and emerging market economies. "
-        f"{KEPT_RAW}", "month", "FED", "2006-01", fetch_ddp),
+        f"{PARSED}", "month", "FED", "2006-01", fetch_ddp, parsers.parse_ddp),
     "FRB-H10-RATES": _source(
         "FRB-H10-RATES", FRB_H10_RATES_URL, "Federal Reserve H.10, foreign exchange rates, daily (CSV, by month)",
         f"The Fed's daily noon buying rates in New York for each currency, as H.10 quotes them: what CME's FX futures "
-        f"track. {KEPT_RAW}", "month", "FED", "1971-01", fetch_ddp),
+        f"track. {PARSED}", "month", "FED", "1971-01", fetch_ddp, parsers.parse_ddp),
     "ECB-EXR": _source(
         "ECB-EXR", ECB_EXR_URL, "ECB euro foreign exchange reference rates, daily (CSV, by month)",
-        f"The ECB's euro reference rate for each currency, each TARGET business day. {KEPT_RAW}",
-        "month", "TARGET", "1999-01", fetch_ecb),
+        f"The ECB's euro reference rate for each currency, each TARGET business day. {PARSED}",
+        "month", "TARGET", "1999-01", fetch_ecb, parsers.parse_ecb),
     "CFTC-TFF": _source(
         "CFTC-TFF", CFTC_TFF_URL, "CFTC Traders in Financial Futures, futures only (CSV, by report date)",
         f"Positions by trader category (dealers, asset managers, leveraged funds, other reportables, non-reportables) "

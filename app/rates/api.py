@@ -8,15 +8,17 @@ or a dropped value always moves it: a revision inserts a row from the newer
 capture, and a dropped value is only possible in a newer capture of the same
 month, whose other values it then carries.
 
-Every observation-shaped source is served: the CMT yields (phase 2) and,
-from phase 3, FedInvest's prices (TD-PRICES, a period per day) and BLS's
-CPI (BLS-CPI, a period per year). Record-shaped sources are in
+Every observation-shaped source is served: the CMT yields (phase 2), from
+phase 3 FedInvest's prices (TD-PRICES, a period per day) and BLS's CPI
+(BLS-CPI, a period per year), and from phase 4 the parsed fixings
+(NYFED-SOFR, NYFED-EFFR, FRB-H10, FRB-H10-RATES, ECB-EXR; a month each). Record-shaped sources are in
 app/securities/api.py (proto/records.proto).
 """
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.futures.sources import SOURCES as FUTURES_SOURCES
 from app.models import Observation, Source
 from app.rates.sources import SOURCES as RATE_SOURCES
 from app.securities.sources import SOURCES as SECURITIES_SOURCES
@@ -25,6 +27,10 @@ from app.securities.sources import SOURCES as SECURITIES_SOURCES
 SOURCES = {name: (src.spec.description, src.calendar, src.first_period) for name, src in RATE_SOURCES.items()} | {
     name: (src.spec.description, src.calendar, src.first_period)
     for name, src in SECURITIES_SOURCES.items() if src.shape == "observations"
+} | {
+    # Phase 4's parsed sources; the ones kept raw (the SOFR averages, the CFTC reports) have no observations.
+    name: (src.spec.description, src.calendar, src.first_period)
+    for name, src in FUTURES_SOURCES.items() if src.shape == "observations" and src.spec.parse is not None
 }
 
 

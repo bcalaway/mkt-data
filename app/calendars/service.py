@@ -372,6 +372,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("CL-RULES", f"{rules.REPO_PREFIX}cl.json",
                        "Chilean legal and bank holidays, 2005-2026 (rules and dated tables; cited)", rules.parse),
+            SourceSpec("CL-PROJECTED", f"{rules.REPO_PREFIX}cl_projected.json",
+                       "CL holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "IL": CalendarSpec(
@@ -381,6 +384,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("IL-RULES", f"{rules.REPO_PREFIX}il.json",
                        "Bank of Israel Zahav non-business days, 2005-2027 (Hebrew-calendar tables; cited)", rules.parse),
+            SourceSpec("IL-PROJECTED", f"{rules.REPO_PREFIX}il_projected.json",
+                       "IL holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "TR": CalendarSpec(
@@ -390,6 +396,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("TR-RULES", f"{rules.REPO_PREFIX}tr.json",
                        "Turkish public holidays and bayram half days, 2005-2027 (rules and dated tables; cited)", rules.parse),
+            SourceSpec("TR-PROJECTED", f"{rules.REPO_PREFIX}tr_projected.json",
+                       "TR holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "HK": CalendarSpec(
@@ -399,6 +408,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("HK-RULES", f"{rules.REPO_PREFIX}hk.json",
                        "Hong Kong general holidays as gazetted, 2008-2027 (dated tables; cited)", rules.parse),
+            SourceSpec("HK-PROJECTED", f"{rules.REPO_PREFIX}hk_projected.json",
+                       "HK holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "CN": CalendarSpec(
@@ -408,6 +420,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("CN-RULES", f"{rules.REPO_PREFIX}cn.json",
                        "State Council holiday notices' weekdays off, 2008-2026 (dated tables; cited)", rules.parse),
+            SourceSpec("CN-PROJECTED", f"{rules.REPO_PREFIX}cn_projected.json",
+                       "CN holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "SG": CalendarSpec(
@@ -417,6 +432,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("SG-RULES", f"{rules.REPO_PREFIX}sg.json",
                        "Singapore public holidays, 2010-2027 (rules and dated tables; cited)", rules.parse),
+            SourceSpec("SG-PROJECTED", f"{rules.REPO_PREFIX}sg_projected.json",
+                       "SG holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "TH": CalendarSpec(
@@ -426,6 +444,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("TH-RULES", f"{rules.REPO_PREFIX}th.json",
                        "Bank of Thailand financial institution holidays, 2019-2027 (dated tables; cited)", rules.parse),
+            SourceSpec("TH-PROJECTED", f"{rules.REPO_PREFIX}th_projected.json",
+                       "TH holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "ID": CalendarSpec(
@@ -435,6 +456,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("ID-RULES", f"{rules.REPO_PREFIX}id.json",
                        "Indonesian national holidays and cuti bersama BI-RTGS closes for, 2010-2027 (dated tables; cited)", rules.parse),
+            SourceSpec("ID-PROJECTED", f"{rules.REPO_PREFIX}id_projected.json",
+                       "ID holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "IN": CalendarSpec(
@@ -444,6 +468,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("IN-RULES", f"{rules.REPO_PREFIX}in.json",
                        "Mumbai bank and FX settlement holidays, 2017-2026 (dated tables; cited)", rules.parse),
+            SourceSpec("IN-PROJECTED", f"{rules.REPO_PREFIX}in_projected.json",
+                       "IN holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     "KR": CalendarSpec(
@@ -453,6 +480,9 @@ CALENDARS: dict[str, CalendarSpec] = {
         sources=(
             SourceSpec("KR-RULES", f"{rules.REPO_PREFIX}kr.json",
                        "Korean public holidays, substitutes and designated days, 2010-2027 (rules and dated tables; cited)", rules.parse),
+            SourceSpec("KR-PROJECTED", f"{rules.REPO_PREFIX}kr_projected.json",
+                       "KR holidays projected past the published years to 2035 (vacanza holidays)", rules.parse,
+                       projected=True),
         ),
     ),
     # Tokyo's bank holidays, for the yen futures (docs/phase-4.md, "Calendars"): the Cabinet Office's national

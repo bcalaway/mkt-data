@@ -2,8 +2,6 @@
 
 Reference copy of CME Group contract specifications for the products the market data platform tracks. Every page was opened and read by hand, one page at a time, in a browser on 2026-10-08. No scripts, no JSON endpoints, no downloads.
 
-> **Status: partial.** 15 emerging-market FX products have not been read yet. They are listed at the end of section 5.
-
 ## How to read this file
 
 - Every value in the right-hand column is copied verbatim from the CME page, including CME's own typos (marked "(sic)" where they could look like transcription errors). Line breaks on the page are shown as `<br>`.
@@ -1187,6 +1185,8 @@ Source: https://www.cmegroup.com/markets/fx/g10/nok-sek/specs — read 2026-10-0
 
 ## 5. Emerging-market FX
 
+Every EM future in CME's FX product menu (Mexican peso excepted; see section 2).
+
 ### Brazilian Real Futures — BRL/USD (6L)
 
 | Field | As shown on the page |
@@ -1309,27 +1309,308 @@ Source: https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi/spe
 
 Source: https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi-euro/specs — read 2026-10-08
 
-### Not yet read (session ended before these pages were opened)
 
-The remaining emerging-market futures from CME's FX product menu have not been read yet. Their pages are listed so the next pass can pick them up:
+### Czech Koruna Futures — CZK/USD (CZK)
 
-| Product (as named in CME's FX menu) | Page |
+| Field | As shown on the page |
 |---|---|
-| CZK/USD | https://www.cmegroup.com/markets/fx/emerging-market/czech-koruna/specs |
-| CZK/EUR | https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-czech-koruna/specs |
-| HUF/USD | https://www.cmegroup.com/markets/fx/emerging-market/hungarian-forint/specs |
-| HUF/EUR | https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-hungarian-forint/specs |
-| PLN/USD | https://www.cmegroup.com/markets/fx/emerging-market/polish-zloty/specs |
-| PLN/EUR | https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-polish-zloty/specs |
-| ILS/USD | https://www.cmegroup.com/markets/fx/emerging-market/israeli-shekel/specs |
-| INR/USD | https://www.cmegroup.com/markets/fx/emerging-market/indian-rupee/specs |
-| KRW/USD | https://www.cmegroup.com/markets/fx/emerging-market/korean-won/specs |
-| RUB/USD | https://www.cmegroup.com/markets/fx/emerging-market/russian-ruble/specs |
-| TRY/USD | https://www.cmegroup.com/markets/fx/emerging-market/turkish-lira-us-dollar-try-usd/specs |
-| ZAR/USD | https://www.cmegroup.com/markets/fx/emerging-market/south-african-rand/specs |
-| IDR/USD | https://www.cmegroup.com/markets/fx/emerging-market/idr-usd/specs |
-| SGD/USD | https://www.cmegroup.com/markets/fx/emerging-market/sgd-usd/specs |
-| THB/USD | https://www.cmegroup.com/markets/fx/emerging-market/thb-usd/specs |
+| Product name | Czech Koruna Futures |
+| CME Globex code | CZK |
+| Clearing code | CZ |
+| Other codes shown | CME ClearPort: CZ |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 4,000,000 Czech korunas |
+| Minimum price fluctuation | CME Globex:<br>0.000002 per Czech koruna increments = $8.00<br>Spreads: 0.000001 per Czech koruna increments = $4.00<br>CME ClearPort:<br>0.0000001 per Czech koruna increments = $0.40 |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | 9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday). |
+| Settlement method | Deliverable |
+| Settlement procedures | CZK/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/czech-koruna/specs — read 2026-10-08
+
+### Czech Koruna/Euro (CZK/EUR) Cross Rate Futures (ECK)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Czech Koruna/Euro (CZK/EUR) Cross Rate Futures |
+| CME Globex code | ECK |
+| Clearing code | K |
+| Other codes shown | CME ClearPort: K |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 4,000,000 Czech koruna |
+| Minimum price fluctuation | CME Globex:<br>0.000002 per Czech koruna increment = 8€<br>Spreads: 0.000001 per Czech koruna increment = 4€<br>CME ClearPort:<br>0.0000001 per Czech koruna increment = 0.40€ |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | 9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday). |
+| Settlement method | Deliverable |
+| Settlement procedures | CZK/EUR Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-czech-koruna/specs — read 2026-10-08
+
+### Hungarian Forint Futures — HUF/USD (HUF)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Hungarian Forint Futures |
+| CME Globex code | HUF |
+| Clearing code | FR |
+| Other codes shown | CME ClearPort: FR |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 30,000,000 Hungarian forint |
+| Minimum price fluctuation | CME ClearPort:<br>$.0000001 per Hungarian forint increments ($3.00/contract).<br>$.0000002 per Hungarian forint increments ($6.00/contract). $.0000001 per Hungarian forint increments ($3.00/contract) for HUF/USD futures intra-currency spreads executed electronically.<br>(All lines appear under the single "CME ClearPort:" heading on the page.) |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | 9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday). |
+| Settlement method | Deliverable |
+| Settlement procedures | HUF/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/hungarian-forint/specs — read 2026-10-08
+
+### Hungarian Forint/Euro (HUF/EUR) Cross Rate Futures (EHF)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Hungarian Forint/Euro (HUF/EUR) Cross Rate Futures |
+| CME Globex code | EHF |
+| Clearing code | R |
+| Other codes shown | CME ClearPort: R |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 30,000,000 Hungarian forint |
+| Minimum price fluctuation | CME ClearPort:<br>0.0000001 euro per Hungarian forint increments (3 euro/contract).<br>$.0000002 euro per Hungarian forint increments (6 euro/contract). $.0000001 euro per Hungarian forint increments (3 euro/contract) for HUF/EUR futures intra-currency spreads executed electronically.<br>(All lines appear under the single "CME ClearPort:" heading on the page.) |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | 9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday). |
+| Settlement method | Deliverable |
+| Settlement procedures | HUF/EUR Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-hungarian-forint/specs — read 2026-10-08
+
+### Polish Zloty Futures — PLN/USD (PLN)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Polish Zloty Futures |
+| CME Globex code | PLN |
+| Clearing code | PZ |
+| Other codes shown | CME ClearPort: PZ |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 500,000 Polish zloty |
+| Minimum price fluctuation | CME Globex:<br>0.00002 per Polish zloty increment = $10.00<br>CME ClearPort:<br>0.000001 per Polish zloty increment = $0.50 |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates on 2nd business day before the 3rd wednesday of the contract month. |
+| Settlement method | Deliverable |
+| Settlement procedures | PLN/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/polish-zloty/specs — read 2026-10-08
+
+### Polish Zloty/Euro (PLN/EUR) Cross Rate Futures (EPZ)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Polish Zloty/Euro (PLN/EUR) Cross Rate Futures |
+| CME Globex code | EPZ |
+| Clearing code | Z |
+| Other codes shown | CME ClearPort: Z |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 500,000 Polish zloty |
+| Minimum price fluctuation | CME Globex:<br>0.00002 per Polish zloty increment = €10.00<br>CME ClearPort:<br>0.000001 per Polish zloty increment = €0.50 |
+| Listed contracts | Six months in the March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates on 2nd friday before the 3rd wednesday of the contract month. if that is not a business day then it is the business day before that in "ctm" (sic) |
+| Settlement method | Deliverable |
+| Settlement procedures | PLN/EUR Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-polish-zloty/specs — read 2026-10-08
+
+### Israeli Shekel Futures — ILS/USD (ILS)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Israeli Shekel Futures |
+| CME Globex code | ILS |
+| Clearing code | IS |
+| Other codes shown | CME ClearPort: IS |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 1,000,000 Israeli sheqalim |
+| Minimum price fluctuation | CME Globex:<br>0.00001 per Israeli shekel increment = $10.00 Spreads: 0.000005 per Israeli shekel increment = $5.00<br>CME ClearPort:<br>0.000001 per Israeli shekel increment = $1.00 |
+| Listed contracts | Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters |
+| Termination of trading | Trading terminates on the second business day prior to the third Wednesday of the contract month. |
+| Settlement method | Deliverable |
+| Settlement procedures | ILS/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/israeli-shekel/specs — read 2026-10-08
+
+### Indian Rupee/USD Futures — INR/USD (SIR)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Indian Rupee/USD Futures |
+| CME Globex code | SIR |
+| Clearing code | SIR |
+| Other codes shown | CME ClearPort: SIR |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 5,000,000 Indian rupees |
+| Minimum price fluctuation | CME Globex:<br>0.01 per 100 Indian rupee increments = $5.00 Spreads: 0.005 per 100 Indian rupee increments = $2.50<br>CME ClearPort:<br>0.001 per 100 Indian rupee increments = $0.50 |
+| Listed contracts | Monthly contracts listed for 12 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates at 1:00 p.m. Mumbai time 2 Indian business days prior to the last Indian business day of the contract month. |
+| Settlement method | Financially Settled |
+| Settlement procedures | INR/USD Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/indian-rupee/specs — read 2026-10-08
+
+### Korean Won Futures — KRW/USD (KRW)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Korean Won Futures |
+| CME Globex code | KRW |
+| Clearing code | KRW |
+| Other codes shown | CME ClearPort: KRW |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 125,000,000 Korean won |
+| Minimum price fluctuation | 0.0000001 per KRW increment = $12.50 |
+| Listed contracts | Monthly contracts listed for 13 consecutive months and 2 additional quarterly contracts (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates on the 3rd Monday of the contract month. If this is not a Seoul business day, trading terminates on the previous Seoul business day. |
+| Settlement method | Financially Settled |
+| Settlement procedures | KRW/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/korean-won/specs — read 2026-10-08
+
+### Russian Ruble Futures — RUB/USD (6R)
+
+> The page carries this notice: "Pending CFTC review, CME is temporarily suspending trading and clearing of Russian Ruble related contracts. Additional information may be viewed in SER-9393 dated June 13, 2024." The page header shows no live Globex contract ("GLOBEX CODE -").
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Russian Ruble Futures |
+| CME Globex code | 6R |
+| Clearing code | RU |
+| Other codes shown | CME ClearPort: RU |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 2,500,000 Russian rubles |
+| Minimum price fluctuation | 0.000005 per RUB increment = $12.50 |
+| Listed contracts | Monthly contacts listed for 4 consecutive quarterly contracts (Mar, Jun, Sep, Dec) (sic) |
+| Termination of trading | Trading terminates on the 15th day of the contract month. If this is not a London business day, trading terminates on the next London business day. |
+| Settlement method | Financially Settled |
+| Settlement procedures | RUB/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/russian-ruble/specs — read 2026-10-08
+
+### Turkish Lira/US Dollar (TRY/USD) Futures (TRL)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | Turkish Lira/US Dollar (TRY/USD) Future |
+| CME Globex code | TRL |
+| Clearing code | TRL |
+| Other codes shown | CME ClearPort: TRL |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 1,000,000 TRY |
+| Minimum price fluctuation | CME Globex:<br>0.000005 per Turkish lira increment = $5.00<br>Spreads: 0.000001 per Turkish lira increment = $1.00<br>CME ClearPort:<br>0.0000005 per Turkish lira increment = $0.50 |
+| Listed contracts | Six months in March quarterly cycle (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminate at 4:00 p.m. London time on the 2nd Business Day immediately preceding the third Wednesday of the contract month. |
+| Settlement method | Deliverable |
+| Settlement procedures | not shown |
+| Trading hours | CME Globex:<br>Sunday - Friday 17:00 hours - 16:00 hours Chicago time. Friday close at 16:00 CT and reopens at 17:00 CT on Sunday.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/turkish-lira-us-dollar-try-usd/specs — read 2026-10-08
+
+### South African Rand Futures — ZAR/USD (6Z)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | South African Rand Futures |
+| CME Globex code | 6Z |
+| Clearing code | RA |
+| Other codes shown | CME ClearPort: RA |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 500,000 South African rand |
+| Minimum price fluctuation | CME Globex:<br>0.000025 per South African rand increment = $12.50<br>Final Settlement: 0.000001<br>CME ClearPort:<br>0.000001 per South African rand increment = $0.50 |
+| Listed contracts | Monthly contracts listed for 13 consecutive months and quarterly contracts (Mar, Jun, Sep, Dec) listed for 4 consecutive quarters |
+| Termination of trading | Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month. |
+| Settlement method | Deliverable |
+| Settlement procedures | ZAR/USD Futures Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/south-african-rand/specs — read 2026-10-08
+
+### IDR/USD Futures (IDR)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | IDR/USD Futures |
+| CME Globex code | IDR |
+| Clearing code | IDR |
+| Other codes shown | CME ClearPort: IDR |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 1,000,000,000 Indonesian rupiah |
+| Minimum price fluctuation | CME Globex:<br>0.01 per 1,000,000 Indonesian rupiah increments = $10.00<br>Spreads: 0.005 per 1,000,000 Indonesian rupiah increments = $5.00<br>CME ClearPort:<br>0.001 per 1,000,000 Indonesian rupiah increments = $1.00 |
+| Listed contracts | Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month. |
+| Settlement method | Financially Settled |
+| Settlement procedures | Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/idr-usd/specs — read 2026-10-08. (CME's FX page lists a 15 Sep 2026 notice amending this contract's Termination of Trading and Cash Settlement rules; the value above is what the specs page showed today.)
+
+### SGD/USD Futures (SGD)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | SGD/USD Futures |
+| CME Globex code | SGD |
+| Clearing code | SGD |
+| Other codes shown | CME ClearPort: SGD |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 100,000 Singapore dollar |
+| Minimum price fluctuation | CME Globex:<br>0.0001 per 100000 Singapore dollar = $10.00<br>Spreads: 0.00005 per per 100000 Singapore dollar = $5.00 (sic)<br>CME ClearPort:<br>0.00001 per 100000 Singapore dollar = $1.00 |
+| Listed contracts | Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month. |
+| Settlement method | Deliverable |
+| Settlement procedures | Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/sgd-usd/specs — read 2026-10-08
+
+### THB/USD Futures (THAI)
+
+| Field | As shown on the page |
+|---|---|
+| Product name | THB/USD Futures |
+| CME Globex code | THAI |
+| Clearing code | THAI |
+| Other codes shown | CME ClearPort: THAI |
+| Vendor codes (Bloomberg / Refinitiv) | not shown (specs page links to "Quote Vendor Symbols Listing"; product has no Overview tab) |
+| Contract unit | 2,000,000 Thai baht |
+| Minimum price fluctuation | CME Globex:<br>0.000005 per 2000000 Thai baht = $10.00<br>Spreads:0.0000025 per 2000000 Thai baht = $5.00<br>CME ClearPort:<br>0.000001 per 2000000 Thai baht = $2.00 |
+| Listed contracts | Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec) |
+| Termination of trading | Trading terminates at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month. |
+| Settlement method | Financially Settled |
+| Settlement procedures | Settlement Procedures (link) |
+| Trading hours | CME Globex:<br>Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.<br>CME ClearPort:<br>Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT |
+| Launch / first trade date | not shown |
+
+Source: https://www.cmegroup.com/markets/fx/emerging-market/thb-usd/specs — read 2026-10-08
 
 (The Mexican peso, 6M, is filed under Emerging Markets by CME but appears in the G10 section above because it was requested there.)
 

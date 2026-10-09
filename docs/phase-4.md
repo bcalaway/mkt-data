@@ -221,6 +221,7 @@ The patterns from phases 2 and 3: stale-capture and parse alerts for the new sou
 5. **Positioning** (mkt-data, secmaster-svc product instruments, quote-svc): TFF backfilled from 2006.
 6. **Schedule and monitoring:** DAGs, Assets, metrics, alerts.
 7. **Screens and voice:** Futures screen, basket view, fixings and positioning charts, home-mcp tools.
+   - **Fed funds target (Bill, 2026-10-09):** the EFFR chart draws the rate inside its target range (the upper and lower bounds `NYFED-EFFR` already carries, loaded in step 4), and a home-mcp fixing tool answers "what's the fed funds target?" and "where did EFFR fix in the range?".
 
 ## Decisions (Bill, 2026-10-07)
 
@@ -244,6 +245,7 @@ The patterns from phases 2 and 3: stale-capture and parse alerts for the new sou
 - **Non-US rates futures with their government bonds** (Eurex Bund, Bobl, Schatz and Buxl; ICE gilts, SONIA and Euribor; €STR futures): each needs its own holiday calendar (TARGET2, UK) and, for its baskets, that country's government bonds in secmaster-svc, a phase-3-sized job per country. Both debt offices publish their bond lists free (Germany's Finanzagentur, the UK Debt Management Office).
 - **Energy, likely phase 5** (Bill, 2026-10-07: wait): CME and ICE energy futures, built on this phase's machinery (contracts from rules, calendars, CFTC capture), with the CFTC's disaggregated report and the EIA's free API for daily spot prices (WTI, Brent, Henry Hub, products; a free key in SSM).
 - Options on futures, intraday data.
+- **Fed funds target before 2000 and FOMC dates** (Bill, 2026-10-09): `NYFED-EFFR` carries the target range only from 2000. FRED's `DFEDTAR` (single target, 1982-09-27 to 2008-12-15) and `DFEDTARU`/`DFEDTARL` (the range from 2008-12-16, a cross-check on the New York Fed's) as raw sources would extend it, through FRED's API (a free key in SSM). FOMC meeting and decision dates as another calendar arm, used as event markers on the rates charts.
 
 ## Sources consulted (2026-10-07)
 

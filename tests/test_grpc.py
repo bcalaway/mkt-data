@@ -88,7 +88,7 @@ def test_observations(migrated_db):
     listed, periods, values, missing = asyncio.run(_call(read))
     assert {x.name for x in listed.sources} == {"UST-PAR", "H15-TCM", "TD-PRICES", "BLS-CPI", "NYFED-SOFR", "NYFED-EFFR",
                                                   "FRB-H10", "FRB-H10-RATES", "ECB-EXR", "CFTC-TFF",
-                                                  "CFTC-TFF-COMBINED"}
+                                                  "CFTC-TFF-COMBINED"} | {f"SPGMI-RFR-{c}" for c in ("USD", "EUR", "GBP", "JPY", "CHF", "AUD")}
     assert [(p.period, p.values) for p in periods.periods] == [("2026-10", 28)]
     assert len(values.values) == 28 and values.values[0].unit == "percent"
     assert missing == grpc.StatusCode.NOT_FOUND
@@ -119,7 +119,7 @@ def test_records(migrated_db):
         return listed, periods, recs, missing
 
     listed, periods, recs, missing = asyncio.run(_call(read))
-    assert {x.name for x in listed.sources} == {"TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS"}
+    assert {x.name for x in listed.sources} == {"TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS"} | {f"SPGMI-RFR-{c}" for c in ("USD", "EUR", "GBP", "JPY", "CHF", "AUD")}
     assert [(p.period, p.records) for p in periods.periods] == [("2026-10", 11)]
     bond = next(r for r in recs.records if r.source_key == "912810UW6/2026-10-15")
     assert bond.record_type == "auction" and json.loads(bond.fields_json)["interestRate"] == "5.125000"

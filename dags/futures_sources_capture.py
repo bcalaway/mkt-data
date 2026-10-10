@@ -1,8 +1,10 @@
-"""mkt-data: the daily captures of phase 4's sources (docs/phase-4.md, step 1).
+"""mkt-data: the daily captures of phase 4's sources (docs/phase-4.md, steps 1 and 6).
 
-Raw capture only: there are no parsers yet, so nothing is marked for other
-services. The point is to start the raw history now and read the real bytes
-on the hub before writing parsers.
+Each source's parsed observations reach quote-svc through an Asset: a capture
+that added, changed or removed observations marks `mkt_data_fixings` (the
+New York Fed's, H.10's and the ECB's) or `mkt_data_positioning` (the CFTC's),
+and quote-svc's load runs on them (step 6). NYFED-SOFR-AVG is kept raw and
+marks nothing.
 
 One DAG, weekdays at 7:45 p.m. New York time, one task per source so a
 failing source doesn't hold up the others:
@@ -14,7 +16,10 @@ failing source doesn't hold up the others:
 - CFTC-TFF and CFTC-TFF-COMBINED: the report dates (Tuesdays) of the last
   two reports due out by today (a report is due the Friday after its
   Tuesday), so a report published late, the Monday after a holiday, is
-  picked up that evening.
+  picked up that evening. When the Tuesday is a federal holiday the CFTC
+  dates the report the Monday before (2025-11-10 for Veterans Day,
+  2023-07-03, the Christmas and New Year weeks), so that week asks for the
+  Monday too (step 6).
 
 A period with nothing published yet (NOT_PUBLISHED from the job) is logged,
 not a failure: the next evening asks again.
@@ -37,11 +42,19 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from airflow.sdk import CronTriggerTimetable, Param, dag, get_current_context, task
+try:  # Airflow 3's home for it; 2.x's as a fallback (see treasury_cmt_daily.py)
+    from airflow.sdk.exceptions import AirflowSkipException
+except ImportError:
+    from airflow.exceptions import AirflowSkipException
+from airflow.sdk import Asset, CronTriggerTimetable, Param, dag, get_current_context, task
 
 # The platform's helper lives at Airflow's DAG root (see treasury_cmt_daily.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from home_platform_jobs import AppJobError, call_app_job
+
+# What quote-svc's load runs on (its dags/load.py): marked only when a capture changed observations.
+FIXINGS = Asset("mkt_data_fixings")
+POSITIONING = Asset("mkt_data_positioning")
 
 NEW_YORK = ZoneInfo("America/New_York")
 FETCH_PAUSES = (10, 30, 60)
@@ -53,6 +66,9 @@ NOT_PUBLISHED = "NOT_PUBLISHED"
 MONTHLY = ("NYFED-SOFR", "NYFED-EFFR", "NYFED-SOFR-AVG", "FRB-H10", "FRB-H10-RATES", "ECB-EXR")
 WEEKLY = ("CFTC-TFF", "CFTC-TFF-COMBINED")
 SOURCES = MONTHLY + WEEKLY
+# The Asset each source's new observations mark; none for a source kept raw.
+MARKS = {**dict.fromkeys(("NYFED-SOFR", "NYFED-EFFR", "FRB-H10", "FRB-H10-RATES", "ECB-EXR"), FIXINGS),
+         **dict.fromkeys(WEEKLY, POSITIONING)}
 
 
 def recent_months(today: date, back: int = MONTH_DAYS_BACK) -> list[str]:
@@ -72,12 +88,39 @@ def cftc_report_dates(today: date, n: int = CFTC_REPORTS) -> list[str]:
     return [d.isoformat() for d in reversed(tuesdays)]
 
 
-def periods_for(source: str, today: date) -> list[str]:
+def fed_business_day(day: date, call=None) -> bool | None:
+    """calendar-svc's FED answer for a day: True, False, or None if it couldn't say."""
+    call = call or call_app_job
+    try:
+        r = call("calendar-svc", "calendars/FED/business-day", {"on": day.isoformat()}, method="GET")
+    except AppJobError as e:
+        print(f"calendar-svc couldn't say whether {day} is a FED business day: {e}")
+        return None
+    return bool(r["business_day"])
+
+
+def with_holiday_mondays(tuesdays: list[str], is_business_day=fed_business_day) -> list[str]:
+    """Each report date, preceded by its Monday when the Tuesday is a federal holiday (the CFTC dates that week's
+    report the Monday). If calendar-svc can't say, the Monday is asked for too: an empty answer costs nothing."""
+    out = []
+    for t in tuesdays:
+        day = date.fromisoformat(t)
+        if is_business_day(day) is not True:
+            out.append((day - timedelta(days=1)).isoformat())
+        out.append(t)
+    return out
+
+
+def periods_for(source: str, today: date, is_business_day=fed_business_day) -> list[str]:
     if source in MONTHLY:
         return recent_months(today)
     if source in WEEKLY:
-        return cftc_report_dates(today)
+        return with_holiday_mondays(cftc_report_dates(today), is_business_day)
     raise ValueError(f"unknown source {source}")
+
+
+def changed(results: list[dict]) -> bool:
+    return any(r.get("added") or r.get("changed") or r.get("removed") for r in results)
 
 
 def capture(source: str, period: str, call=None, sleep=time.sleep) -> dict:
@@ -126,12 +169,22 @@ def capture_all(source: str, periods: list[str], call=None, sleep=time.sleep) ->
 )
 def futures_sources_capture():
     for source in SOURCES:
+        slug = source.lower().replace("-", "_")
 
-        @task(task_id=f"capture_{source.lower().replace('-', '_')}", retries=1, retry_delay=timedelta(hours=1))
+        @task(task_id=f"capture_{slug}", retries=1, retry_delay=timedelta(hours=1))
         def run(source: str = source) -> list[dict]:
             return capture_all(source, periods_for(source, datetime.now(NEW_YORK).date()))
 
-        run()
+        got = run()
+        if source in MARKS:
+
+            @task(task_id=f"mark_{slug}", outlets=[MARKS[source]])
+            def mark(results: list[dict], source: str = source) -> str:
+                if not changed(results):
+                    raise AirflowSkipException(f"{source}: nothing new for quote-svc")
+                return "marked"
+
+            mark(got)
 
 
 futures_sources_capture()

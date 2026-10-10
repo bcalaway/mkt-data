@@ -65,9 +65,24 @@ def test_cftc_report_dates(mod):
     assert mod.cftc_report_dates(date(2026, 10, 12)) == ["2026-09-29", "2026-10-06"]  # Monday after a holiday Friday
 
 
+def test_a_holiday_tuesday_asks_for_the_monday_too(mod):
+    # Veterans Day 2025 was a Tuesday: the CFTC dated that week's report Monday 2025-11-10.
+    holidays = {date(2025, 11, 11)}
+    on = lambda d: d not in holidays  # noqa: E731
+    assert mod.periods_for("CFTC-TFF", date(2025, 11, 17), on) == ["2025-11-04", "2025-11-10", "2025-11-11"]
+    assert mod.periods_for("CFTC-TFF", date(2025, 11, 24), on) == ["2025-11-10", "2025-11-11", "2025-11-18"]
+    # calendar-svc couldn't say: ask for the Monday as well.
+    assert mod.with_holiday_mondays(["2026-10-06"], lambda d: None) == ["2026-10-05", "2026-10-06"]
+
+
+def test_only_parsed_sources_mark_an_asset(mod):
+    assert set(mod.MARKS) == set(mod.SOURCES) - {"NYFED-SOFR-AVG"}
+    assert mod.changed([{"added": 0}, {"changed": 3}]) and not mod.changed([{"added": 0, "changed": 0, "removed": 0}])
+
+
 def test_periods_for_every_source(mod):
     for source in mod.SOURCES:
-        assert mod.periods_for(source, date(2026, 10, 7))
+        assert mod.periods_for(source, date(2026, 10, 7), lambda d: True)
     with pytest.raises(ValueError):
         mod.periods_for("NOPE", date(2026, 10, 7))
 

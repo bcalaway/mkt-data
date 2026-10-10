@@ -130,7 +130,8 @@ def _source(name, url, description, pulls, kind, calendar, first_period, fetch, 
                             fetch=fetch)
 
 
-KEPT_RAW = "Kept raw for now (phase 4, step 1): quote-svc reads it once it has a parser."
+PARSED_CFTC = ("Parsed to near-raw observations (phase 4, step 5): open interest, positions, trader counts and "
+               "concentration by contract market code; quote-svc builds each product's positioning from them.")
 PARSED = "Parsed to near-raw observations as published (phase 4, step 4); quote-svc builds the fixings from them."
 
 SOURCES: dict[str, SecuritiesSource] = {
@@ -162,13 +163,13 @@ SOURCES: dict[str, SecuritiesSource] = {
     "CFTC-TFF": _source(
         "CFTC-TFF", CFTC_TFF_URL, "CFTC Traders in Financial Futures, futures only (CSV, by report date)",
         f"Positions by trader category (dealers, asset managers, leveraged funds, other reportables, non-reportables) "
-        f"in every financial futures market, weekly as of Tuesday. {KEPT_RAW}",
-        "day", "FED", "2006-06-13", fetch_cftc),
+        f"in every financial futures market, weekly as of Tuesday. {PARSED_CFTC}",
+        "day", "FED", "2006-06-13", fetch_cftc, parsers.parse_tff),
     "CFTC-TFF-COMBINED": _source(
         "CFTC-TFF-COMBINED", CFTC_TFF_COMBINED_URL,
         "CFTC Traders in Financial Futures, futures and options combined (CSV, by report date)",
-        f"The same report with options on futures included, delta-adjusted. {KEPT_RAW}",
-        "day", "FED", "2006-06-13", fetch_cftc),
+        f"The same report with options on futures included, delta-adjusted. {PARSED_CFTC}",
+        "day", "FED", "2006-06-13", fetch_cftc, parsers.parse_tff_combined),
 }
 
 

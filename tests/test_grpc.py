@@ -87,7 +87,8 @@ def test_observations(migrated_db):
 
     listed, periods, values, missing = asyncio.run(_call(read))
     assert {x.name for x in listed.sources} == {"UST-PAR", "H15-TCM", "TD-PRICES", "BLS-CPI", "NYFED-SOFR", "NYFED-EFFR",
-                                                  "FRB-H10", "FRB-H10-RATES", "ECB-EXR"}
+                                                  "FRB-H10", "FRB-H10-RATES", "ECB-EXR", "CFTC-TFF",
+                                                  "CFTC-TFF-COMBINED"}
     assert [(p.period, p.values) for p in periods.periods] == [("2026-10", 28)]
     assert len(values.values) == 28 and values.values[0].unit == "percent"
     assert missing == grpc.StatusCode.NOT_FOUND

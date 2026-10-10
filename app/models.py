@@ -192,7 +192,7 @@ class Observation(Base):
     period: Mapped[str] = mapped_column(String(10))
     source_key: Mapped[str] = mapped_column(String(40))
     as_of: Mapped[date] = mapped_column(Date)
-    field: Mapped[str] = mapped_column(String(20))
+    field: Mapped[str] = mapped_column(String(40))  # the source's name: percentRate, dealer_positions_long_all
     value: Mapped[Decimal] = mapped_column(Numeric)
     unit: Mapped[str] = mapped_column(String(20))
     capture_id: Mapped[int] = mapped_column(Integer, ForeignKey("capture.id"))

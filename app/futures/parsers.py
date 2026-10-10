@@ -14,6 +14,14 @@ like the source's format is a ParseError, and the raw capture is kept for a fixe
 - ECB-EXR: the ECB data portal's SDMX CSV. Key the series (`EXR.D.JPY.EUR.SP00.A`), field `rate`, unit
   `JPY per EUR`.
 
+- CFTC-TFF, CFTC-TFF-COMBINED: the CFTC's Traders in Financial Futures report (Socrata CSV, one report
+  date, every market). Key the contract market code (`043602`: 10-year T-note futures), field the CFTC's
+  column name, for the published levels only: open interest, each trader category's long, short and
+  spreading positions (`unit` contracts), the number of traders in each (`traders`), and the
+  concentration ratios (`percent`). The week-on-week changes and the percents of open interest are
+  arithmetic on those, so they stay in the raw capture. A count the CFTC leaves empty (it withholds
+  categories with too few traders) is skipped.
+
 The SOFR Averages and Index (NYFED-SOFR-AVG) stay raw: averaging is analytics, for a later phase (Bill,
 2026-10-09).
 """
@@ -140,3 +148,58 @@ def parse_ecb(content: bytes) -> list[Obs]:
         out.append(Obs(r["KEY"].strip(), day, _decimal(value, f"{day} {r['KEY']}"), field="rate",
                        unit=f"{r['CURRENCY'].strip()} per {r['CURRENCY_DENOM'].strip()}"[:20]))
     return out
+
+
+CFTC_LEVELS = ("open_interest_all", "dealer_positions_", "asset_mgr_positions_", "lev_money_positions_",
+               "other_rept_positions_", "tot_rept_positions_", "nonrept_positions_", "traders_", "conc_")
+CFTC_NEED = {"id", "report_date_as_yyyy_mm_dd", "cftc_contract_market_code", "open_interest_all"}
+CFTC_CODE = re.compile(r"^[0-9A-Z]{5}[0-9A-Z+]$")
+
+
+def _cftc_unit(column: str) -> str:
+    if column.startswith("traders_"):
+        return "traders"
+    if column.startswith("conc_"):
+        return "percent"
+    return "contracts"
+
+
+def parse_cftc(content: bytes, kind: str) -> list[Obs]:
+    """One TFF report date, every market. kind: F (futures only) or C (futures and options combined), the
+    last letter of each row's id."""
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise ParseError("not UTF-8 text") from None
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames or not CFTC_NEED <= set(reader.fieldnames):
+        raise ParseError(f"missing columns {sorted(CFTC_NEED - set(reader.fieldnames or []))}")
+    columns = [c for c in reader.fieldnames if c.startswith(CFTC_LEVELS)]
+    out, days, seen = [], set(), set()
+    for r in reader:
+        code = (r["cftc_contract_market_code"] or "").strip()
+        if not CFTC_CODE.match(code):
+            raise ParseError(f"unexpected contract market code {code!r}")
+        if not r["id"].strip().endswith(kind):
+            raise ParseError(f"{code}: row {r['id']!r} isn't a {'futures-only' if kind == 'F' else 'combined'} row")
+        if code in seen:
+            raise ParseError(f"{code} twice in one report")
+        seen.add(code)
+        day = _date(r["report_date_as_yyyy_mm_dd"], code)
+        days.add(day)
+        for c in columns:
+            v = (r[c] or "").strip()
+            if v in ("", "."):
+                continue  # withheld: too few traders in the category
+            out.append(Obs(code, day, _decimal(v, f"{day} {code} {c}"), field=c, unit=_cftc_unit(c)))
+    if len(days) > 1:
+        raise ParseError(f"more than one report date: {sorted(days)}")
+    return out
+
+
+def parse_tff(content: bytes) -> list[Obs]:
+    return parse_cftc(content, "F")
+
+
+def parse_tff_combined(content: bytes) -> list[Obs]:
+    return parse_cftc(content, "C")

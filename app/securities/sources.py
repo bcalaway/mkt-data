@@ -112,7 +112,9 @@ def bls_view(body: bytes) -> object:
 class SecuritiesSource:
     spec: SourceSpec  # name, url template, description, parser
     kind: Kind  # what a period is: a day, a month or a year
-    shape: Literal["records", "observations"]  # which near-raw table its parse goes to
+    # Which near-raw table its parse goes to; "curve" (the SPGMI swap curves): both, the parse a pair (observations,
+    # records).
+    shape: Literal["records", "observations", "curve"]
     calendar: str  # publication calendar (calendar-svc), for metric labels
     first_period: str  # the earliest period to ask for; the real first one is found in the backfill
     ahead: int = 0  # periods past the current one that may already have data (announcements)
@@ -135,6 +137,7 @@ class SecuritiesSource:
         return self.spec.url.format(
             first=first.isoformat(), last=last.isoformat(),
             first_us=first.strftime("%m/%d/%Y"), last_us=last.strftime("%m/%d/%Y"), year=first.year,
+            ymd=first.strftime("%Y%m%d"),
         )
 
 
@@ -254,7 +257,16 @@ def post_fedinvest(period: str):
     return fetch
 
 
+def _apply_curve(s: Session, cap, parsed) -> dict:
+    """Both halves of a curve file's parse: its observations, then its record (counts under "record")."""
+    obs, recs = parsed
+    out = near_raw.apply_period(s, cap, obs)
+    return out | {"record": records.apply_period(s, cap, recs)}
+
+
 def _apply(src: SecuritiesSource):
+    if src.shape == "curve":
+        return _apply_curve
     return records.apply_period if src.shape == "records" else near_raw.apply_period
 
 
@@ -291,10 +303,13 @@ def run_capture(s: Session, name: str, period: str, fetcher=None, sources: dict 
     return out | {"parsed": True} | result
 
 
-def run_rebuild(s: Session, name: str) -> dict:
+def run_rebuild(s: Session, name: str, sources: dict | None = None) -> dict:
     """Rebuild one source's near-raw rows from every stored capture."""
-    src = SOURCES[name]
+    src = (sources or SOURCES)[name]
     service._source(s, src.spec)
+    if src.shape == "curve":  # each half replayed on its own (each rebuild commits)
+        out = near_raw.rebuild(s, name, lambda body: src.spec.parse(body)[0])
+        return out | {"record": records.rebuild(s, name, lambda body: src.spec.parse(body)[1])}
     if src.shape == "records":
         return records.rebuild(s, name, src.spec.parse)
     return near_raw.rebuild(s, name, src.spec.parse)

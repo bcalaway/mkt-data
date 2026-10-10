@@ -22,7 +22,7 @@ def test_sources_are_listed_before_anything_is_captured(migrated_db):
     with db.session() as s:
         listed = {r["name"]: r for r in api.list_sources(s)}
         assert api.list_periods(s, "TD-SECURITIES") == [] and api.get_period(s, "TD-SECURITIES", "2026-10") == []
-    assert set(listed) == {"TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS"}
+    assert set(listed) == {"TD-SECURITIES", "FD-AUCTIONS", "FD-MSPD-STRIPS"} | {f"SPGMI-RFR-{c}" for c in ("USD", "EUR", "GBP", "JPY", "CHF", "AUD")}  # curve records
     assert listed["TD-SECURITIES"]["calendar"] == "SIFMA-US" and listed["TD-SECURITIES"]["periods"] == 0
 
 

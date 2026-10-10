@@ -25,6 +25,7 @@ from app.futures import sources as futures
 from app.models import Capture, Observation, RecordComparison, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
+from app.swaps import sources as swaps
 
 router = APIRouter()
 
@@ -89,6 +90,9 @@ def _collect(s, out: _Out) -> None:
     # Phase 4's fixings and positioning sources, likewise.
     cal_of |= {name: src.calendar for name, src in futures.SOURCES.items()}
     kind_of |= {name: "published" for name in futures.SOURCES}
+    # The SPGMI swap curves, likewise.
+    cal_of |= {name: src.calendar for name, src in swaps.SOURCES.items()}
+    kind_of |= {name: "published" for name in swaps.SOURCES}
 
     # Per source: last successful fetch, latest parse outcome, captures and bytes.
     last_ok = dict(s.execute(

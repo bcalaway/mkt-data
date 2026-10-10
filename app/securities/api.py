@@ -16,8 +16,10 @@ from sqlalchemy.orm import Session
 
 from app.models import Record, Source
 from app.securities.sources import SOURCES as ALL_SOURCES
+from app.swaps.sources import SOURCES as SWAP_SOURCES
 
-SOURCES = {name: src for name, src in ALL_SOURCES.items() if src.shape == "records"}
+# Phase 3's record sources, and the SPGMI swap curves' `curve` records (their par rates are observations too).
+SOURCES = {name: src for name, src in ALL_SOURCES.items() if src.shape == "records"} | SWAP_SOURCES
 
 
 class UnknownSource(LookupError):

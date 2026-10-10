@@ -35,6 +35,11 @@ class Settings:
     # capture text, checks); the Airflow token works there too.
     read_token: str | None = os.environ.get("READ_TOKEN")
 
+    # The email address that accepted S&P's terms for the ISDA standard model's RFR curves (app/swaps/sources.py):
+    # SSM /home-platform/mkt-data/spgmi-rfr-email, delivered by the deploy. Kept out of the public repo; unset means
+    # the SPGMI-RFR-* captures fail with a message saying so.
+    spgmi_rfr_email: str | None = os.environ.get("SPGMI_RFR_EMAIL")
+
 
     # gRPC server (ADR-0020): internal-only, port 9090 by convention.
     grpc_port: int = int(os.environ.get("GRPC_PORT", "9090"))

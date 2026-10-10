@@ -20,6 +20,7 @@ from app.futures import sources as futures
 from app.models import Capture, Source, SourceCheck
 from app.rates import sources as rates
 from app.securities import sources as securities
+from app.swaps import sources as swaps
 
 # How each group of sources is fetched: the DAG, when it runs, and how long without a successful fetch is late.
 # tests/test_source_status.py checks every DAG id and schedule here against dags/, so this can't drift from them.
@@ -69,6 +70,8 @@ CALENDAR_SCHEDULES = {
     "IN": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "KR": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
     "JP": Schedule("mkt_data__fx_calendars", "Mondays 11:41 UTC", "41 11 * * 1", WEEKLY_LATE_HOURS),
+    "ISDA-NYM": Schedule("mkt_data__isda_calendars", "Mondays 11:47 UTC", "47 11 * * 1", WEEKLY_LATE_HOURS),
+    "ISDA-TYO": Schedule("mkt_data__isda_calendars", "Mondays 11:47 UTC", "47 11 * * 1", WEEKLY_LATE_HOURS),
 }
 SOURCE_SCHEDULES = {
     "UST-PAR": Schedule("mkt_data__ust_par", "Weekdays 6:30 p.m. New York", "30 18 * * 1-5", WEEKDAYS_LATE_HOURS),
@@ -79,7 +82,9 @@ SECURITIES_SCHEDULE = Schedule("mkt_data__treasury_securities_capture", "Weekday
 FUTURES_SCHEDULE = Schedule("mkt_data__futures_sources_capture", "Weekdays 7:45 p.m. New York",
                             "45 19 * * 1-5", WEEKDAYS_LATE_HOURS)
 # Phase 4's DAG re-fetches the latest CFTC report every weekday, so the weekly report is held to the weekday limit.
-GROUP_SCHEDULES = {"securities": SECURITIES_SCHEDULE, "futures": FUTURES_SCHEDULE}
+SWAPS_SCHEDULE = Schedule("mkt_data__swap_curves_capture", "Weekdays 6:15 p.m. New York", "15 18 * * 1-5",
+                          WEEKDAYS_LATE_HOURS)
+GROUP_SCHEDULES = {"securities": SECURITIES_SCHEDULE, "futures": FUTURES_SCHEDULE, "swaps": SWAPS_SCHEDULE}
 
 
 def schedule_for(e: "Entry") -> Schedule:
@@ -116,7 +121,7 @@ class UnknownSource(LookupError):
 @dataclass(frozen=True)
 class Entry:
     name: str
-    group: str  # calendars | rates | securities | futures
+    group: str  # calendars | rates | securities | futures | swaps
     calendar: str
     kind: str  # published | rules | projected
     period_kind: str  # day | month | year; "" for a one-page source
@@ -138,6 +143,8 @@ def catalog() -> list[Entry]:
     for name, src in futures.SOURCES.items():
         out.setdefault(name, Entry(name, "futures", src.calendar, "published", src.kind, src.spec,
                                    src.first_period))
+    for name, src in swaps.SOURCES.items():
+        out.setdefault(name, Entry(name, "swaps", src.calendar, "published", src.kind, src.spec, src.first_period))
     return list(out.values())
 
 

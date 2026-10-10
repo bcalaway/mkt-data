@@ -23,6 +23,8 @@ Each capture is the zip as downloaded; its XML is parsed (app/swaps/parsers.py) 
 tenor's par rate) and one `curve` record (conventions, spot date, maturity dates, as printed).
 """
 
+from urllib.parse import quote
+
 import httpx2
 
 from app import config
@@ -69,6 +71,12 @@ def _get(url: str) -> tuple[int, str | None, bytes]:
     return r.status_code, r.headers.get("content-type"), r.content
 
 
+def _scrub(text: str, email: str) -> str:
+    """The text without the email, as typed or URL-encoded: rfr.spglobal.com redirects (302) to its API host,
+    pvr-rfr-api.api.rfr.spglobal.com, with the address re-encoded (%40), and an HTTP error names that URL."""
+    return text.replace(email, "<email>").replace(quote(email, safe=""), "<email>")
+
+
 def fetch_spgmi(url: str) -> tuple[int, str | None, bytes]:
     """Fetch one file with the registered email added, and turn S&P's refusals into failed fetches.
 
@@ -78,10 +86,10 @@ def fetch_spgmi(url: str) -> tuple[int, str | None, bytes]:
     try:
         status, ctype, body = _get(f"{url}?email={email}")
     except SourceFetchError as e:
-        raise SourceFetchError(f"{url}: {str(e).replace(email, '<email>')}") from None
+        raise SourceFetchError(f"{url}: {_scrub(str(e), email)}") from None
     if status == 200 and (body[:2] == b"PK" or body.lstrip()[:1] == b"<" and b"interestRateCurve" in body[:4000]):
         return status, ctype, body
-    message = " ".join(body[:600].decode("utf-8", errors="replace").replace(email, "<email>").split())
+    message = " ".join(_scrub(body[:600].decode("utf-8", errors="replace"), email).split())
     low = message.lower()
     if "not available" in low:
         raise SourceFetchError(f"{url}: {NOT_PUBLISHED}: {message[:200]}")

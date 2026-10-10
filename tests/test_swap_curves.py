@@ -152,13 +152,14 @@ def test_fetch_adds_the_email_and_keeps_it_out_of_errors(email, monkeypatch):
             sw.fetch_spgmi("https://rfr.spglobal.com/x.zip")
         assert EMAIL not in str(e.value)
 
-    def boom(url):
-        raise service.SourceFetchError(f"connect failed for {url}")
+    def boom(url):  # the redirect target names the address URL-encoded
+        raise service.SourceFetchError(f"connect failed for {url}, then for "
+                                       f"https://pvr-rfr-api.api.rfr.spglobal.com/x.zip?email=someone%40example.com")
 
     monkeypatch.setattr(sw, "_get", boom)
     with pytest.raises(service.SourceFetchError) as e:
         sw.fetch_spgmi("https://rfr.spglobal.com/x.zip")
-    assert EMAIL not in str(e.value) and "<email>" in str(e.value)
+    assert EMAIL not in str(e.value) and "%40" not in str(e.value) and str(e.value).count("<email>") == 2
 
 
 def test_no_email_is_a_failed_fetch(monkeypatch):

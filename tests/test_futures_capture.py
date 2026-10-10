@@ -24,8 +24,8 @@ SOFR = json.dumps({"refRates": [
      "percentPercentile25": 3.87, "percentPercentile75": 3.94, "percentPercentile99": 3.97, "volumeInBillions": 3007,
      "revisionIndicator": ""}]}).encode()
 NO_RATES = b'{"refRates":[]}'
-TFF = (b"market_and_exchange_names,report_date_as_yyyy_mm_dd,cftc_contract_market_code\n"
-       b'"UST BOND - CHICAGO BOARD OF TRADE",2026-09-29T00:00:00.000,020601\n')
+TFF = (b"id,market_and_exchange_names,report_date_as_yyyy_mm_dd,cftc_contract_market_code,open_interest_all\n"
+       b'260929020601F,"UST BOND - CHICAGO BOARD OF TRADE",2026-09-29T00:00:00.000,020601,1906233\n')
 TFF_HEADER_ONLY = b"market_and_exchange_names,report_date_as_yyyy_mm_dd,cftc_contract_market_code\n"
 
 
@@ -53,7 +53,8 @@ def test_urls_by_period():
     assert "report_date_as_yyyy_mm_dd%3D%272026-09-29T00%3A00%3A00.000%27" in tff
     assert "/yw9f-hn96.csv?" in fut.SOURCES["CFTC-TFF-COMBINED"].url("2026-09-29")
     parsed = {n for n, src in fut.SOURCES.items() if src.spec.parse is not None}
-    assert parsed == {"NYFED-SOFR", "NYFED-EFFR", "FRB-H10", "FRB-H10-RATES", "ECB-EXR"}  # step 4; no averages
+    assert parsed == {"NYFED-SOFR", "NYFED-EFFR", "FRB-H10", "FRB-H10-RATES", "ECB-EXR",  # step 4; no averages
+                      "CFTC-TFF", "CFTC-TFF-COMBINED"}  # step 5
     assert all(src.spec.pulls for src in fut.SOURCES.values())
     assert not set(fut.SOURCES) & set(sec.SOURCES)
 
@@ -116,10 +117,11 @@ def test_the_ecb_404_is_nothing_published(migrated_db, monkeypatch):
         fut.run_capture(s, "ECB-EXR", "2026-10")
 
 
-def test_a_cftc_report_is_kept(migrated_db, monkeypatch):
+def test_a_cftc_report_is_kept_and_parsed(migrated_db, monkeypatch):
     monkeypatch.setattr(service, "fetch", _fetcher(TFF, "text/csv"))
     with db.session() as s:
-        assert fut.run_capture(s, "CFTC-TFF", "2026-09-29")["new_capture"]
+        r = fut.run_capture(s, "CFTC-TFF", "2026-09-29")
+        assert r["new_capture"] and r["parsed"] and r["values"] == 1
 
 
 def test_job(migrated_db, monkeypatch):

@@ -29,6 +29,7 @@ from app.futures import sources as futures
 from app.models import Capture, Observation, Record, Source, SourceCheck, SourceDay, SourceYear
 from app.rates import sources as rates
 from app.securities import sources as securities
+from app.swaps import sources as swaps
 
 router = APIRouter(prefix="/jobs")
 
@@ -189,6 +190,42 @@ def capture_futures(source: str, period: str | None = None) -> dict:
         raise HTTPException(422, f"parse failed (raw capture kept): {e}") from None
 
 
+def _swap_source(source: str) -> str:
+    key = source.upper()
+    if key not in swaps.SOURCES:
+        raise HTTPException(404, f"unknown swap curve source {source!r}; known: {sorted(swaps.SOURCES)}")
+    return key
+
+
+@router.post("/swaps/{source}/capture", dependencies=[Depends(require_token)])
+def capture_swaps(source: str, period: str | None = None) -> dict:
+    """Fetch one publication date's file of an SPGMI RFR curve (app/swaps/sources.py), keep it raw if new, and record
+    its par rates and curve record (docs/phase-4.md, "Swap curves").
+
+    `period` is the publication date YYYY-MM-DD (default: today, in New York). Not published (yet), or a weekend:
+    HTTP 502 with NOT_PUBLISHED in the detail, nothing stored. S&P not knowing the email, or its terms due again:
+    HTTP 502 with TERMS_NOT_ACCEPTED.
+    """
+    key = _swap_source(source)
+    try:
+        with db.session() as s:
+            return swaps.run_capture(s, key, period or securities.current_period("day"))
+    except securities.BadPeriod as e:
+        raise HTTPException(400, str(e)) from None
+    except service.SourceFetchError as e:
+        raise HTTPException(502, f"fetch failed: {e}") from None
+    except ParseError as e:
+        raise HTTPException(422, f"parse failed (raw capture kept): {e}") from None
+
+
+@router.post("/swaps/{source}/rebuild", dependencies=[Depends(require_token)])
+def rebuild_swaps(source: str) -> dict:
+    """Rebuild an SPGMI RFR curve's observations and records by replaying every stored capture. No fetch."""
+    key = _swap_source(source)
+    with db.session() as s:
+        return swaps.run_rebuild(s, key)
+
+
 @router.post("/securities/compare", dependencies=[Depends(require_token)])
 def compare_securities() -> dict:
     """Cross-check TreasuryDirect's auction records against Fiscal Data's; kept for the metrics (docs/phase-3.md, step 5)."""
@@ -280,7 +317,7 @@ def list_checks(
 
 def _has_parser(source: str) -> bool:
     spec = service.SOURCES.get(source)
-    for registry in (rates.SOURCES, securities.SOURCES, futures.SOURCES):
+    for registry in (rates.SOURCES, securities.SOURCES, futures.SOURCES, swaps.SOURCES):
         if spec is None and source in registry:
             spec = registry[source].spec
     return spec is not None and spec.parse is not None

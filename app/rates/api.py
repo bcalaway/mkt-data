@@ -11,7 +11,8 @@ month, whose other values it then carries.
 Every observation-shaped source is served: the CMT yields (phase 2), from
 phase 3 FedInvest's prices (TD-PRICES, a period per day) and BLS's CPI
 (BLS-CPI, a period per year), and from phase 4 the parsed fixings
-(NYFED-SOFR, NYFED-EFFR, FRB-H10, FRB-H10-RATES, ECB-EXR; a month each). Record-shaped sources are in
+(NYFED-SOFR, NYFED-EFFR, FRB-H10, FRB-H10-RATES, ECB-EXR; a month each), and the SPGMI swap curves'
+par rates (SPGMI-RFR-*, a period per publication date). Record-shaped sources are in
 app/securities/api.py (proto/records.proto).
 """
 
@@ -22,6 +23,7 @@ from app.futures.sources import SOURCES as FUTURES_SOURCES
 from app.models import Observation, Source
 from app.rates.sources import SOURCES as RATE_SOURCES
 from app.securities.sources import SOURCES as SECURITIES_SOURCES
+from app.swaps.sources import SOURCES as SWAP_SOURCES
 
 # name -> (description, calendar, first_period)
 SOURCES = {name: (src.spec.description, src.calendar, src.first_period) for name, src in RATE_SOURCES.items()} | {
@@ -31,6 +33,9 @@ SOURCES = {name: (src.spec.description, src.calendar, src.first_period) for name
     # Phase 4's parsed sources; the ones kept raw (the SOFR averages, the CFTC reports) have no observations.
     name: (src.spec.description, src.calendar, src.first_period)
     for name, src in FUTURES_SOURCES.items() if src.shape == "observations" and src.spec.parse is not None
+} | {
+    # The SPGMI swap curves: each tenor's par rate (their curve records are in app/securities/api.py).
+    name: (src.spec.description, src.calendar, src.first_period) for name, src in SWAP_SOURCES.items()
 }
 
 

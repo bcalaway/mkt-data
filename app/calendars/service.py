@@ -39,6 +39,7 @@ from sqlalchemy.orm import Session
 from app.calendars import (
     fed,
     govuk,
+    isda,
     jpcao,
     nbo,
     near_raw,
@@ -502,6 +503,26 @@ CALENDARS: dict[str, CalendarSpec] = {
                 "JP-PROJECTED", f"{rules.REPO_PREFIX}jp_projected.json",
                 "Japan national holidays projected to 2100 (years the CSV doesn't list)", rules.parse, projected=True,
             ),
+        ),
+    ),
+    # ISDA's CDS Standard Model calendars, for the SPGMI RFR swap curves (docs/phase-4.md, "Swap curves"): USD dates
+    # adjust on NYM, JPY dates on TYO. Not banking calendars: only the holidays ISDA lists (app/calendars/isda.py).
+    "ISDA-NYM": CalendarSpec(
+        name="ISDA-NYM",
+        description="ISDA CDS Standard Model New York calendar (NYM): weekends and the few dates ISDA lists",
+        timezone="America/New_York",
+        sources=(
+            SourceSpec("ISDA-NYM-CSV", isda.NYM_URL, "cdsmodel.com, ISDA standard model holiday file NYM.csv",
+                       isda.make_parser("NYM")),
+        ),
+    ),
+    "ISDA-TYO": CalendarSpec(
+        name="ISDA-TYO",
+        description="ISDA CDS Standard Model Tokyo calendar (TYO): weekends and the dates ISDA lists",
+        timezone="Asia/Tokyo",
+        sources=(
+            SourceSpec("ISDA-TYO-CSV", isda.TYO_URL, "cdsmodel.com, ISDA standard model holiday file TYO.csv",
+                       isda.make_parser("TYO")),
         ),
     ),
     "CME-FX": CalendarSpec(

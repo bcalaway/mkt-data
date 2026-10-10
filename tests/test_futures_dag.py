@@ -68,7 +68,7 @@ def test_cftc_report_dates(mod):
 def test_a_holiday_tuesday_asks_for_the_monday_too(mod):
     # Veterans Day 2025 was a Tuesday: the CFTC dated that week's report Monday 2025-11-10.
     holidays = {date(2025, 11, 11)}
-    on = lambda d: d not in holidays  # noqa: E731
+    on = lambda d: d not in holidays
     assert mod.periods_for("CFTC-TFF", date(2025, 11, 17), on) == ["2025-11-04", "2025-11-10", "2025-11-11"]
     assert mod.periods_for("CFTC-TFF", date(2025, 11, 24), on) == ["2025-11-10", "2025-11-11", "2025-11-18"]
     # calendar-svc couldn't say: ask for the Monday as well.

@@ -1,7 +1,7 @@
 """Parser for the ISDA standard model's RFR swap curves (S&P Global Market Intelligence; docs/phase-4.md, "Swap curves").
 
-One capture is one currency's file for one publication date: a zip holding one XML document (the spec's section 4),
-or the XML itself. The layout, from the SPGMI Interest Rate Curve XML Specification (RFRs), v1.3, 2026-06-15:
+One capture is one currency's file for one publication date: a zip holding one XML document (the spec's section 4)
+and S&P's disclaimer text, or the XML itself. The layout, from the SPGMI Interest Rate Curve XML Specification (RFRs), v1.3, 2026-06-15:
 
     <?xml version='1.0' encoding='UTF-8'?>
     <IHSM ...>                        root (named for IHS Markit; any name is accepted)
@@ -62,9 +62,11 @@ def xml_of(body: bytes) -> tuple[bytes, str]:
     if body[:2] == b"PK":
         try:
             with zipfile.ZipFile(io.BytesIO(body)) as z:
-                names = [n for n in z.namelist() if not n.endswith("/")]
+                # The XML, and beside it S&P's "ISDA Standard Rate Curves Disclaimer.txt" (seen on the first
+                # captures, 2026-10-10), kept in the raw capture and not parsed.
+                names = [n for n in z.namelist() if n.lower().endswith(".xml")]
                 if len(names) != 1:
-                    raise ParseError(f"expected one file in the zip, found {len(names)}: {names[:5]}")
+                    raise ParseError(f"expected one .xml file in the zip, found {len(names)}: {z.namelist()[:5]}")
                 return z.read(names[0]), names[0]
         except zipfile.BadZipFile as e:
             raise ParseError(f"not a readable zip: {e}") from None

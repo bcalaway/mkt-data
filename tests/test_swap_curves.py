@@ -49,10 +49,15 @@ def curve_xml(ccy="USD", effective="2026-10-12", snap="2026-10-09T16:00:00", poi
             f"<calendars><calendar>{calendar}</calendar></calendars>{cps}</ois></interestRateCurve></{root}>").encode()
 
 
-def zipped(xml: bytes, name="InterestRates_USD_20261009.xml", when=(2026, 10, 9, 16, 50, 0)) -> bytes:
+DISCLAIMER = "ISDA Standard Rate Curves Disclaimer.txt"  # beside the XML in every real file (2026-10-10)
+
+
+def zipped(xml: bytes, name="InterestRates_USD_20261009.xml", when=(2026, 10, 9, 16, 50, 0), extra=(DISCLAIMER,)) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr(zipfile.ZipInfo(name, when), xml)
+        for other in extra:
+            z.writestr(zipfile.ZipInfo(other, when), b"disclaimer text")
     return buf.getvalue()
 
 
@@ -73,6 +78,12 @@ def test_parse_a_curve_file():
     assert (f["fixeddaycountconvention"], f["floatingdaycountconvention"], f["fixedpaymentfrequency"],
             f["floatingpaymentfrequency"], f["calendars"]) == ("ACT/360", "ACT/360", "1Y", "1Y", ["NYM"])
     assert f["curvepoints"][4] == {"tenor": "10Y", "maturitydate": "2036-10-14", "parrate": "0.036912"}
+
+
+def test_the_xml_is_picked_out_of_the_zip():
+    assert len(p.parse_curve(zipped(curve_xml(), extra=()), "USD")[0]) == len(POINTS)
+    with pytest.raises(ParseError, match="expected one .xml file"):
+        p.parse_curve(zipped(curve_xml(), extra=("InterestRates_USD_20261008.xml",)), "USD")
 
 
 def test_plain_xml_and_any_root_name_are_read():

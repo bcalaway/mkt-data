@@ -4,7 +4,7 @@ The market data platform's data pipeline. The overview and conventions are in `R
 
 ## Git
 
-`main` is protected by the platform's ruleset: no direct pushes, no force-push, and `ci / Build, test, lint` must pass. Work on a branch, `git push` it right after every commit without asking, then open a PR (or update the open one). Bill merges, with one exception: for a PR that changes only docs (`docs/**`, `*.md`), Claude turns on auto-merge, so it merges once CI passes (Bill, 2026-10-04). Merging deploys to the hub after Bill approves the `production` environment; docs-only merges don't deploy (`cd.yml` ignores them).
+`main` is protected by the platform's ruleset: no direct pushes, no force-push, and `ci / Build, test, lint` must pass. Work on a branch, `git push` it right after every commit without asking, then open a PR (or update the open one). Bill merges, with one exception: for a PR that changes only docs (`docs/**`, `*.md`), Claude turns on auto-merge, so it merges once CI passes (Bill, 2026-10-04). Merging deploys to the hub automatically (no approval since 2026-10-04: only the platform's own release waits for Bill); docs-only merges don't deploy (`cd.yml` ignores them).
 
 ## Rules
 
